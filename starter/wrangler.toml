@@ -96,7 +96,7 @@ ANTHROPIC_MODEL_SMART = "claude-haiku-4-5-20251001"
 # recuperación lo usan). Skill: /whitelabel (modo dominio).
 # routes = [{ pattern = "panel.tunegocio.com", custom_domain = true }]
 # HIDDEN_TABS = "costs,config"   # tabs que este panel OCULTA (CSV de ids: conversations|boveda|leads|cobros|tickets|reviews|campanas|plantillas|agente|kb|mejoras|conexiones|config|insights|stats|costs). "overview" nunca se oculta. Skill /ocultar-tabs.
-DEMO_MODE = "on"   # chat web público en /demo para enseñarle el bot a un prospecto
+# DEMO_MODE = "on"   # chat web público en /demo para enseñarle el bot a un prospecto
 #                     (Modo Agencia · skill /demo). Déjalo APAGADO en un bot real:
 #                     es acceso sin autenticar a tu llave de IA.
 BOT_NICHE = "generico"  # el CLI lo reescribe al giro instalado (restaurante, cafeteria…)
