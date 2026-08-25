@@ -4,7 +4,7 @@
 # así ningún placeholder rompe `wrangler login` ni el parseo del toml.
 # DO NOT commit member-specific values to git.
 
-name = "forja-starter-4deeec"
+name = "forja-starter-ceb06e"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 compatibility_flags = ["nodejs_compat"]
@@ -36,12 +36,12 @@ new_sqlite_classes = ["SupportAgent"]
 # en la misma cuenta de Cloudflare NUNCA compartan datos (settings/persona).
 [[d1_databases]]
 binding = "DB"
-database_name = "horizontes_bot_starter_4deeec_db"
-database_id = "{{D1_DATABASE_ID}}"  # crea tu D1 (wrangler d1 create horizontes_bot_starter_4deeec_db) y pega aquí su id
+database_name = "horizontes_bot_starter_ceb06e_db"
+database_id = "{{D1_DATABASE_ID}}"  # crea tu D1 (wrangler d1 create horizontes_bot_starter_ceb06e_db) y pega aquí su id
 
 [[vectorize]]
 binding = "KB"
-index_name = "horizontes_bot_starter_4deeec_kb"
+index_name = "horizontes_bot_starter_ceb06e_kb"
 
 # R2 (OPCIONAL) — solo para lead magnets / catálogo con archivos. R2 pide tarjeta
 # en Cloudflare (aunque el uso sea $0), así que va COMENTADO por default: el bot
@@ -59,8 +59,8 @@ index_name = "horizontes_bot_starter_4deeec_kb"
 # bucket_name = "horizontes-bot-media"
 
 [vars]
-BOT_NAME = "Asistente"
-BUSINESS_NAME = "{{BUSINESS_NAME}}"
+BOT_NAME = "Asistente de Ciudad Maderas — Terrenos y Casas Premium"
+BUSINESS_NAME = "Ciudad Maderas — Terrenos y Casas Premium"
 BOT_LANGUAGE = "es-MX"
 # BOT_TIMEZONE = "America/Mexico_City"  # zona horaria para resolver fechas ("mañana", "el jueves 27"). Sin ella cae a CALCOM_TIMEZONE y luego a CDMX. Cámbiala si tu negocio no está en el centro de México (ej. "America/Bogota", "Europe/Madrid").
 BOT_TIER = "free"  # 'free' | 'pro'
