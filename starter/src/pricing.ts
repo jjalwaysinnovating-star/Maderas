@@ -53,6 +53,11 @@ const RATES: Record<string, Rates> = {
   "gemini-2.5-flash-lite": { input: 0.10, cacheRead: 0.01, output: 0.40 },
   "gemini-2.5-flash": { input: 0.30, cacheRead: 0.03, output: 2.50 },
   "gemini-2.5-pro": { input: 1.25, cacheRead: 0.125, output: 10.00 },
+  // Gemini 3.x — verificados contra ai.google.dev/gemini-api/docs/pricing (ago-2026).
+  // Sin ellos, un bot con Gemini 3 caía al fallback de Haiku ($1/$5) y el panel de
+  // Costos reportaba de más: para Flash-Lite, más de 3× el gasto real.
+  "gemini-3.5-flash-lite": { input: 0.30, cacheRead: 0.03, output: 2.50 },
+  "gemini-3.5-flash": { input: 1.50, cacheRead: 0.15, output: 9.00 },
 };
 
 // Any concrete model id string (Anthropic or OpenAI). Kept as a string alias so
