@@ -37,7 +37,7 @@ new_sqlite_classes = ["SupportAgent"]
 [[d1_databases]]
 binding = "DB"
 database_name = "horizontes_bot_starter_ceb06e_db"
-database_id = "{{D1_DATABASE_ID}}"  # crea tu D1 (wrangler d1 create horizontes_bot_starter_ceb06e_db) y pega aquí su id
+database_id = "46be1842-d68e-4457-ad61-ebd0667839c1"
 
 [[vectorize]]
 binding = "KB"
@@ -59,7 +59,7 @@ index_name = "horizontes_bot_starter_ceb06e_kb"
 # bucket_name = "horizontes-bot-media"
 
 [vars]
-BOT_NAME = "Asistente de Ciudad Maderas — Terrenos y Casas Premium"
+BOT_NAME = "Asesor Ciudad Maderas"
 BUSINESS_NAME = "Ciudad Maderas — Terrenos y Casas Premium"
 BOT_LANGUAGE = "es-MX"
 # BOT_TIMEZONE = "America/Mexico_City"  # zona horaria para resolver fechas ("mañana", "el jueves 27"). Sin ella cae a CALCOM_TIMEZONE y luego a CDMX. Cámbiala si tu negocio no está en el centro de México (ej. "America/Bogota", "Europe/Madrid").
