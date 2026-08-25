@@ -64,9 +64,13 @@ export const CURATED_MODELS: { id: string; nombre: string; desc: string; provide
   { id: "grok-4-fast-non-reasoning", nombre: "Grok 4 Fast", desc: "modeloDesc.rapidoBarato", provider: "xai" },
   { id: "grok-3-mini", nombre: "Grok 3 mini", desc: "modeloDesc.economico", provider: "xai" },
   { id: "grok-4", nombre: "Grok 4", desc: "modeloDesc.masCapaz", provider: "xai" },
-  { id: "gemini-2.5-flash-lite", nombre: "Gemini 2.5 Flash-Lite", desc: "modeloDesc.masRapidoBarato", provider: "google" },
-  { id: "gemini-2.5-flash", nombre: "Gemini 2.5 Flash", desc: "modeloDesc.equilibradoEconomico", provider: "google" },
-  { id: "gemini-2.5-pro", nombre: "Gemini 2.5 Pro", desc: "modeloDesc.maxInteligencia", provider: "google" },
+  // Los Gemini 2.5 salieron del picker: Google ya no los sirve a cuentas nuevas
+  // (generateContent responde 404 "no longer available to new users"), así que
+  // ofrecerlos dejaba mudo al bot de quien los eligiera.
+  { id: "gemini-3.5-flash-lite", nombre: "Gemini 3.5 Flash-Lite", desc: "modeloDesc.masRapidoBarato", provider: "google" },
+  { id: "gemini-3.5-flash", nombre: "Gemini 3.5 Flash", desc: "modeloDesc.equilibradoEconomico", provider: "google" },
+  { id: "gemini-3.6-flash", nombre: "Gemini 3.6 Flash", desc: "modeloDesc.equilibrado", provider: "google" },
+  { id: "gemini-3.7-flash", nombre: "Gemini 3.7 Flash", desc: "modeloDesc.masCapaz", provider: "google" },
 ];
 
 /**

@@ -64,7 +64,12 @@ BUSINESS_NAME = "Ciudad Maderas — Terrenos y Casas Premium"
 BOT_LANGUAGE = "es-MX"
 # BOT_TIMEZONE = "America/Mexico_City"  # zona horaria para resolver fechas ("mañana", "el jueves 27"). Sin ella cae a CALCOM_TIMEZONE y luego a CDMX. Cámbiala si tu negocio no está en el centro de México (ej. "America/Bogota", "Europe/Madrid").
 BOT_TIER = "free"  # 'free' | 'pro'
-LLM_PROVIDER = "anthropic"
+LLM_PROVIDER = "google"
+# Los defaults de Gemini del template (gemini-2.5-flash / -pro) ya no se sirven a
+# cuentas nuevas de Google AI Studio: aparecen en /models pero generateContent
+# responde 404 "no longer available to new users". Fijamos modelos vigentes.
+GOOGLE_MODEL_FAST = "gemini-3.5-flash-lite"
+GOOGLE_MODEL_SMART = "gemini-3.7-flash"
 # BLINDAJE_MODE = "full"  # estrictez del Blindaje anti-invento (Pro): 'off' | 'negaciones' | 'full'. Sin línea = 'full' (verificación completa; el prompt ya trata tool/KB/listados/cálculos como respaldo y solo bloquea contradicciones o datos sin fuente). 'negaciones' = confía en TODO dato positivo y solo vigila negaciones — para negocios que listan inventario en vivo. 'off' = apagado.
 # ── White-label del panel (Modo Agencia): TU marca o la del cliente. Opcionales;
 #    sin ellas el panel usa el tema Forja. Un valor inválido cae al default. Las
@@ -86,7 +91,7 @@ LLM_PROVIDER = "anthropic"
 # recuperación lo usan). Skill: /whitelabel (modo dominio).
 # routes = [{ pattern = "panel.tunegocio.com", custom_domain = true }]
 # HIDDEN_TABS = "costs,config"   # tabs que este panel OCULTA (CSV de ids: conversations|boveda|leads|cobros|tickets|reviews|campanas|plantillas|agente|kb|mejoras|conexiones|config|insights|stats|costs). "overview" nunca se oculta. Skill /ocultar-tabs.
-# DEMO_MODE = "on"   # chat web público en /demo para enseñarle el bot a un prospecto
+DEMO_MODE = "on"   # chat web público en /demo para enseñarle el bot a un prospecto
 #                     (Modo Agencia · skill /demo). Déjalo APAGADO en un bot real:
 #                     es acceso sin autenticar a tu llave de IA.
 BOT_NICHE = "generico"  # el CLI lo reescribe al giro instalado (restaurante, cafeteria…)
