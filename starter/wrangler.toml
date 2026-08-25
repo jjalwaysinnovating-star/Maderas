@@ -64,21 +64,17 @@ BUSINESS_NAME = "Ciudad Maderas — Terrenos y Casas Premium"
 BOT_LANGUAGE = "es-MX"
 # BOT_TIMEZONE = "America/Mexico_City"  # zona horaria para resolver fechas ("mañana", "el jueves 27"). Sin ella cae a CALCOM_TIMEZONE y luego a CDMX. Cámbiala si tu negocio no está en el centro de México (ej. "America/Bogota", "Europe/Madrid").
 BOT_TIER = "free"  # 'free' | 'pro'
-LLM_PROVIDER = "google"
-# Los defaults de Gemini del template (gemini-2.5-flash / -pro) ya no se sirven a
-# cuentas nuevas de Google AI Studio: aparecen en /models pero generateContent
-# responde 404 "no longer available to new users". Fijamos modelos vigentes.
+LLM_PROVIDER = "anthropic"
+# Anthropic es el ÚNICO proveedor para el que este bot cachea el prompt del
+# sistema (ver supportsPromptCache en src/llm/provider.ts): ~2,200 de los ~5,300
+# tokens de entrada por turno se cobran a 0.1× a partir del segundo mensaje.
+ANTHROPIC_MODEL_FAST = "claude-haiku-4-5-20251001"
+ANTHROPIC_MODEL_SMART = "claude-haiku-4-5-20251001"
 #
-# Ambos niveles apuntan al MISMO Flash-Lite a propósito. En la capa gratuita de
-# Google los modelos grandes traen una cuota de 20 peticiones (gemini-3.7-flash
-# devuelve 429 RESOURCE_EXHAUSTED al pasarla); el agente reintentaba, tardaba de
-# más y el Durable Object se reiniciaba con "blockConcurrencyWhile() waited for
-# too long" — el cliente se quedaba sin respuesta. Flash-Lite además contesta en
-# ~1s contra ~4s del 3.7, que para un chat importa.
-# Con una cuenta de Google de pago, subir SMART a gemini-3.5-flash da respuestas
-# más finas en conversaciones difíciles.
-GOOGLE_MODEL_FAST = "gemini-3.5-flash-lite"
-GOOGLE_MODEL_SMART = "gemini-3.5-flash-lite"
+# Gemini queda configurado como respaldo: si algún día quitas el saldo de
+# Anthropic, cambia LLM_PROVIDER a "google" y el bot sigue con estos modelos.
+# GOOGLE_MODEL_FAST = "gemini-3.5-flash-lite"
+# GOOGLE_MODEL_SMART = "gemini-3.5-flash-lite"
 # BLINDAJE_MODE = "full"  # estrictez del Blindaje anti-invento (Pro): 'off' | 'negaciones' | 'full'. Sin línea = 'full' (verificación completa; el prompt ya trata tool/KB/listados/cálculos como respaldo y solo bloquea contradicciones o datos sin fuente). 'negaciones' = confía en TODO dato positivo y solo vigila negaciones — para negocios que listan inventario en vivo. 'off' = apagado.
 # ── White-label del panel (Modo Agencia): TU marca o la del cliente. Opcionales;
 #    sin ellas el panel usa el tema Forja. Un valor inválido cae al default. Las
