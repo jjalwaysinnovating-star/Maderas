@@ -123,7 +123,7 @@ DASHBOARD_BASE_URL = "https://ciudad-maderas.jjalwaysinnovating.workers.dev"
 # IA desde otra web. Los subdominios entran solos (con "minegocio.com" también
 # vale "tienda.minegocio.com"). Guía completa:
 # skill/references/channel-setup-guides/sitio-web.md
-# WEB_SITES = "minegocio.com, www.minegocio.com"
+WEB_SITES = "ciudad-maderas.jjalwaysinnovating.workers.dev"
 
 # Secrets (set with `wrangler secret put <NAME>` — never commit values):
 #   ANTHROPIC_API_KEY          required — Claude API

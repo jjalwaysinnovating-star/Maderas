@@ -28,6 +28,7 @@ import { isOwner, handleOwnerMessage } from "./owner/handler";
 import { purgeOldMessages } from "./crons/purgeOldMessages";
 import { reindexFixtures } from "./kb/reindex";
 import { widgetJs, widgetPreflight, webPoll, webSend } from "./web/rutas";
+import { landingHtml } from "../member/landing.local";
 import { analyzeConversations } from "./insights/analyzer";
 import { Db } from "./db/client";
 import { SettingsRepo, SETTING_KEYS } from "./db/settings";
@@ -276,6 +277,11 @@ app.post("/demo/send", async (c) => {
 // ── CANAL WEB · el bot en el sitio del negocio ──────────────────────────────
 // Un canal más (ver src/web/): el visitante escribe desde el widget y entra al
 // MISMO pipeline que Telegram o WhatsApp. Se enciende con WEB_SITES.
+// Página pública del miembro, servida por este mismo Worker: el chat queda en
+// el mismo origen (sin CORS) y no hace falta hosting aparte. El HTML vive en
+// member/, que `forjabot update` no toca.
+app.get("/", (c) => c.html(landingHtml));
+
 app.get("/widget.js", (c) => widgetJs(c));
 app.options("/web/send", (c) => widgetPreflight(c));
 app.options("/web/poll", (c) => widgetPreflight(c));
