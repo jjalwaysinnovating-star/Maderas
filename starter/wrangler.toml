@@ -4,7 +4,7 @@
 # así ningún placeholder rompe `wrangler login` ni el parseo del toml.
 # DO NOT commit member-specific values to git.
 
-name = "forja-starter-ceb06e"
+name = "ciudad-maderas"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 compatibility_flags = ["nodejs_compat"]
