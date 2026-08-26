@@ -27,7 +27,9 @@ la reemplaza (no se puede recuperar la anterior).
   costo en ~$0.002–0.003 por respuesta. Gemini quedó comentado en `wrangler.toml`
   como respaldo — sus modelos 2.5 ya no se sirven a cuentas nuevas, por eso están
   fijados los 3.5.
-- **Canal:** web, servido por el mismo Worker (`WEB_SITES` lo enciende). El demo
+- **Canales:** web, servido por el mismo Worker (`WEB_SITES` lo enciende), y
+  **Facebook Messenger vía Zernio** (`/webhooks/zernio`, firma HMAC fail-closed:
+  sin `ZERNIO_WEBHOOK_SECRET` correcto el bot rechaza todo con 403). El demo
   público (`DEMO_MODE`) está APAGADO a propósito: era acceso sin autenticar a la
   llave de IA.
 - **Avisos:** Telegram al dueño (`@ciudadmaderas_avisos_bot`). Solo se avisa de los
@@ -72,9 +74,14 @@ Cloudflare para desplegar código.
 
 ## Pendientes
 
-- **Zernio** — falta la cuenta y su API key para que el flujo entre por Instagram y
-  WhatsApp. 1–2 cuentas conectadas son gratis. Guía:
-  `starter/skill/references/channel-setup-guides/zernio.md`.
+- **WhatsApp por YCloud** — el dueño eligió coexistencia para NO perder su app de
+  WhatsApp Business (Zernio, Twilio y la Cloud API dedican el número y se la
+  quitarían). La cuenta y el número ya se enlazaron, pero Meta tiene pendiente la
+  verificación del negocio: hasta que llegue su correo, la API de YCloud reporta
+  cero números y no hay nada que configurar. Al aprobarse faltan
+  `YCLOUD_API_KEY`, `YCLOUD_WEBHOOK_SECRET` y `YCLOUD_WA_FROM`. Guía:
+  `starter/skill/references/channel-setup-guides/ycloud-whatsapp.md`.
+- **Instagram** — cabe como la 2ª cuenta gratis de Zernio cuando el dueño quiera.
 - **Saldo de Anthropic** — sin cuota diaria que deje mudo al bot, pero el saldo se
   acaba. Conviene recarga automática antes de abrir WhatsApp.
 - **Leads de prueba** — hay tres falsos (Ana López, Roberto Salinas, Patricia Vega)
