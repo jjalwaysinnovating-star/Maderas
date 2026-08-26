@@ -164,11 +164,23 @@ export async function messageOwner(
   if (line) {
     try {
       const text = `${msg.heading}\n${msg.body}${msg.url ? `\n\n${msg.url}` : ""}`;
-      await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chat_id: env.OWNER_TELEGRAM_CHAT_ID, text }),
       });
+      // Telegram rechaza con 200-no-ok y con 4xx (chat_id equivocado, bot
+      // bloqueado, token rotado). Sin mirar la respuesta, un aviso perdido se
+      // veía EXACTAMENTE igual que uno entregado: el lead caliente se moría en
+      // silencio y el dueño se enteraba cuando el cliente ya no contestaba.
+      if (!r.ok) {
+        console.error(`[messageOwner] telegram HTTP ${r.status}: ${(await r.text()).slice(0, 300)}`);
+      } else {
+        const j = (await r.json().catch(() => null)) as { ok?: boolean; description?: string } | null;
+        if (j && j.ok === false) {
+          console.error(`[messageOwner] telegram rechazó: ${j.description ?? "sin descripción"}`);
+        }
+      }
     } catch (e) {
       console.error("[messageOwner] telegram failed:", e);
     }
