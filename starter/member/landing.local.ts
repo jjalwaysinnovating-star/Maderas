@@ -1,463 +1,385 @@
 // member/landing.local.ts — la página pública del asesor.
 // Vive en member/ a propósito: `forjabot update` refresca src/ pero NUNCA toca
 // esta carpeta, así que los textos y datos de contacto sobreviven las
-// actualizaciones del motor. Edítala cuando cambien precios o teléfonos.
+// actualizaciones del motor.
 //
-// Se sirve desde el mismo Worker del bot (ver la ruta "/" en src/index.ts), así
-// que el chat queda en el mismo origen: sin CORS, sin hosting aparte, sin costo.
+// Se sirve desde el mismo Worker del bot (ruta "/" en src/index.ts), así que el
+// chat queda en el mismo origen: sin CORS, sin hosting aparte, sin costo.
 //
-// FOTOS: se referencian desde el bucket público de Ciudad Maderas
-// (storage.googleapis.com/landing-ciudad-maderas), el mismo que usa su sitio
-// oficial. El navegador las trae de ahí — no se redistribuyen copias. Si la
-// desarrolladora mueve esas rutas, las fotos dejan de cargar: por eso cada
-// bloque de imagen conserva su color de fondo y el texto encima nunca depende
-// de que la foto exista.
+// ESTRUCTURA: replica la del sitio oficial ciudadmaderas.com — mismo orden de
+// secciones, mismos textos de marca, misma paleta (#00263a / #b4a269 / #f3f0e8)
+// y mismas tipografías (Montserrat + Sorts Mill Goudy), tomadas de su hoja de
+// estilos. Tres cosas se apartan a propósito, y son las que hacen que esta
+// página sirva al asesor en vez de al corporativo:
+//   1. El teléfono y el WhatsApp son los del asesor, no el 800 ni el 442 de
+//      Querétaro — si no, los prospectos de esta página se irían al corporativo.
+//   2. El chat es el bot de IA propio, no el widget de agente de Salesforce.
+//   3. Se identifica como asesor autorizado y cierra con aviso legal, para no
+//      pasar por el sitio oficial de la desarrolladora.
+// Del menú original se omiten MIS PAGOS, ESCRITURACIÓN, PAYMENTS, APARTADO,
+// MI CUENTA y BOSQUE MEMORIAL: son portales de cliente de la desarrolladora
+// (en su propio sitio tampoco tienen enlace) y un asesor no puede prestarlos.
 //
-// PALETA: la de la marca (azul petróleo #00263a + dorado #b4a269), tomada de
-// la hoja de estilos de ciudadmaderas.com para que la página se lea como parte
-// de la misma familia visual.
+// FOTOS: se referencian desde el bucket público de Ciudad Maderas, el mismo que
+// usa su sitio oficial. El navegador las trae de ahí — no se redistribuyen
+// copias. Cada bloque conserva su color de fondo y el texto nunca depende de
+// que la foto exista: si mueven esas rutas, la página se degrada, no se rompe.
 
 export const landingConfig = {
   asesor: "Ciudad Maderas",
   telefono: "686 606 6613",
-  telefonoLink: "526866066613", // formato internacional, para el link de WhatsApp
+  telefonoLink: "526866066613",
   horario: "Lunes a domingo · 8:00 a.m. – 6:00 p.m.",
 };
 
 const { telefono, telefonoLink, horario } = landingConfig;
-
 const IMG = "https://storage.googleapis.com/landing-ciudad-maderas";
 
-const amenidades: { img: string; nombre: string }[] = [
-  { img: `${IMG}/amenidades/Alberca.jpg`, nombre: "Albercas semiolímpicas" },
-  { img: `${IMG}/amenidades/Albercas%20techadas.webp`, nombre: "Albercas techadas" },
-  { img: `${IMG}/amenidades/Cancha%20Pa%CC%81del.webp`, nombre: "Canchas de pádel" },
-  { img: `${IMG}/amenidades/Cancha%20de%20tenis.webp`, nombre: "Canchas de tenis" },
-  { img: `${IMG}/amenidades/Chapoteadero.webp`, nombre: "Chapoteaderos" },
+const amenidades = [
+  { img: `${IMG}/amenidades/Alberca.jpg`, n: "Albercas" },
+  { img: `${IMG}/amenidades/Albercas%20techadas.webp`, n: "Albercas techadas" },
+  { img: `${IMG}/amenidades/Cancha%20Pa%CC%81del.webp`, n: "Canchas de Pádel" },
+  { img: `${IMG}/amenidades/Cancha%20de%20tenis.webp`, n: "Canchas de tenis" },
+  { img: `${IMG}/amenidades/Chapoteadero.webp`, n: "Chapoteaderos" },
 ];
 
-const ciudades: { img: string; nombre: string }[] = [
-  { img: `${IMG}/desarrollos/Qro.webp`, nombre: "Querétaro" },
-  { img: `${IMG}/desarrollos/Guanajuato.webp`, nombre: "León" },
-  { img: `${IMG}/desarrollos/Me%CC%81rida.webp`, nombre: "Mérida" },
-  { img: `${IMG}/desarrollos/Ags.webp`, nombre: "Aguascalientes" },
-  { img: `${IMG}/desarrollos/Mty.webp`, nombre: "Monterrey" },
-  { img: `${IMG}/desarrollos/SLP.webp`, nombre: "San Luis Potosí" },
-  { img: `${IMG}/desarrollos/Quintana%20Roo.webp`, nombre: "Cancún" },
-  { img: `${IMG}/desarrollos/puebla/puebla.webp`, nombre: "Puebla" },
+const ciudades = [
+  { img: `${IMG}/desarrollos/Qro.webp`, n: "Querétaro" },
+  { img: `${IMG}/desarrollos/Guanajuato.webp`, n: "León" },
+  { img: `${IMG}/desarrollos/Me%CC%81rida.webp`, n: "Mérida" },
+  { img: `${IMG}/desarrollos/Ags.webp`, n: "Aguascalientes" },
+  { img: `${IMG}/desarrollos/Mty.webp`, n: "Monterrey" },
+  { img: `${IMG}/desarrollos/SLP.webp`, n: "San Luis Potosí" },
+  { img: `${IMG}/desarrollos/Quintana%20Roo.webp`, n: "Cancún" },
+  { img: `${IMG}/desarrollos/puebla/puebla.webp`, n: "Puebla" },
 ];
 
-// Los 7 modelos que publica la desarrolladora. Sin metros ni recámaras: no los
-// publica, y el bot tiene prohibido inventarlos.
-const modelos = ["Alba", "Nova", "Aqua", "Stella", "Lucero", "Antara", "Aura"];
-
-const faqs: { q: string; a: string }[] = [
-  {
-    q: "¿Piden buró de crédito?",
-    a: "No. No se revisa buró. Estar en buró no te impide comprar: el crédito es directo con la desarrolladora, no con un banco.",
-  },
-  {
-    q: "¿Necesito comprobar ingresos?",
-    a: "No se pide comprobante de ingresos ni recibos de nómina. Tampoco necesitas aval.",
-  },
-  {
-    q: "¿De cuánto es el enganche?",
-    a: "Desde el 1%. Es de las mayores facilidades que existen en el sector: no necesitas una entrada fuerte para empezar a construir patrimonio.",
-  },
-  {
-    q: "¿Cuánto mide un lote y cuánto cuesta exactamente?",
-    a: "Depende del desarrollo, los metros y la ubicación dentro de la comunidad. Te comparto los planos con medidas y el precio del lote específico que te interese, sin costo.",
-  },
-  {
-    q: "¿Cuánto va a subir de valor mi terreno?",
-    a: "No te daría un porcentaje que luego no se cumpla: el comportamiento de cada zona depende de muchos factores. Lo que sí puedo mostrarte es cómo se ha desarrollado la zona que te interesa y el respaldo de más de 40 años y +124,000 lotes.",
-  },
-  {
-    q: "¿Puedo apartar desde aquí?",
-    a: "El apartado y el contrato los hacemos con calma, ya con toda la información sobre la mesa. Aquí resolvemos tus dudas y agendamos.",
-  },
+const fundacion = [
+  { img: `${IMG}/fundacion/Arte%20y%20Cultura.webp`, n: "Arte y cultura" },
+  { img: `${IMG}/fundacion/Educaci%C3%B3n.webp`, n: "Educación" },
+  { img: `${IMG}/fundacion/Mascotas.webp`, n: "Dignidad Animal" },
 ];
 
-const chip = (t: string) => `<span class="chip">${t}</span>`;
+const wa = (t: string) => `https://wa.me/${telefonoLink}?text=${encodeURIComponent(t)}`;
 
 export const landingHtml = `<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ciudad Maderas — Terrenos y Casas Premium | Asesor autorizado</title>
-<meta name="description" content="Terrenos desde $550,000 MXN y casas premium desde $15,220 al mes. Crédito directo desde 1% de enganche, sin aval y sin revisión de buró. Asesoría gratuita.">
-<meta name="robots" content="index, follow">
+<title>Terrenos y Casas Premium | Ciudad Maderas — Asesor autorizado</title>
+<meta name="description" content="Terrenos y casas premium con crédito directo desde 1% de enganche, sin aval y sin revisión de buró. Asesoría personalizada gratis.">
 <meta name="theme-color" content="#00263a">
-<meta property="og:title" content="Ciudad Maderas — Terrenos y Casas Premium">
-<meta property="og:description" content="Desde 1% de enganche · Crédito directo · Sin aval y sin buró. Asesoría personalizada y gratuita.">
+<meta property="og:title" content="Terrenos y Casas Premium | Ciudad Maderas">
+<meta property="og:description" content="Crédito directo · Sin aval · Sin revisión de buró · Desde 1% de enganche">
 <meta property="og:image" content="${IMG}/casas/casaPremium.webp">
-<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Sorts+Mill+Goudy:ital@0;1&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>">
 <style>
-  :root{
-    --azul:#00263a; --azul-2:#0d1f33; --azul-3:#001e2d;
-    --oro:#b4a269; --oro-claro:#dcce9e;
-    --crema:#f3f0e8; --crema-2:#e9e6dc;
-    --texto:#14212b; --gris:#5a6672; --linea:#ddd9ce; --blanco:#fff;
-  }
+  :root{--azul:#00263a;--azul-2:#0d1f33;--azul-3:#001e2d;--oro:#b4a269;
+        --oro-2:#dcce9e;--crema:#f3f0e8;--crema-2:#e9e6dc;--linea:#ddd9ce;
+        --texto:#0b2538;--gris:#5a6672}
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-       color:var(--texto);line-height:1.6;background:var(--blanco);-webkit-font-smoothing:antialiased}
+  body{font-family:Montserrat,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+       color:var(--texto);line-height:1.6;background:#fff;-webkit-font-smoothing:antialiased}
   img{display:block;max-width:100%}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:1140px;margin:0 auto;padding:0 22px}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+  .serif{font-family:"Sorts Mill Goudy",Georgia,serif}
 
-  /* ── Barra superior ─────────────────────────────────────────── */
-  header{background:var(--azul);color:#fff;position:sticky;top:0;z-index:60;
-         border-bottom:1px solid rgba(180,162,105,.28)}
-  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;
-               min-height:64px;flex-wrap:wrap}
-  .marca{font-weight:800;font-size:17px;letter-spacing:.01em;line-height:1.15}
-  .marca span{display:block;font-weight:500;font-size:10.5px;letter-spacing:.16em;
-              text-transform:uppercase;color:var(--oro-claro);margin-top:2px}
-  nav{display:flex;gap:22px;font-size:14.5px;font-weight:600}
-  nav a{opacity:.88}
-  nav a:hover{opacity:1;color:var(--oro-claro)}
-  @media(max-width:860px){nav{display:none}}
-  .tel-top{background:var(--oro);color:var(--azul);padding:9px 18px;border-radius:6px;
-           font-weight:800;font-size:14px;white-space:nowrap}
+  /* header */
+  header{background:var(--azul);color:#fff;position:sticky;top:0;z-index:70}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;
+               gap:16px;min-height:72px;flex-wrap:wrap}
+  .logo{font-weight:800;font-size:17px;letter-spacing:.06em;text-transform:uppercase;line-height:1.1}
+  .logo span{display:block;font-weight:400;font-size:9.5px;letter-spacing:.22em;
+             color:var(--oro-2);margin-top:3px}
+  nav{display:flex;gap:26px;font-size:12px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
+  nav a{opacity:.9}nav a:hover{color:var(--oro-2)}
+  @media(max-width:960px){nav{display:none}}
+  .btn-nav{border:1px solid var(--oro);color:var(--oro-2);padding:10px 20px;border-radius:3px;
+           font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;white-space:nowrap}
 
-  /* ── Portada ────────────────────────────────────────────────── */
-  .hero{position:relative;background:var(--azul-3);color:#fff;overflow:hidden}
-  .hero-bg{position:absolute;inset:0}
-  .hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.4}
-  .hero-bg:after{content:"";position:absolute;inset:0;
-    background:linear-gradient(100deg,rgba(0,30,45,.94) 0%,rgba(0,38,58,.82) 45%,rgba(0,38,58,.45) 100%)}
-  .hero .wrap{position:relative;padding:78px 22px 84px}
-  .eyebrow{display:inline-block;font-size:12px;letter-spacing:.2em;text-transform:uppercase;
-           font-weight:700;color:var(--oro-claro);border:1px solid rgba(220,206,158,.42);
-           border-radius:999px;padding:6px 16px;margin-bottom:22px}
-  .hero h1{font-size:clamp(31px,5.6vw,55px);line-height:1.09;letter-spacing:-.025em;
-           font-weight:800;margin-bottom:20px;max-width:16ch}
-  .hero h1 em{font-style:normal;color:var(--oro-claro)}
-  .hero p.lead{font-size:clamp(16.5px,2.1vw,20px);opacity:.92;max-width:52ch;margin-bottom:32px}
-  .cta-row{display:flex;gap:12px;flex-wrap:wrap}
-  .btn{display:inline-block;padding:15px 28px;border-radius:8px;font-weight:800;font-size:16px;
-       transition:transform .14s,box-shadow .14s;border:2px solid transparent}
-  .btn:active{transform:translateY(1px)}
-  .btn-wa{background:#25D366;color:#05301a;box-shadow:0 6px 20px rgba(37,211,102,.28)}
-  .btn-oro{background:var(--oro);color:var(--azul);box-shadow:0 6px 20px rgba(180,162,105,.28)}
-  .btn-ghost{border-color:rgba(255,255,255,.4);color:#fff}
+  /* hero */
+  .hero{position:relative;min-height:min(84vh,660px);display:flex;align-items:flex-end;
+        background:var(--azul-3);color:#fff;overflow:hidden}
+  .hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+  .hero:after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(0,30,45,.55) 0%,rgba(0,30,45,.1) 40%,rgba(0,30,45,.92) 100%)}
+  .hero .wrap{position:relative;z-index:2;padding-bottom:58px;padding-top:70px}
+  .hero h1{font-size:clamp(34px,6vw,62px);line-height:1.06;letter-spacing:.01em;font-weight:300;
+           text-transform:uppercase;margin-bottom:18px}
+  .hero h1 b{display:block;font-weight:800;color:var(--oro-2)}
+  .hero p{font-size:clamp(15px,2vw,19px);max-width:54ch;opacity:.93;margin-bottom:28px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:15px 30px;border-radius:3px;font-weight:700;font-size:13px;
+       letter-spacing:.12em;text-transform:uppercase;border:1px solid transparent}
+  .btn-oro{background:var(--oro);color:var(--azul)}
+  .btn-wa{background:#25D366;color:#05301a}
+  .btn-line{border-color:rgba(255,255,255,.55);color:#fff}
 
-  /* ── Cifras ─────────────────────────────────────────────────── */
-  .cifras{background:var(--crema);border-bottom:1px solid var(--linea)}
-  .cifras .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
-                padding-top:30px;padding-bottom:30px;text-align:center}
-  .cifra b{display:block;font-size:clamp(21px,3.4vw,31px);color:var(--azul);
-           font-weight:800;letter-spacing:-.025em;line-height:1.1}
-  .cifra span{font-size:12.5px;color:var(--gris);font-weight:500}
-  @media(max-width:640px){.cifras .wrap{grid-template-columns:repeat(2,1fr);gap:24px}}
+  /* somos / cifras */
+  .somos{background:var(--azul);color:#fff;padding:58px 0}
+  .somos .lbl{font-family:"Sorts Mill Goudy",serif;font-size:26px;color:var(--oro-2);margin-bottom:26px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:26px}
+  @media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr);gap:34px}}
+  .st b{display:block;font-size:clamp(30px,4.6vw,46px);font-weight:800;color:var(--oro-2);
+        line-height:1;letter-spacing:-.02em;margin-bottom:8px}
+  .st span{font-size:13.5px;opacity:.88;font-weight:400;display:block}
 
-  /* ── Secciones ──────────────────────────────────────────────── */
-  section{padding:66px 0}
-  .head{max-width:640px;margin-bottom:34px}
-  .kicker{font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;
-          color:var(--oro);margin-bottom:10px}
-  h2{font-size:clamp(24px,3.8vw,35px);letter-spacing:-.025em;font-weight:800;
-     line-height:1.16;margin-bottom:12px}
-  .head p{color:var(--gris);font-size:16.5px}
+  /* creadores */
+  .creadores{background:var(--crema);text-align:center;padding:70px 0}
+  .creadores h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(30px,5.4vw,54px);
+                font-weight:400;line-height:1.14;color:var(--azul)}
+  .creadores h2 em{font-style:italic;color:var(--oro)}
+  .creadores p{margin-top:16px;color:var(--gris);font-size:16.5px}
 
-  /* ── Terreno vs casa ────────────────────────────────────────── */
-  .duo{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-  @media(max-width:800px){.duo{grid-template-columns:1fr}}
-  .op{border:1px solid var(--linea);border-radius:14px;overflow:hidden;background:#fff;
-      display:flex;flex-direction:column}
-  .op-img{height:210px;background:var(--azul-2);position:relative}
-  .op-img img{width:100%;height:100%;object-fit:cover}
-  .op-tag{position:absolute;left:16px;top:16px;background:var(--azul);color:#fff;
-          font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-          padding:6px 13px;border-radius:5px}
-  .op-body{padding:26px;flex:1;display:flex;flex-direction:column}
-  .op h3{font-size:21px;font-weight:800;margin-bottom:4px}
-  .precio{font-size:31px;font-weight:800;letter-spacing:-.03em;color:var(--azul);margin:12px 0 2px}
-  .precio small{display:block;font-size:13px;font-weight:600;color:var(--gris);letter-spacing:0;margin-top:3px}
-  .op ul{list-style:none;margin:18px 0 22px}
-  .op li{padding:6px 0 6px 26px;position:relative;font-size:15px;border-top:1px solid var(--crema-2)}
-  .op li:first-child{border-top:0}
-  .op li:before{content:"✓";position:absolute;left:0;top:6px;color:var(--oro);font-weight:900}
-  .op .btn{margin-top:auto;text-align:center}
+  /* secciones */
+  section{padding:72px 0}
+  .kick{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;
+        color:var(--oro);margin-bottom:12px}
+  h2.sec{font-family:"Sorts Mill Goudy",serif;font-size:clamp(27px,4.2vw,42px);font-weight:400;
+         line-height:1.16;color:var(--azul);margin-bottom:14px}
+  .sub{color:var(--gris);font-size:16.5px;max-width:60ch;margin-bottom:34px}
 
-  /* ── Modelos ────────────────────────────────────────────────── */
-  .modelos{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
-  .modelo{border:1.5px solid var(--linea);border-radius:8px;padding:13px 22px;
-          font-weight:800;font-size:16px;color:var(--azul);background:var(--crema)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+  .card{position:relative;border-radius:4px;overflow:hidden;background:var(--azul-2);aspect-ratio:4/3}
+  .card img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+  .card:hover img{transform:scale(1.06)}
+  .card figcaption{position:absolute;inset:auto 0 0 0;padding:30px 16px 14px;color:#fff;
+    font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    background:linear-gradient(transparent,rgba(0,30,45,.92))}
+  .tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
+  .tab{border:1px solid var(--linea);background:var(--crema);border-radius:3px;padding:10px 20px;
+       font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--azul)}
 
-  /* ── Financiamiento ─────────────────────────────────────────── */
-  .fin{background:var(--azul);color:#fff}
-  .fin h2{color:#fff}
-  .fin .head p{color:rgba(255,255,255,.82)}
-  .fin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  @media(max-width:880px){.fin-grid{grid-template-columns:repeat(2,1fr)}}
-  .fi{background:rgba(255,255,255,.06);border:1px solid rgba(180,162,105,.32);
-      border-radius:12px;padding:24px}
-  .fi b{display:block;font-size:19px;color:var(--oro-claro);margin-bottom:6px;font-weight:800}
-  .fi span{font-size:14.5px;opacity:.86}
-  .nota{margin-top:30px;padding:20px 24px;background:rgba(0,0,0,.22);border-left:3px solid var(--oro);
-        border-radius:0 10px 10px 0;font-size:15.5px;max-width:70ch}
+  /* casas premium */
+  .casas{position:relative;background:var(--azul-3);color:#fff;overflow:hidden;padding:0}
+  .casas>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.34}
+  .casas:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,30,45,.94),rgba(0,30,45,.55))}
+  .casas .wrap{position:relative;z-index:2;padding-top:78px;padding-bottom:78px}
+  .desde{display:inline-block;border:1px solid var(--oro);padding:14px 22px;border-radius:3px;
+         margin-bottom:26px}
+  .desde i{display:block;font-style:normal;font-size:10.5px;letter-spacing:.22em;
+           text-transform:uppercase;color:var(--oro-2)}
+  .desde b{display:block;font-size:34px;font-weight:800;letter-spacing:-.02em;margin:2px 0}
+  .desde s{display:block;text-decoration:none;font-size:10.5px;opacity:.7}
+  .casas .tag{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--oro-2);
+              font-weight:700;margin-bottom:10px}
+  .casas h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(34px,6vw,60px);font-weight:400;
+            line-height:1.04;text-transform:uppercase;margin-bottom:16px}
+  .casas h2 b{display:block;font-weight:800;color:var(--oro-2)}
+  .casas p.big{font-size:clamp(17px,2.3vw,22px);max-width:46ch;margin-bottom:10px}
+  .casas p.small{opacity:.82;max-width:52ch;margin-bottom:28px;font-size:15.5px}
+  .modelos{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:30px}
+  .modelos span{border:1px solid rgba(220,206,158,.45);border-radius:3px;padding:9px 17px;
+                font-size:13px;font-weight:600;letter-spacing:.05em}
 
-  /* ── Galerías ───────────────────────────────────────────────── */
-  .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:16px}
-  .g{border-radius:12px;overflow:hidden;position:relative;background:var(--azul-2);aspect-ratio:4/3}
-  .g img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
-  .g:hover img{transform:scale(1.05)}
-  .g figcaption{position:absolute;left:0;right:0;bottom:0;padding:26px 16px 13px;color:#fff;
-     font-weight:700;font-size:15.5px;background:linear-gradient(transparent,rgba(0,30,45,.9))}
-  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}
-  .chip{background:var(--crema);border:1px solid var(--linea);border-radius:999px;
-        padding:8px 17px;font-size:14.5px;font-weight:600}
+  /* entorno */
+  .entorno{background:var(--crema)}
+  .entorno .cols{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:center}
+  @media(max-width:880px){.entorno .cols{grid-template-columns:1fr;gap:28px}}
+  .entorno p{color:var(--gris);font-size:16px;margin-bottom:14px}
+  .entorno img{border-radius:4px;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--azul-2)}
 
-  /* ── Proceso ────────────────────────────────────────────────── */
-  .pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;counter-reset:p}
-  @media(max-width:880px){.pasos{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:520px){.pasos{grid-template-columns:1fr}}
-  .paso{counter-increment:p;position:relative;padding-top:52px}
-  .paso:before{content:counter(p);position:absolute;top:0;left:0;width:38px;height:38px;
-    border-radius:50%;background:var(--oro);color:var(--azul);font-weight:900;font-size:17px;
-    display:flex;align-items:center;justify-content:center}
-  .paso h4{font-size:17px;font-weight:800;margin-bottom:5px}
-  .paso p{font-size:14.5px;color:var(--gris)}
+  /* facilidades */
+  .facil{background:var(--azul);color:#fff}
+  .facil h2.sec{color:#fff}
+  .facil .sub{color:rgba(255,255,255,.82)}
+  .fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:30px}
+  @media(max-width:880px){.fgrid{grid-template-columns:repeat(2,1fr)}}
+  .fitem{border:1px solid rgba(180,162,105,.4);border-radius:3px;padding:22px;
+         background:rgba(255,255,255,.05);text-align:center}
+  .fitem b{display:block;font-size:13px;font-weight:700;letter-spacing:.11em;
+           text-transform:uppercase;color:var(--oro-2)}
+  .precio-mes{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+              border-left:3px solid var(--oro);padding-left:20px;margin-bottom:26px}
+  .precio-mes i{font-style:normal;font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
+  .precio-mes b{font-size:40px;font-weight:800;letter-spacing:-.02em}
 
-  /* ── FAQ ────────────────────────────────────────────────────── */
-  .faq{background:var(--crema)}
-  details{background:#fff;border:1px solid var(--linea);border-radius:10px;margin-bottom:11px;
-          overflow:hidden}
-  summary{padding:18px 22px;font-weight:700;font-size:16.5px;cursor:pointer;list-style:none;
-          display:flex;justify-content:space-between;align-items:center;gap:14px}
-  summary::-webkit-details-marker{display:none}
-  summary:after{content:"+";color:var(--oro);font-size:24px;font-weight:800;line-height:1;flex-shrink:0}
-  details[open] summary:after{content:"–"}
-  details p{padding:0 22px 20px;color:var(--gris);font-size:15.5px;max-width:75ch}
+  /* contacto */
+  .contacto{background:var(--crema);text-align:center}
+  .contacto h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(28px,4.4vw,44px);
+               font-weight:400;color:var(--azul);line-height:1.15;margin-bottom:14px}
+  .contacto p{color:var(--gris);max-width:52ch;margin:0 auto 30px;font-size:16.5px}
+  .contacto .cta{justify-content:center}
+  .tel-big{margin-top:26px;font-size:15.5px;color:var(--gris)}
+  .tel-big a{color:var(--azul);font-weight:800}
 
-  /* ── Cierre ─────────────────────────────────────────────────── */
-  .cierre{background:var(--azul-3);color:#fff;text-align:center}
-  .cierre h2{color:#fff}
-  .cierre p.lead{color:rgba(255,255,255,.85);max-width:56ch;margin:0 auto 28px;font-size:17px}
-  .cierre .cta-row{justify-content:center}
-  .cierre .tel{margin-top:24px;font-size:15.5px;opacity:.82}
-  .cierre .tel a{color:var(--oro-claro);font-weight:800}
-
-  footer{background:#001622;color:rgba(255,255,255,.72);padding:40px 0;font-size:14px}
-  .foot-top{display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap;
-            padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.12)}
+  footer{background:var(--azul-3);color:rgba(255,255,255,.72);padding:44px 0;font-size:13.5px}
+  .fbar{display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap;padding-bottom:22px;
+        border-bottom:1px solid rgba(255,255,255,.13)}
   footer strong{color:#fff}
-  footer a{color:var(--oro-claro);font-weight:700}
-  .legal{margin-top:20px;font-size:12px;opacity:.6;line-height:1.6;max-width:95ch}
+  footer a{color:var(--oro-2)}
+  .legal{margin-top:20px;font-size:11.5px;opacity:.62;line-height:1.65;max-width:100ch}
 </style>
 </head>
 <body>
 
 <header>
   <div class="wrap">
-    <div class="marca">Ciudad Maderas<span>Asesor autorizado</span></div>
+    <div class="logo">Ciudad Maderas<span>Asesor autorizado</span></div>
     <nav>
-      <a href="#opciones">Terrenos y casas</a>
-      <a href="#financiamiento">Financiamiento</a>
+      <a href="#desarrollos">Desarrollos</a>
+      <a href="#casas">Casas Premium</a>
       <a href="#amenidades">Amenidades</a>
-      <a href="#ciudades">Ciudades</a>
-      <a href="#faq">Preguntas</a>
+      <a href="#facilidades">Facilidades de pago</a>
+      <a href="#contacto">Contáctanos</a>
     </nav>
-    <a class="tel-top" href="tel:+${telefonoLink}">${telefono}</a>
+    <a class="btn-nav" href="${wa("Hola, quiero contactar a un asesor")}">Contacta a un asesor</a>
   </div>
 </header>
 
 <div class="hero">
-  <div class="hero-bg"><img src="${IMG}/casas/casaPremium.webp" alt="" loading="eager" decoding="async"></div>
+  <img src="${IMG}/casas/casaPremium.webp" alt="" decoding="async">
   <div class="wrap">
-    <div class="eyebrow">Asesor autorizado</div>
-    <h1>Construye tu patrimonio <em>desde 1% de enganche</em></h1>
-    <p class="lead">Terrenos y casas premium en comunidades planificadas con más de 30 amenidades.
-       Crédito directo con la desarrolladora: <strong>sin aval, sin buró y sin comprobante de ingresos.</strong></p>
-    <div class="cta-row">
-      <a class="btn btn-wa" href="https://wa.me/${telefonoLink}?text=Hola,%20me%20interesa%20invertir%20en%20un%20terreno">Escríbeme por WhatsApp</a>
-      <a class="btn btn-ghost" href="#opciones">Ver opciones y precios</a>
+    <h1>Terrenos y<b>Casas Premium</b></h1>
+    <p>Crédito directo con la desarrolladora, sin aval y sin revisión de buró.
+       Comunidades planificadas con más de 30 amenidades de lujo.</p>
+    <div class="cta">
+      <a class="btn btn-wa" href="${wa("Hola, me interesa un terreno")}">Escríbeme por WhatsApp</a>
+      <a class="btn btn-line" href="#facilidades">Ver facilidades de pago</a>
     </div>
   </div>
 </div>
 
-<div class="cifras">
+<div class="somos">
   <div class="wrap">
-    <div class="cifra"><b>40+</b><span>años de experiencia</span></div>
-    <div class="cifra"><b>124,000+</b><span>lotes comercializados</span></div>
-    <div class="cifra"><b>28</b><span>desarrollos</span></div>
-    <div class="cifra"><b>20</b><span>ciudades en México</span></div>
+    <div class="lbl serif">Somos:</div>
+    <div class="stats">
+      <div class="st"><b>+40</b><span>Años de experiencia en el sector</span></div>
+      <div class="st"><b>+124,000</b><span>Lotes habitacionales y comerciales</span></div>
+      <div class="st"><b>28</b><span>Desarrollos en toda la república</span></div>
+      <div class="st"><b>+30</b><span>Amenidades de lujo en cada desarrollo</span></div>
+    </div>
   </div>
 </div>
 
-<section id="opciones">
+<div class="creadores">
   <div class="wrap">
-    <div class="head">
-      <div class="kicker">Qué puedes adquirir</div>
-      <h2>¿Terreno para construir, o casa lista?</h2>
-      <p>Los montos son precios <em>desde</em>: el final depende de la ciudad, los metros y la
-         ubicación dentro del desarrollo. Te lo cotizo sin costo y sin compromiso.</p>
-    </div>
-    <div class="duo">
-      <article class="op">
-        <div class="op-img"><span class="op-tag">Terrenos</span>
-          <img src="${IMG}/desarrollos/Qro.webp" alt="Terrenos en comunidad planificada" loading="lazy"></div>
-        <div class="op-body">
-          <h3>Lotes habitacionales y comerciales</h3>
-          <div class="precio">Desde $550,000<small>MXN · según ciudad, metros y ubicación</small></div>
-          <ul>
-            <li>Menor entrada y mensualidad</li>
-            <li>Construyes a tu gusto y a tu tiempo</li>
-            <li>Ideal para inversión a mediano plazo</li>
-            <li>Traza urbana, servicios y amenidades proyectadas</li>
-          </ul>
-          <a class="btn btn-oro" href="https://wa.me/${telefonoLink}?text=Hola,%20quiero%20info%20de%20terrenos">Cotizar un terreno</a>
-        </div>
-      </article>
-      <article class="op">
-        <div class="op-img"><span class="op-tag">Casas premium</span>
-          <img src="${IMG}/casas/casaPremium.webp" alt="Casa premium Ciudad Maderas" loading="lazy"></div>
-        <div class="op-body">
-          <h3>7 modelos exclusivos</h3>
-          <div class="precio">Desde $15,220<small>MXN al mes · según modelo, enganche y plazo</small></div>
-          <ul>
-            <li>Listas para habitar, sin tiempos de obra</li>
-            <li>Siete distribuciones a elegir</li>
-            <li>Dentro de la comunidad con amenidades</li>
-            <li>Para vivir, rentar o heredar</li>
-          </ul>
-          <a class="btn btn-oro" href="https://wa.me/${telefonoLink}?text=Hola,%20quiero%20info%20de%20casas%20premium">Ver casas disponibles</a>
-        </div>
-      </article>
-    </div>
-
-    <div class="head" style="margin-top:52px;margin-bottom:14px">
-      <h2 style="font-size:22px">Los siete modelos</h2>
-      <p>Cada uno con su propia distribución y acabados. La disponibilidad varía por desarrollo.</p>
-    </div>
-    <div class="modelos">${modelos.map((m) => `<span class="modelo">${m}</span>`).join("")}</div>
+    <h2>Somos <em>creadores</em><br>de ciudades</h2>
+    <p>Nuestra presencia es internacional: 20 ciudades de México y 4 en Estados Unidos,
+       con más de 30 desarrollos y 40 oficinas.</p>
   </div>
-</section>
-
-<section class="fin" id="financiamiento">
-  <div class="wrap">
-    <div class="head">
-      <div class="kicker">Por qué sí calificas</div>
-      <h2>El crédito es directo con la desarrolladora</h2>
-      <p>No pasa por un banco. Por eso las condiciones son distintas a todo lo que ya
-         te dijeron que no.</p>
-    </div>
-    <div class="fin-grid">
-      <div class="fi"><b>1% de enganche</b><span>No necesitas una entrada fuerte para empezar</span></div>
-      <div class="fi"><b>Sin buró</b><span>Estar en buró no te descalifica</span></div>
-      <div class="fi"><b>Sin aval</b><span>Nadie más tiene que firmar por ti</span></div>
-      <div class="fi"><b>Sin comprobante</b><span>No se piden recibos de nómina</span></div>
-    </div>
-    <p class="nota">Mucha gente se descarta antes de preguntar: cree que necesita buen buró,
-       sueldo comprobable o una entrada grande. Si eso te frenó alguna vez, esta es la
-       diferencia — y no cuesta nada averiguar cuánto te tocaría pagar.</p>
-  </div>
-</section>
+</div>
 
 <section id="amenidades">
   <div class="wrap">
-    <div class="head">
-      <div class="kicker">La vida dentro</div>
-      <h2>Más de 30 amenidades por desarrollo</h2>
-      <p>No compras un lote aislado: compras la comunidad que lo rodea. Eso es lo que
-         sostiene el valor de la zona con el tiempo.</p>
+    <div class="kick">Nuestras principales</div>
+    <h2 class="sec">Amenidades</h2>
+    <div class="tabs">
+      <span class="tab">Casa Club</span><span class="tab">Family Club</span>
+      <span class="tab">Club Deportivo</span><span class="tab">Club Acuático</span>
     </div>
-    <div class="gal">
+    <div class="grid">
       ${amenidades
-        .map(
-          (a) =>
-            `<figure class="g"><img src="${a.img}" alt="${a.nombre}" loading="lazy"><figcaption>${a.nombre}</figcaption></figure>`,
-        )
+        .map((a) => `<figure class="card"><img src="${a.img}" alt="${a.n}" loading="lazy"><figcaption>${a.n}</figcaption></figure>`)
         .join("")}
     </div>
-    <div class="chips">
-      ${["Casa club", "Gimnasio", "Áreas infantiles", "Áreas verdes", "Club deportivo", "Family club"].map(chip).join("")}
-    </div>
-    <p style="margin-top:16px;color:var(--gris);font-size:14.5px">
-      El catálogo exacto varía por desarrollo y por etapa. Te confirmo cuáles hay —y cuáles ya
-      están construidas— en el que te interese.</p>
+    <p class="sub" style="margin-top:20px;margin-bottom:0">El catálogo exacto varía por desarrollo
+       y por etapa. Te confirmo cuáles hay —y cuáles ya están construidas— en el que te interese.</p>
   </div>
 </section>
 
-<section class="faq" id="ciudades" style="background:var(--crema)">
+<section class="casas" id="casas">
+  <img src="${IMG}/casas/casaPremium.webp" alt="" loading="lazy">
   <div class="wrap">
-    <div class="head">
-      <div class="kicker">Dónde</div>
-      <h2>Presencia en 20 ciudades de México</h2>
-      <p>Y 4 en Estados Unidos. Si tu ciudad no aparece aquí, pregúntame: es probable
-         que haya algo cerca.</p>
+    <div class="desde"><i>Mensualidades desde</i><b>$15,220</b><s>*Aplican restricciones</s></div>
+    <div class="tag">Crédito directo · Sin aval · Sin revisión de buró</div>
+    <h2>Casas<b>Premium</b></h2>
+    <p class="big">El crédito directo más accesible de todo México.</p>
+    <p class="small"><strong>Tranquilidad y confianza.</strong> 7 exclusivos modelos para elegir
+       tu nuevo hogar. La disponibilidad varía por desarrollo.</p>
+    <div class="modelos">
+      ${["Alba", "Nova", "Aqua", "Stella", "Lucero", "Antara", "Aura"].map((m) => `<span>${m}</span>`).join("")}
     </div>
-    <div class="gal">
+    <a class="btn btn-oro" href="${wa("Hola, quiero conocer las casas premium")}">Conócelos</a>
+  </div>
+</section>
+
+<section id="desarrollos">
+  <div class="wrap">
+    <div class="kick">Elige el mejor estilo de vida</div>
+    <h2 class="sec">Nuestros desarrollos</h2>
+    <p class="sub">Si tu ciudad no aparece aquí, pregúntame: tenemos presencia en 20 ciudades
+       del país y es probable que haya algo cerca de ti.</p>
+    <div class="grid">
       ${ciudades
-        .map(
-          (c) =>
-            `<figure class="g"><img src="${c.img}" alt="Desarrollos en ${c.nombre}" loading="lazy"><figcaption>${c.nombre}</figcaption></figure>`,
-        )
+        .map((c) => `<figure class="card"><img src="${c.img}" alt="Desarrollos en ${c.n}" loading="lazy"><figcaption>${c.n}</figcaption></figure>`)
         .join("")}
     </div>
   </div>
 </section>
 
-<section>
+<section class="entorno">
   <div class="wrap">
-    <div class="head">
-      <div class="kicker">Cómo funciona</div>
-      <h2>De la duda a las llaves, en cuatro pasos</h2>
+    <div class="cols">
+      <div>
+        <div class="kick">El entorno a tu favor</div>
+        <h2 class="sec">Planes urbanos pensados<br>para vivirse</h2>
+        <p>En Ciudad Maderas se desarrollan planes urbanos combinando la ciencia clásica
+           oriental Kan Yu con técnicas de biofísica aplicada, de manera que calles, avenidas,
+           jardines, montañas y lagos se conecten en una gran red.</p>
+        <p>Así se genera un flujo constante, dinámico y productivo, enfocado en mejorar
+           la calidad de vida de todos los residentes.</p>
+      </div>
+      <img src="${IMG}/biofisica/biofisica.webp" alt="Planeación urbana" loading="lazy">
     </div>
-    <div class="pasos">
-      <div class="paso"><h4>Platicamos</h4><p>Me cuentas qué buscas y en qué ciudad. Por WhatsApp o
-        por el chat de aquí abajo, a la hora que te quede.</p></div>
-      <div class="paso"><h4>Te coticé</h4><p>Te mando opciones reales con medidas, precio y plan de
-        pagos del lote o modelo que te haga sentido.</p></div>
-      <div class="paso"><h4>Conoces el desarrollo</h4><p>Recorremos la comunidad para que veas
-        amenidades, avance y entorno con tus propios ojos.</p></div>
-      <div class="paso"><h4>Apartas y firmas</h4><p>Con toda la información sobre la mesa y sin
-        prisa. La asesoría es gratuita de principio a fin.</p></div>
+
+    <div style="margin-top:56px">
+      <h2 class="sec" style="font-size:26px">Fundación Ciudad Maderas</h2>
+      <p class="sub">Promueve desarrollo social a través de educación, salud, arte, deporte y
+         protección animal, creando impacto humano, inclusión y esperanza.</p>
+      <div class="grid">
+        ${fundacion
+          .map((f) => `<figure class="card"><img src="${f.img}" alt="${f.n}" loading="lazy"><figcaption>${f.n}</figcaption></figure>`)
+          .join("")}
+      </div>
     </div>
   </div>
 </section>
 
-<section class="faq" id="faq">
+<section class="facil" id="facilidades">
   <div class="wrap">
-    <div class="head">
-      <div class="kicker">Preguntas frecuentes</div>
-      <h2>Lo que más me preguntan</h2>
+    <div class="kick">Facilidades de pago</div>
+    <h2 class="sec">Tenemos el mejor crédito directo de todo México</h2>
+    <p class="sub">No pasa por un banco. Por eso las condiciones son distintas a todo lo que
+       ya te dijeron que no.</p>
+    <div class="precio-mes">
+      <i>Terrenos desde</i><b>$1,244</b><i>al mes · *aplican restricciones</i>
     </div>
-    ${faqs
-      .map((f) => `<details><summary>${f.q}</summary><p>${f.a}</p></details>`)
-      .join("")}
+    <div class="fgrid">
+      <div class="fitem"><b>Crédito directo</b></div>
+      <div class="fitem"><b>Sin aval</b></div>
+      <div class="fitem"><b>Sin revisión de buró</b></div>
+      <div class="fitem"><b>Desde 1% de enganche</b></div>
+    </div>
+    <a class="btn btn-oro" href="${wa("Hola, quiero saber de cuánto me quedaría la mensualidad")}">Calcular mi mensualidad</a>
   </div>
 </section>
 
-<section class="cierre">
+<section class="contacto" id="contacto">
   <div class="wrap">
-    <h2>La asesoría es gratuita y sin compromiso</h2>
-    <p class="lead">Cuéntame qué buscas —invertir, construir o asegurar patrimonio— y te muestro
-       las opciones que te hacen sentido en la ciudad que te interese.</p>
-    <div class="cta-row">
-      <a class="btn btn-wa" href="https://wa.me/${telefonoLink}?text=Hola,%20quiero%20asesor%C3%ADa%20sobre%20terrenos">Escríbeme por WhatsApp</a>
+    <h2>Agenda una asesoría<br>personalizada gratis hoy</h2>
+    <p>Cuéntame qué buscas —invertir, construir o asegurar patrimonio— y te muestro las
+       opciones que te hacen sentido en la ciudad que te interese.</p>
+    <div class="cta">
+      <a class="btn btn-wa" href="${wa("Hola, quiero agendar una asesoría")}">Escríbeme por WhatsApp</a>
       <a class="btn btn-oro" href="tel:+${telefonoLink}">Llámame ahora</a>
     </div>
-    <p class="tel">O pregúntale al asistente en el chat de esta página · ${horario}</p>
+    <p class="tel-big">O pregúntale al asistente en el chat de esta página<br>
+       <a href="tel:+${telefonoLink}">${telefono}</a> · ${horario}</p>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <div class="foot-top">
-      <div>
-        <strong>Ciudad Maderas</strong> · Asesor autorizado<br>
-        ${horario}
-      </div>
-      <div>
-        <a href="tel:+${telefonoLink}">${telefono}</a> ·
-        <a href="https://wa.me/${telefonoLink}">WhatsApp</a>
-      </div>
+    <div class="fbar">
+      <div><strong>Ciudad Maderas</strong> · Asesor autorizado<br>${horario}</div>
+      <div><a href="tel:+${telefonoLink}">${telefono}</a> · <a href="https://wa.me/${telefonoLink}">WhatsApp</a></div>
     </div>
     <p class="legal">
       Asesor inmobiliario autorizado para la comercialización de desarrollos de Ciudad Maderas.
@@ -465,9 +387,10 @@ export const landingHtml = `<!doctype html>
       Los precios mostrados son montos <em>desde</em>, de carácter informativo, y no constituyen
       una oferta vinculante: el precio final depende del lote o modelo, su ubicación y la
       disponibilidad al momento de la cotización. Las condiciones de crédito están sujetas a
-      aprobación y a los términos vigentes de la desarrolladora. La plusvalía de un inmueble
-      depende del comportamiento del mercado y de la zona; no se garantiza rendimiento alguno.
-      Imágenes propiedad de Ciudad Maderas, usadas con fines informativos.
+      aprobación y a los términos vigentes de la desarrolladora; aplican restricciones. La
+      plusvalía de un inmueble depende del comportamiento del mercado y de la zona; no se
+      garantiza rendimiento alguno. Imágenes propiedad de Ciudad Maderas, usadas con fines
+      informativos.
     </p>
   </div>
 </footer>
