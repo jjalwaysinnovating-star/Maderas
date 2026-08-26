@@ -3,30 +3,137 @@
 // Esta carpeta (member/) es TUYA: las actualizaciones (`forjabot update`) NUNCA
 // la tocan. Todo lo que definas aquí SOBREVIVE cada actualización, ya conectado
 // (a diferencia de editar src/, que el update reemplaza).
-//
-// Devuelve un objeto { nombreDeLaTool: tool(...) }. Déjalo vacío ({}) para no
-// agregar ninguna. Para escribir una sin programar, usa el skill /agregar-tool.
-//
-// Para agregar una tool, importa los helpers y regrésala:
-//   import { tool } from "ai";
-//   import { z } from "zod";
-//
-// `ctx.env` = variables/bindings del bot; `ctx.getConversationId()` = la
-// conversación en curso.
+import { tool } from "ai";
+import { z } from "zod";
+import { Db } from "../src/db/client";
+import { LeadsRepo } from "../src/db/leads";
+import { messageOwner } from "../src/tools/handoffHuman";
+import { selfOrigin } from "../src/lib/self-origin";
 import type { MemberToolCtx } from "../src/tools/member";
 
+/** Las tres respuestas que deciden qué tan bueno es el lead. */
+const PLAZO = { inmediato: 3, medio_plazo: 2, cotizando: 1 } as const;
+const PAGO = { contado: 3, credito: 2, financiamiento: 2, no_definido: 1 } as const;
+
+export type Prioridad = "caliente" | "tibio" | "frio";
+
+/**
+ * Reglas de prioridad. Se mantienen como función pura y exportada a propósito:
+ * así se pueden leer (y cambiar) sin tocar el resto, y se prueban solas.
+ *
+ *   🔥 caliente — compra este mes Y ya sabe cómo va a pagar
+ *   🟡 tibio    — plazo de 3-6 meses, o compra pronto sin forma de pago clara
+ *   ❄️ frío     — solo está cotizando
+ *
+ * "Inversión" no sube de nivel por sí sola, pero desempata: un inversionista a
+ * 3-6 meses con pago de contado vale más que quien apenas está viendo.
+ */
+export function calcularPrioridad(input: {
+  plazo: keyof typeof PLAZO;
+  formaPago: keyof typeof PAGO;
+  uso?: "vivienda" | "inversion";
+}): Prioridad {
+  const p = PLAZO[input.plazo] ?? 1;
+  const f = PAGO[input.formaPago] ?? 1;
+  if (p === 1) return "frio"; // solo cotizando: nunca es caliente, pague como pague
+  if (p === 3 && f >= 2) return "caliente";
+  // Umbral 6, no 5: con 5 bastaba plazo medio + contado para marcar caliente, y
+  // entonces el bonus de inversionista no decidía nada. Ahora medio+contado (5)
+  // se queda tibio y solo el inversionista con dinero listo (5+1) sube.
+  const bonus = input.uso === "inversion" && f === 3 ? 1 : 0;
+  return p + f + bonus >= 6 ? "caliente" : "tibio";
+}
+
+const ETIQUETA: Record<Prioridad, string> = {
+  caliente: "🔥 CALIENTE",
+  tibio: "🟡 Tibio",
+  frio: "❄️ Frío",
+};
+
 export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
-  void ctx; // quítalo cuando uses ctx dentro de tus tools
   return {
-    // Ejemplo — descomenta, agrega los imports de arriba y adáptalo:
-    //
-    // estatusPedido: tool({
-    //   description: "Consulta el estatus de un pedido por su número de orden.",
-    //   inputSchema: z.object({ orden: z.string().describe("número de orden") }),
-    //   execute: async ({ orden }) => {
-    //     // Tu lógica. Puedes usar ctx.env y ctx.getConversationId().
-    //     return `El pedido ${orden} está en preparación.`;
-    //   },
-    // }),
+    calificarLead: tool({
+      description:
+        "Registra y CALIFICA a un prospecto cuando ya conoces su plazo de compra, cómo piensa pagar " +
+        "y si es para vivir o invertir. Úsala en cuanto tengas esas tres respuestas (aunque falten " +
+        "otros datos) y SIEMPRE antes de despedirte de alguien interesado. No anuncies al cliente " +
+        "que lo estás registrando ni menciones esta herramienta: simplemente continúa la conversación.",
+      inputSchema: z.object({
+        plazo: z
+          .enum(["inmediato", "medio_plazo", "cotizando"])
+          .describe("inmediato = este mes · medio_plazo = 3 a 6 meses · cotizando = solo está viendo"),
+        formaPago: z
+          .enum(["contado", "credito", "financiamiento", "no_definido"])
+          .describe("financiamiento = crédito directo con la desarrolladora"),
+        uso: z.enum(["vivienda", "inversion"]).optional(),
+        nombre: z.string().optional(),
+        contacto: z.string().optional().describe("Teléfono o correo, si lo dio"),
+        ciudad: z.string().optional().describe("Ciudad o desarrollo de interés"),
+        notas: z.string().optional().describe("Cualquier detalle útil para el asesor"),
+      }),
+      execute: async ({ plazo, formaPago, uso, nombre, contacto, ciudad, notas }) => {
+        const prioridad = calcularPrioridad({ plazo, formaPago, uso });
+        const db = new Db(ctx.env.DB);
+
+        const intent = [
+          ciudad ? `Interesado en ${ciudad}` : "Interesado en terreno/casa",
+          uso === "inversion" ? "para inversión" : uso === "vivienda" ? "para vivir" : null,
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        const leadId = await new LeadsRepo(db).create({
+          conversationId: ctx.getConversationId(),
+          name: nombre,
+          contact: contacto,
+          channelUserId: null,
+          intent,
+          notes: notas,
+          // El panel de Leads y /exportar leen metadata: aquí viaja la
+          // calificación completa, sin necesitar una tabla aparte.
+          metadata: { prioridad, plazo, forma_pago: formaPago, uso: uso ?? null, ciudad: ciudad ?? null },
+        });
+
+        // Solo los calientes interrumpen al asesor. Avisar de TODOS entrena a
+        // ignorar los avisos, que es peor que no tenerlos.
+        if (prioridad === "caliente") {
+          const detalle = [
+            nombre ? `Nombre: ${nombre}` : null,
+            contacto ? `Contacto: ${contacto}` : "Contacto: no lo dio todavía",
+            ciudad ? `Ciudad: ${ciudad}` : null,
+            `Plazo: ${plazo === "inmediato" ? "este mes" : plazo}`,
+            `Pago: ${formaPago}`,
+            uso ? `Uso: ${uso === "inversion" ? "inversión" : "vivienda"}` : null,
+            notas ? `Notas: ${notas}` : null,
+          ]
+            .filter(Boolean)
+            .join("\n");
+
+          try {
+            await messageOwner(ctx.env, {
+              heading: "🔥 Lead caliente — contáctalo hoy",
+              body: detalle,
+              url: `${await selfOrigin(ctx.env)}/admin/leads`,
+            });
+          } catch (e) {
+            // Que falle el aviso NUNCA debe tumbar la conversación con el
+            // cliente: el lead ya quedó guardado y visible en el panel.
+            console.error("[calificarLead] aviso al asesor falló:", e);
+          }
+        }
+
+        // Lo que regresa lo lee el modelo, no el cliente: le confirma que ya
+        // quedó registrado para que no lo intente de nuevo.
+        return {
+          leadId,
+          prioridad: ETIQUETA[prioridad],
+          registrado: true,
+          siguiente:
+            prioridad === "caliente"
+              ? "Un asesor ya fue notificado. Dile que lo contactarán hoy mismo."
+              : "Queda registrado. Despídete con calidez y deja la puerta abierta.",
+        };
+      },
+    }),
   };
 }

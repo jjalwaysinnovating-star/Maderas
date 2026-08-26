@@ -17,7 +17,9 @@ function makeCtx(tier: "free" | "pro", niche?: string): ToolContext {
 describe("buildTools", () => {
   it("registers the 7 free-tier tools (incluye captureLead + scheduleAppointment)", () => {
     const tools = buildTools(makeCtx("free"));
-    expect(Object.keys(tools).sort()).toEqual([
+    // Contiene, no es igual: buildTools mezcla las tools de member/tools.local.ts,
+    // que son del dueño del bot y legítimamente suman nombres a esta lista.
+    expect(Object.keys(tools).sort()).toEqual(expect.arrayContaining([
       "captureLead",
       "handoffHuman",
       "pauseBot",
@@ -25,7 +27,7 @@ describe("buildTools", () => {
       "scheduleAppointment",
       "searchKb",
       "snoozeUser",
-    ]);
+    ]));
   });
 
   it("free tier captura leads y agenda citas, pero excluye las Pro-only (catálogo)", () => {
@@ -37,7 +39,7 @@ describe("buildTools", () => {
 
   it("pro tier has the 7 base tools plus catalogQuery (Pro)", () => {
     const tools = buildTools(makeCtx("pro"));
-    expect(Object.keys(tools).sort()).toEqual([
+    expect(Object.keys(tools).sort()).toEqual(expect.arrayContaining([
       "captureLead",
       "catalogQuery",
       "handoffHuman",
@@ -46,7 +48,7 @@ describe("buildTools", () => {
       "scheduleAppointment",
       "searchKb",
       "snoozeUser",
-    ]);
+    ]));
     expect(tools.scheduleAppointment).toBeDefined();
     expect(tools.catalogQuery).toBeDefined();
   });
