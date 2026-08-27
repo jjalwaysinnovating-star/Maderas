@@ -284,19 +284,15 @@ const CSS = `
              color:var(--oro-2);margin-top:3px}
   nav{display:flex;gap:26px;font-size:12px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
   nav a{opacity:.9}nav a:hover{color:var(--oro-2);opacity:1}
-  .btn-nav{border:1px solid var(--oro);color:var(--oro-2);padding:10px 20px;border-radius:3px;
-           font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;white-space:nowrap}
   .burger{display:none;cursor:pointer;padding:8px;margin:-8px}
   .burger span{display:block;width:24px;height:2px;background:#fff;margin:5px 0}
   @media(max-width:1040px){
     .burger{display:block}
-    header .wrap>nav,header .wrap>.btn-nav{display:none}
+    header .wrap>nav{display:none}
     #mnu:checked~.wrap nav{display:flex;position:absolute;top:76px;left:0;right:0;
-      flex-direction:column;gap:0;background:var(--azul-3);padding:8px 24px 68px;
+      flex-direction:column;gap:0;background:var(--azul-3);padding:8px 24px 20px;
       border-top:1px solid rgba(255,255,255,.12)}
     #mnu:checked~.wrap nav a{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.09)}
-    #mnu:checked~.wrap .btn-nav{display:block;position:absolute;top:100%;left:24px;right:24px;
-      text-align:center;transform:translateY(-56px)}
   }
 
   /* héroe */
@@ -514,7 +510,6 @@ function shell({ titulo, desc, cuerpo }: Pagina): string {
   <div class="wrap">
     <a href="/" class="logo">Ciudad Maderas<span>Terrenos Premium · Asesor autorizado</span></a>
     <nav>${nav}</nav>
-    <a class="btn-nav" href="${wa("Hola, quiero contactar a un asesor")}">Contacta a un asesor</a>
     <label class="burger" for="mnu" aria-label="Abrir menú"><span></span><span></span><span></span></label>
   </div>
 </header>

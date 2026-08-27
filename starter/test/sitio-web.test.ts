@@ -129,6 +129,19 @@ describe("sitio del asesor — los clics llevan a algún lado", () => {
     expect(rotas).toEqual([]);
   });
 
+  // En celular el botón "Contacta a un asesor" se colocaba en absoluto sobre el
+  // encabezado y quedaba encimado con el logo. El menú ya lleva CONTÁCTANOS y la
+  // página está llena de botones de WhatsApp, así que sobra.
+  it("el encabezado solo lleva logo, menú y el botón de abrir el menú", () => {
+    for (const [ruta, html] of Object.entries(landingPages)) {
+      const header = html.slice(html.indexOf("<header>"), html.indexOf("</header>"));
+      expect(header, ruta).not.toContain("btn-nav");
+      expect(header, ruta).not.toMatch(/Contacta a un asesor/i);
+      expect(header, ruta).toContain('class="logo"');
+      expect(header, ruta).toContain('class="burger"');
+    }
+  });
+
   it("el aviso legal y los enlaces legales aparecen en todas las páginas", () => {
     for (const [ruta, html] of Object.entries(landingPages)) {
       expect(html, ruta).toContain("garantiza rendimiento alguno");
