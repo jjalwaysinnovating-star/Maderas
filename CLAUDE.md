@@ -57,6 +57,11 @@ la reemplaza (no se puede recuperar la anterior).
   D1). Nativos en Messenger/WhatsApp; en la web salen como lista numerada — esa
   conversión la hace `/web/poll`, no `sendReply`, porque el canal web no pasa por
   ahí (su `sendReply` es no-op y el navegador lee lo guardado en D1).
+- **`captureLead` está APAGADO** (`disabled_tools = captureLead` en `settings`).
+  Hacía lo mismo que `calificarLead` pero sin calificar, y el modelo llamaba a las
+  dos: cada prospecto entraba DOS veces al panel, una con prioridad y otra sin
+  ella. Se vio en la conversación real de Messenger (el lead "Jay" quedó cuatro
+  veces). Si algún día vuelven los duplicados, revisa que ese ajuste siga puesto.
 - **Reindexar la KB:** el secret `KB_REINDEX_TOKEN` ya está puesto. Después de cada
   deploy que toque `member/kb/`:
   `curl -X POST …/kb/reindex -H "X-Reindex-Token: <token>"`. **Ojo:** si se corre
@@ -164,6 +169,14 @@ Cloudflare para desplegar código.
   cero números y no hay nada que configurar. Al aprobarse faltan
   `YCLOUD_API_KEY`, `YCLOUD_WEBHOOK_SECRET` y `YCLOUD_WA_FROM`. Guía:
   `starter/skill/references/channel-setup-guides/ycloud-whatsapp.md`.
+- **El "Talk to human" de Messenger NO sale de este bot.** Antes de que conteste
+  el Worker, a quien escribe le llega un mensaje en inglés —"J&J Always
+  Innovating typically replies in 1 day… press the 'Talk to human' button"— con
+  su botón. Se comprobó: esa cadena no existe en `src/`, `member/` ni `scripts/`,
+  y trae el nombre VIEJO de la página, así que es una automatización guardada
+  fuera (Meta Business Suite → Bandeja de entrada → Automatizaciones, o el
+  panel de Zernio). El bot sí responde en paralelo — en D1 se ve su respuesta un
+  segundo después. Solo el dueño puede apagarla desde esos paneles.
 - **Instagram** — cabe como la 2ª cuenta gratis de Zernio cuando el dueño quiera.
 - **Saldo de Anthropic** — sin cuota diaria que deje mudo al bot, pero el saldo se
   acaba. Conviene recarga automática antes de abrir WhatsApp.
