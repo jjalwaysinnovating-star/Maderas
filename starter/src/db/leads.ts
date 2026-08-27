@@ -93,6 +93,11 @@ export class LeadsRepo {
     );
   }
 
+  /** Borra un lead para siempre. Sin papelera: el panel confirma antes de llamar. */
+  async delete(id: string): Promise<void> {
+    await this.db.run("DELETE FROM leads WHERE id = ?", [id]);
+  }
+
   async setExported(id: string, target: string, externalId: string): Promise<void> {
     await this.db.run(
       "UPDATE leads SET exported_to = ?, external_id = ?, updated_at = ? WHERE id = ?",

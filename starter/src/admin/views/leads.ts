@@ -91,6 +91,12 @@ export async function renderLeads(env: Env): Promise<string> {
             <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-top:2px">
               ${convLink}
               <span class="text-dim" style="font-size:11.5px;display:inline-flex;align-items:center;gap:6px"><i data-lucide="clock" width="12" height="12"></i>${fullDate}</span>
+              <form method="POST" action="/admin/leads/${l.id}/delete" style="margin-left:auto"
+                    onsubmit="return confirm('¿Borrar este registro para siempre? No se puede deshacer.')">
+                <button type="submit" class="text-dim" style="background:none;border:none;padding:0;font-size:11.5px;display:inline-flex;align-items:center;gap:6px;cursor:pointer">
+                  <i data-lucide="trash-2" width="12" height="12"></i> Borrar
+                </button>
+              </form>
             </div>
           </div>
         </div>

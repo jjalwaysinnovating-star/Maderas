@@ -1195,6 +1195,13 @@ adminApp.post("/leads/:id/status", async (c) => {
   return c.redirect("/admin/leads");
 });
 
+// Borrar un lead (pruebas, duplicados, spam). Definitivo — el botón del panel
+// vive dentro del detalle desplegado y pide confirmación antes de enviar.
+adminApp.post("/leads/:id/delete", async (c) => {
+  await new LeadsRepo(new Db(c.env.DB)).delete(c.req.param("id"));
+  return c.redirect("/admin/leads");
+});
+
 // Resolve a support ticket.
 adminApp.post("/tickets/:id/resolve", async (c) => {
   const form = await c.req.formData();

@@ -39,4 +39,41 @@ describe("LeadsRepo", () => {
     const list = await repo.list(10);
     expect(list[0].status).toBe("sold");
   });
+
+  it("delete quita solo el lead pedido", async () => {
+    const borrar = await repo.create({
+      name: "Lead de prueba",
+      contact: "555",
+      intent: "prueba",
+      conversationId: null,
+      channelUserId: null,
+    });
+    await repo.create({
+      name: "Cliente real",
+      contact: "686",
+      intent: "terreno en Querétaro",
+      conversationId: null,
+      channelUserId: null,
+    });
+
+    await repo.delete(borrar);
+
+    const list = await repo.list(10);
+    expect(list).toHaveLength(1);
+    expect(list[0].name).toBe("Cliente real");
+  });
+
+  it("delete con un id que no existe no truena ni borra de más", async () => {
+    await repo.create({
+      name: "Cliente real",
+      contact: "686",
+      intent: "casa en Mexicali",
+      conversationId: null,
+      channelUserId: null,
+    });
+
+    await repo.delete("no-existe");
+
+    expect(await repo.list(10)).toHaveLength(1);
+  });
 });
