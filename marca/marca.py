@@ -39,7 +39,9 @@ MONT = b64(insumo("mont.woff2"))
 GOUDY = b64(insumo("goudy.woff2"))
 FOTO = b64(insumo("aerea.webp"))
 
-AZUL, AZUL2, ORO = "#00263a", "#001a28", "#b4a269"
+# Muestreados de la foto de perfil real de Ciudad Maderas.
+AZUL, AZUL2, ORO = "#11253a", "#001a28", "#b4a269"
+ORO_OSCURO, ORO_CLARO = "#8a7c56", "#e8dcae"
 
 FUENTES = f"""
 @font-face{{font-family:Mont;src:url(data:font/woff2;base64,{MONT}) format('woff2');font-weight:100 900}}
@@ -50,7 +52,7 @@ FUENTES = f"""
 # más chico. La fuente web no trae versalitas de verdad, así que se arman con
 # dos tamaños — que es exactamente como se ve en su logo original.
 CAJA = """
-.vs{font-family:Goudy,Georgia,serif;color:#fff;line-height:.96;white-space:nowrap}
+.vs{font-family:Goudy,Georgia,serif;color:#fff;line-height:.90;white-space:nowrap}
 .vs i{font-style:normal;font-size:.74em}
 .bajada{font-family:Mont,sans-serif;color:#fff;white-space:nowrap}
 .bajada b{font-weight:700}
@@ -81,11 +83,34 @@ PERFIL = f"""<!doctype html><meta charset="utf-8"><style>
 {FUENTES}{CAJA}
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{width:1000px;height:1000px;overflow:hidden}}
-.p{{width:1000px;height:1000px;
-    background:radial-gradient(circle at 50% 38%, #013b58 0%, {AZUL} 55%, {AZUL2} 100%);
+.p{{width:1000px;height:1000px;position:relative;background:{AZUL};
     display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}}
+.aros{{position:absolute;inset:0}}
+.tx{{position:relative;z-index:2}}
+/* El renglón dorado y el claro debajo son el ritmo del emblema original
+   ("TERRENOS Y CASAS" en dorado, "PREMIUM" en claro). Aquí el segundo renglón
+   dice el rol, que es lo que cambia respecto de la desarrolladora. */
+.producto{{font-family:Mont,sans-serif;font-weight:700;color:{ORO};
+           font-size:50px;letter-spacing:.10em;margin-top:30px}}
+.rol2{{font-family:Mont,sans-serif;font-weight:400;color:#d7dde3;
+       font-size:41px;letter-spacing:.15em;margin-top:12px}}
 </style>
-<div class="p">{candado(escala=1.32, apilado=True)}</div>"""
+<div class="p">
+  <svg class="aros" viewBox="0 0 1000 1000" fill="none">
+    <defs><linearGradient id="oro" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="{ORO_CLARO}"/><stop offset=".38" stop-color="{ORO}"/>
+      <stop offset=".62" stop-color="{ORO_OSCURO}"/><stop offset="1" stop-color="{ORO_CLARO}"/>
+    </linearGradient></defs>
+    <circle cx="500" cy="500" r="437" stroke="url(#oro)" stroke-width="13"/>
+    <circle cx="500" cy="500" r="408" stroke="#ffffff" stroke-width="4" stroke-opacity=".92"/>
+  </svg>
+  <div class="tx">
+    <div class="vs" style="font-size:154px">C<i>IUDAD</i></div>
+    <div class="vs" style="font-size:154px">M<i>ADERAS</i></div>
+    <div class="producto">TERRENOS PREMIUM</div>
+    <div class="rol2">ASESOR AUTORIZADO</div>
+  </div>
+</div>"""
 
 
 # ── Portada ────────────────────────────────────────────────────────────────

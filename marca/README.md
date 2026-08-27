@@ -6,18 +6,19 @@ Las dos imágenes que se suben a la página: `fb-perfil.png` (1000×1000) y
 ## Sin logo propio, a propósito
 
 El asesor **no es la desarrolladora**. Un símbolo inventado compite con la marca
-y confunde a quien pregunta con quién está tratando, así que aquí se reproduce
-el **candado real de Ciudad Maderas**: "CIUDAD MADERAS" en serif con versalitas,
-y debajo "TERRENOS" en negritas junto a "PREMIUM" en delgada.
+y confunde a quien pregunta con quién está tratando.
 
-En el renglón donde la marca pone el nombre del desarrollo —Bosques,
-Corregidora, Península— aquí va **ASESOR AUTORIZADO**, en el mismo serif y en
-dorado. El rol queda dicho en el lugar y con el peso con que la marca nombra a
-sus propias plazas: se lee como parte del sistema, no como un añadido.
+El **perfil** replica el emblema circular que Ciudad Maderas usa como foto de
+perfil: fondo `#11253a` (muestreado de la suya), aro exterior dorado con
+degradado metálico, aro interior blanco delgado, y adentro "CIUDAD MADERAS" en
+serif con versalitas. Debajo va el mismo ritmo de dos renglones que el original
+—uno dorado y uno claro—, pero diciendo lo que aquí sí aplica: **TERRENOS
+PREMIUM** (no "y casas", que el asesor no vende) y **ASESOR AUTORIZADO**.
+
+La **portada** usa el candado horizontal, como el encabezado de su sitio.
 
 Las versalitas se arman con dos tamaños (inicial completa, resto al 74%) porque
-la fuente web no las trae de verdad — que es exactamente como se ve el logo
-original.
+la fuente web no las trae de verdad — que es exactamente como se ve el original.
 
 ## La portada y el celular
 
@@ -28,9 +29,10 @@ las orillas, desaparece justo en el aparato donde casi todos lo van a ver. La
 esquina inferior izquierda se deja vacía a propósito: ahí Facebook encima la
 foto de perfil en computadora.
 
-Un candado de solo texto no se lee a 48 px, que es el tamaño en Messenger. Es el
-costo de no inventar un símbolo, y vale la pena: a ese tamaño Facebook ya
-muestra el nombre de la página al lado.
+A 48 px —el tamaño en Messenger— el emblema se lee como un disco azul con aro
+dorado, igual que el de la desarrolladora. Es el costo de no inventar un
+símbolo, y vale la pena: a ese tamaño Facebook ya muestra el nombre de la
+página al lado.
 
 ## Rehacerlas
 
