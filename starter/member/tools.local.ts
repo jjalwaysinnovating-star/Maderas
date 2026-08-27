@@ -76,7 +76,7 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
         const db = new Db(ctx.env.DB);
 
         const intent = [
-          ciudad ? `Interesado en ${ciudad}` : "Interesado en terreno/casa",
+          ciudad ? `Interesado en un terreno en ${ciudad}` : "Interesado en un terreno",
           uso === "inversion" ? "para inversión" : uso === "vivienda" ? "para vivir" : null,
         ]
           .filter(Boolean)

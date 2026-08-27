@@ -41,13 +41,33 @@ la reemplaza (no se puede recuperar la anterior).
 - **Calificación de prospectos:** `calificarLead` en `member/tools.local.ts`, con sus
   reglas probadas en `test/calificacion-leads.test.ts`. Sustituye a la cadena
   ManyChat → Make → Sheets → Twilio que el dueño iba a contratar.
+- **Guion del bot:** el dueño lo eligió sobre un cuestionario de 28 preguntas. Tres
+  decisiones que NO son improvisables: (1) el bot **contesta primero y pregunta
+  después**; (2) las tres preguntas que califican van en orden **uso → plazo →
+  pago**, luego nombre y teléfono, **una por mensaje**; (3) los **botones tocables
+  van SOLO en esas tres**. Vive en `member/config.local.ts` (`customFields`, siempre
+  en el prompt) y en `member/kb/08-guion-de-calificacion.md`. `test/guion-bot.test.ts`
+  lo vigila.
+- **Botones tocables:** encendidos (`buttons_enabled = 1` en la tabla `settings` de
+  D1). Nativos en Messenger/WhatsApp; en la web salen como lista numerada — esa
+  conversión la hace `/web/poll`, no `sendReply`, porque el canal web no pasa por
+  ahí (su `sendReply` es no-op y el navegador lee lo guardado en D1).
+- **Reindexar la KB:** el secret `KB_REINDEX_TOKEN` ya está puesto. Después de cada
+  deploy que toque `member/kb/`:
+  `curl -X POST …/kb/reindex -H "X-Reindex-Token: <token>"`. **Ojo:** si se corre
+  antes de que propague el deploy, contesta `indexed: 0` — hay que repetirlo.
 
 ## Reglas del negocio que NO se relajan
 
-- **Nunca "plusvalía garantizada"** ni equivalentes ("inversión segura", "no
-  pierdes"). Es una promesa de rendimiento y es legalmente riesgosa en venta
-  inmobiliaria. Las formulaciones aprobadas están en
-  `starter/member/kb/09-como-hablar-de-plusvalia.md`.
+- **La palabra "garantizar" está prohibida ENTERA**, no solo pegada a "plusvalía", y
+  para lo que sea. Probando el bot rechazó "plusvalía garantizada" y a renglón
+  seguido escribió "lo que sí garantizamos es el terreno, la ubicación y la
+  calidad": junto a una pregunta de plusvalía, eso se lee como promesa de
+  rendimiento. Tampoco se afirma cómo se comportó el mercado en el pasado. Las
+  formulaciones aprobadas están en
+  `starter/member/kb/07-como-hablar-de-plusvalia.md`.
+- **Nada de voseo.** Haiku se va a "vos elegís / tenés / querés" cuando el mensaje
+  se pone coloquial; al cliente de Mexicali le suena a call center de fuera.
 - **Precios siempre "desde"**, nunca un total cerrado: los confirma un asesor.
 - **Un dato a la vez** al capturar (nombre, luego teléfono…), nunca en lista.
 - **El bot no narra su proceso** ("déjame buscar", "no encontré en mi información").
@@ -101,6 +121,19 @@ lead en la misma tabla que el bot (aparece en `/admin/leads` con
 contra bots de spam. Con JS enseña el acuse en el mismo formulario, como el
 original; sin JS cae en `/gracias`.
 
+### La sesión del chat web ya no se cae al cambiar de IP
+
+La plantilla emitía sesión nueva en cuanto cambiaba la IP del visitante — normal en
+celular al pasar de WiFi a datos. El bot perdía el hilo y volvía a preguntar lo ya
+contestado; probando esto en vivo, un lead que era **caliente** quedó registrado
+**tibio** porque se perdió la forma de pago. Ahora `webSend` acepta una sesión que
+ya existe en `conversations` aunque venga de otra IP (`sesionConocida()` en
+`src/web/widget.ts`). No abre hueco de abuso: el sufijo son 64 bits aleatorios, el
+tope por sesión se cuenta por id exacto y el tope global del día —el que protege la
+llave de IA— no depende de la IP. Pruebas en `test/web/sesion-ip.test.ts`.
+**Vive en `src/`, así que `forjabot update` lo borra:** si tras una actualización el
+bot vuelve a repetir preguntas en celular, es esto.
+
 **Tras editar la KB hay que reindexar**, o el bot sigue contestando lo viejo:
 
 ```bash
@@ -123,11 +156,8 @@ Cloudflare para desplegar código.
 - **Instagram** — cabe como la 2ª cuenta gratis de Zernio cuando el dueño quiera.
 - **Saldo de Anthropic** — sin cuota diaria que deje mudo al bot, pero el saldo se
   acaba. Conviene recarga automática antes de abrir WhatsApp.
-- **Leads de prueba** — hay siete falsos en el panel (Ana López, Roberto Salinas,
-  Patricia Vega, Jay, Carlos Mendez, Lucia Ramos y uno llamado "PRUEBA — bórrame"
-  que dejó la verificación del formulario). El panel ya tiene botón **Borrar**,
-  desplegado: se abre el detalle del lead y está abajo a la derecha.
-- **Sesión web atada a la IP** — el canal web reemite la sesión si cambia la IP del
-  visitante, así que en celular (WiFi → datos) se puede perder el hilo a media
-  conversación. Es la defensa antiabuso de la plantilla. En WhatsApp/Instagram no
-  aplica: ahí la identidad es el número o la cuenta.
+- **Leads de prueba** — hay nueve falsos en el panel (Ana López, Roberto Salinas,
+  Patricia Vega, Jay, Carlos Mendez, Lucia Ramos, "PRUEBA — bórrame" del
+  formulario, y Jorge Prueba y Sofía Prueba de la verificación del guion). El panel
+  ya tiene botón **Borrar**, desplegado: se abre el detalle del lead y está abajo a
+  la derecha.

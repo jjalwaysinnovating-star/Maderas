@@ -213,6 +213,34 @@ export function nuevaSesion(ip: string): string {
   return `${hashIp(ip)}-${rnd}`;
 }
 
+/** Forma exacta de un id emitido por nuevaSesion(). */
+const SESION_RE = /^[0-9a-z]{1,16}-[0-9a-f]{16}$/;
+
+/**
+ * ¿Esta sesión la emitimos nosotros y ya tiene conversación?
+ *
+ * Se usa para NO tirar el hilo cuando al visitante le cambia la IP a media
+ * conversación —lo normal en celular al pasar de WiFi a datos, o detrás de un
+ * proxy que rota salida—. Antes bastaba con que el prefijo dejara de coincidir
+ * para emitirle sesión nueva, y el bot volvía a preguntar lo ya contestado;
+ * en una calificación eso se traduce en un lead peor del que era.
+ *
+ * No abre un hueco de abuso: el sufijo son 64 bits aleatorios (no se adivina),
+ * el tope POR SESIÓN se cuenta por id exacto y el tope GLOBAL del día —el que
+ * protege la llave de IA— no depende de la IP. Quien quiera esquivar el tope
+ * por IP rotando salida ya podía hacerlo pidiendo sesión nueva en cada IP, que
+ * además es más barato para él.
+ */
+export async function sesionConocida(env: Env, sessionId: string): Promise<boolean> {
+  if (!SESION_RE.test(sessionId)) return false;
+  const db = new Db(env.DB);
+  const row = await db.first<{ id: string }>(
+    "SELECT id FROM conversations WHERE channel = 'web' AND channel_user_id = ? LIMIT 1",
+    [sessionId],
+  );
+  return Boolean(row);
+}
+
 export function ipDe(request: Request): string {
   return request.headers.get("CF-Connecting-IP") ?? "";
 }

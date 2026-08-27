@@ -6,6 +6,7 @@
 import type { Context } from "hono";
 import type { Env } from "../env";
 import { Db } from "../db/client";
+import { extraeBotones } from "../replies/sender";
 import { widgetOpciones, widgetScript } from "./script";
 import {
   avisaDeSaturacion,
@@ -13,6 +14,7 @@ import {
   limites,
   nuevaSesion,
   origenPermitido,
+  sesionConocida,
   turnosDeIp,
   turnosDeSesion,
   turnosDelDia,
@@ -77,8 +79,14 @@ export async function webSend(
   const body = (await c.req.raw.clone().json().catch(() => ({}))) as { sessionId?: string };
   const pedida = String(body.sessionId ?? "").slice(0, 64);
   const prefijo = nuevaSesion(ip).split("-")[0];
-  // La sesión solo vale si la emitimos para esta IP; si no, se emite otra.
-  const sessionId = pedida.startsWith(`${prefijo}-`) ? pedida : nuevaSesion(ip);
+  // Vale la sesión si es de esta IP (el caso normal) o si ya la emitimos antes
+  // y tiene conversación: en celular la IP cambia al pasar de WiFi a datos, y
+  // tirar el hilo ahí hace que el bot repita lo ya contestado. Ver sesionConocida().
+  const sessionId = pedida.startsWith(`${prefijo}-`)
+    ? pedida
+    : (await sesionConocida(c.env, pedida))
+      ? pedida
+      : nuevaSesion(ip);
 
   // Los tres topes, del más específico al más general. Todos se revisan ANTES
   // de tocar el modelo: rechazar tiene que costar menos que responder, o el
@@ -143,5 +151,19 @@ export async function webPoll(c: Context<{ Bindings: Env }>) {
       ORDER BY created_at ASC LIMIT 20`,
     [conv.id, after],
   );
-  return c.json({ ok: true, messages: filas }, 200, cabeceras);
+  // El canal web NO pasa por sendReply: su `sendReply` es no-op porque el
+  // navegador lee lo que quedó guardado en D1, y ahí el texto es tal cual salió
+  // del modelo — con el marcador [[botones: …]] crudo. En Telegram o Messenger
+  // sendReply lo convierte antes de mandar; aquí hay que hacerlo al servir, o el
+  // visitante ve "[[botones: Invertir | Construir mi casa | ...]]" en pantalla.
+  // Web no tiene botones nativos, así que van como lista numerada.
+  const messages = filas.map((f) => {
+    const { chunks, buttons } = extraeBotones([f.content]);
+    const texto = chunks.join("\n\n");
+    const lista = buttons ? buttons.map((b, i) => `${i + 1}) ${b.title}`).join("\n") : "";
+    const content = [texto, lista].filter(Boolean).join("\n\n");
+    return { ...f, content };
+  });
+
+  return c.json({ ok: true, messages }, 200, cabeceras);
 }
