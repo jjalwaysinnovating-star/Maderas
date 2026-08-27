@@ -60,7 +60,7 @@ index_name = "horizontes_bot_starter_ceb06e_kb"
 
 [vars]
 BOT_NAME = "Asesor Ciudad Maderas"
-BUSINESS_NAME = "Ciudad Maderas — Terrenos y Casas Premium"
+BUSINESS_NAME = "Ciudad Maderas — Terrenos Premium"
 BOT_LANGUAGE = "es-MX"
 # BOT_TIMEZONE = "America/Mexico_City"  # zona horaria para resolver fechas ("mañana", "el jueves 27"). Sin ella cae a CALCOM_TIMEZONE y luego a CDMX. Cámbiala si tu negocio no está en el centro de México (ej. "America/Bogota", "Europe/Madrid").
 BOT_TIER = "free"  # 'free' | 'pro'

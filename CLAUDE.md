@@ -1,9 +1,13 @@
 # Bot de Ciudad Maderas — estado y cómo retomar
 
-Chatbot de IA para **Ciudad Maderas — Terrenos y Casas Premium**, operado por un
-**asesor inmobiliario autorizado** (no es la desarrolladora). El bot vive en la
+Chatbot de IA y sitio web para **Ciudad Maderas — Terrenos Premium**, operado por
+un **asesor inmobiliario autorizado** (no es la desarrolladora). El bot vive en la
 cuenta de Cloudflare del dueño; el código está en `starter/`, bajado con
 `npx forjabot init` (plantilla Forja / Horizontes IA).
+
+**SOLO TERRENOS.** El asesor no vende casas. Nada de Casas Premium, modelos ni la
+mensualidad de casa — ni en la página, ni en la KB, ni en el prompt. Hay una prueba
+que lo vigila (`test/sitio-web.test.ts`, bloque "solo terrenos").
 
 **El dueño no programa.** Corre los comandos por él y explícale en español
 sencillo, una pregunta a la vez. Lee `starter/CLAUDE.md` para el mapa del código.
@@ -59,8 +63,27 @@ la reemplaza (no se puede recuperar la anterior).
 | Precios, ciudades, amenidades | `starter/member/kb/*.md` → luego reindexar |
 | Reglas y tono | `starter/member/config.local.ts` (`customFields`) |
 | Capacidades nuevas | `starter/member/tools.local.ts` |
-| Textos de la página | `starter/member/landing.local.ts` |
+| Textos y páginas del sitio | `starter/member/landing.local.ts` |
 | Modelo, idioma, moneda | Panel → Configuración |
+
+### El sitio web
+
+Son **15 páginas** servidas por el mismo Worker, todas declaradas en el mapa
+`landingPages` de `member/landing.local.ts`. `src/index.ts` solo recorre ese mapa,
+así que **agregar una página no requiere tocar `src/`**: basta una entrada más.
+
+`/` · `/desarrollos` · `/proyectos/<region>` (8) · `/amenidades` ·
+`/facilidades-de-pago` · `/nosotros` · `/contacto` · `/gracias`
+
+Las páginas de región **no publican lista de lotes, medidas ni precios cerrados**,
+igual que el sitio oficial: la disponibilidad cambia cada semana y un precio viejo
+en internet hace que el prospecto llegue enojado a la cita. La página lleva a la
+conversación. Si el dueño quiere publicar desarrollos concretos, que dé la lista
+él —es quien sabe cuáles puede vender— y se agregan a `regiones`.
+
+El formulario de `/contacto` hace `POST /contacto`: guarda el lead en la misma
+tabla que el bot (aparece en `/admin/leads` con `origen: formulario_web`) y avisa
+por Telegram. Trae un campo cebo (`apellido2`) contra bots de spam.
 
 **Tras editar la KB hay que reindexar**, o el bot sigue contestando lo viejo:
 

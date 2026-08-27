@@ -28,9 +28,11 @@ import { isOwner, handleOwnerMessage } from "./owner/handler";
 import { purgeOldMessages } from "./crons/purgeOldMessages";
 import { reindexFixtures } from "./kb/reindex";
 import { widgetJs, widgetPreflight, webPoll, webSend } from "./web/rutas";
-import { landingHtml } from "../member/landing.local";
+import { landingPages } from "../member/landing.local";
 import { analyzeConversations } from "./insights/analyzer";
 import { Db } from "./db/client";
+import { LeadsRepo } from "./db/leads";
+import { messageOwner } from "./tools/handoffHuman";
 import { SettingsRepo, SETTING_KEYS } from "./db/settings";
 import { detectKind } from "./learn/fieldPath";
 import { saveCapture, isLearnMode } from "./learn/mapping";
@@ -277,10 +279,73 @@ app.post("/demo/send", async (c) => {
 // ── CANAL WEB · el bot en el sitio del negocio ──────────────────────────────
 // Un canal más (ver src/web/): el visitante escribe desde el widget y entra al
 // MISMO pipeline que Telegram o WhatsApp. Se enciende con WEB_SITES.
-// Página pública del miembro, servida por este mismo Worker: el chat queda en
+// Sitio público del miembro, servido por este mismo Worker: el chat queda en
 // el mismo origen (sin CORS) y no hace falta hosting aparte. El HTML vive en
-// member/, que `forjabot update` no toca.
-app.get("/", (c) => c.html(landingHtml));
+// member/, que `forjabot update` no toca — aquí solo se registran las rutas
+// que ese archivo declara, así que agregar una página no requiere tocar src/.
+for (const [ruta, html] of Object.entries(landingPages)) {
+  app.get(ruta, (c) => c.html(html));
+}
+
+// Formulario de contacto de la página. Guarda el lead en la misma tabla que usa
+// el bot —para que el dueño los vea todos juntos en /admin/leads— y le avisa
+// por Telegram: quien se toma la molestia de teclear su teléfono en un
+// formulario ya es un lead que vale despertar al dueño.
+app.post("/contacto", async (c) => {
+  const form = await c.req.formData().catch(() => null);
+  if (!form) return c.redirect("/contacto", 303);
+
+  const campo = (n: string) => String(form.get(n) ?? "").trim().slice(0, 200);
+  // Campo cebo: invisible para una persona, irresistible para un bot de spam.
+  // Si trae algo, se responde igual que a un envío bueno para no enseñarle al
+  // bot cuál fue el campo que lo delató — pero no se guarda nada.
+  if (campo("apellido2")) return c.redirect("/gracias", 303);
+
+  const nombre = campo("nombre");
+  const telefono = campo("telefono");
+  if (!nombre || !telefono) return c.redirect("/contacto", 303);
+
+  const email = campo("email");
+  const region = campo("region");
+  const uso = campo("uso");
+
+  const resumen = [
+    `${nombre} pidió informes desde la página`,
+    region ? `Ciudad: ${region}` : null,
+    uso ? `Uso: ${uso}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const leads = new LeadsRepo(new Db(c.env.DB));
+  await leads.create({
+    conversationId: null,
+    channelUserId: null,
+    name: nombre,
+    contact: [telefono, email].filter(Boolean).join(" · "),
+    intent: resumen,
+    notes: "Origen: formulario de la página web",
+    metadata: { origen: "formulario_web", ciudad: region || null, uso: uso || null },
+  });
+
+  c.executionCtx.waitUntil(
+    messageOwner(c.env, {
+      heading: "🌳 Nuevo contacto desde la página",
+      body: [
+        `Nombre: ${nombre}`,
+        `Teléfono: ${telefono}`,
+        email ? `Correo: ${email}` : null,
+        region ? `Ciudad: ${region}` : null,
+        uso ? `Para: ${uso}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      url: c.env.DASHBOARD_BASE_URL ? `${c.env.DASHBOARD_BASE_URL}/admin/leads` : undefined,
+    }),
+  );
+
+  return c.redirect("/gracias", 303);
+});
 
 app.get("/widget.js", (c) => widgetJs(c));
 app.options("/web/send", (c) => widgetPreflight(c));

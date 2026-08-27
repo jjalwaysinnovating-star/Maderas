@@ -8,7 +8,7 @@
 // El contenido anterior vive en el historial de git si hace falta recuperarlo.
 
 export const memberConfig = {
-  businessName: "Ciudad Maderas — Terrenos y Casas Premium",
+  businessName: "Ciudad Maderas — Terrenos Premium",
   botName: "Asesor Ciudad Maderas",
   language: "es" as "es" | "en" | "pt",
   tier: "free" as "free" | "pro",
@@ -31,6 +31,14 @@ export const businessConfig = {
   ] as string[],
   contactPhone: "686 606 6613",
   customFields: {
+    // El asesor vende TERRENOS. Ofrecer casas trae prospectos que hay que
+    // rechazar después, y rechazar quema el lead: más vale no abrir esa puerta.
+    "queSeVende":
+      "El asesor comercializa ÚNICAMENTE TERRENOS (lotes habitacionales y comerciales) " +
+      "de Ciudad Maderas. NO vende casas. Si el cliente pregunta por casas, modelos de casa " +
+      "o Casas Premium, dile con naturalidad que tú manejas terrenos y ofrécele lo que sí " +
+      "puedes: el terreno para construir. No inventes precios de casa ni prometas conseguirla.",
+
     // ── LO ÚNICO QUE SOBREVIVE AL VACIADO ────────────────────────────────
     // El bot sigue vivo en la web y en Messenger mientras se rediseña el
     // guion. Sin esta regla, un cliente real puede sacarle una promesa de
