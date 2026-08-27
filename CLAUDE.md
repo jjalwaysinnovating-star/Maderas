@@ -37,7 +37,12 @@ la reemplaza (no se puede recuperar la anterior).
   público (`DEMO_MODE`) está APAGADO a propósito: era acceso sin autenticar a la
   llave de IA.
 - **Avisos:** Telegram al dueño (`@ciudadmaderas_avisos_bot`). Solo se avisa de los
-  leads **calientes** — avisar de todos entrena a ignorar los avisos.
+  leads **calientes** — avisar de todos entrena a ignorar los avisos. El aviso NO
+  depende del canal: `calificarLead` solo recibe `env` y el id de conversación, así
+  que sale igual desde la web que desde Messenger (`test/aviso-lead-caliente.test.ts`
+  lo fija). Para comprobar una entrega real:
+  `wrangler tail` y buscar `[messageOwner] telegram entregado`. Esa línea sale solo
+  cuando Telegram contesta `ok:true`; los rechazos salen como `error`.
 - **Calificación de prospectos:** `calificarLead` en `member/tools.local.ts`, con sus
   reglas probadas en `test/calificacion-leads.test.ts`. Sustituye a la cadena
   ManyChat → Make → Sheets → Twilio que el dueño iba a contratar.
@@ -66,8 +71,14 @@ la reemplaza (no se puede recuperar la anterior).
   rendimiento. Tampoco se afirma cómo se comportó el mercado en el pasado. Las
   formulaciones aprobadas están en
   `starter/member/kb/07-como-hablar-de-plusvalia.md`.
-- **Nada de voseo.** Haiku se va a "vos elegís / tenés / querés" cuando el mensaje
-  se pone coloquial; al cliente de Mexicali le suena a call center de fuera.
+- **Nada de voseo.** La causa de fondo estaba en `src/idioma.ts`: `BOT_LANGUAGE`
+  = "es-MX" caía en `es-419`, cuyo texto de prompt decía *"español latinoamericano
+  … NUNCA uses 'vosotros'"*. "Latinoamérica" incluye el Río de la Plata y
+  *vosotros* es de España, así que el bloque de MÁS autoridad del prompt
+  (`<output_language>`, marcado CRITICAL OVERRIDE) autorizaba el voseo mientras el
+  campo `tono` lo prohibía más abajo — y ganaba el de arriba. Se agregó **es-MX**
+  como idioma propio, con el voseo prohibido por nombre. Pruebas en
+  `test/idioma.test.ts`. **Vive en `src/`: `forjabot update` lo borra.**
 - **Precios siempre "desde"**, nunca un total cerrado: los confirma un asesor.
 - **Un dato a la vez** al capturar (nombre, luego teléfono…), nunca en lista.
 - **El bot no narra su proceso** ("déjame buscar", "no encontré en mi información").

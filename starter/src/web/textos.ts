@@ -60,6 +60,7 @@ export function htmlLang(botLanguage: string): string {
 
 const CODIGO_HTML: Record<CodigoIdioma, string> = {
   "es-419": "es",
+  "es-MX": "es-MX",
   "es-ES": "es-ES",
   en: "en",
   "pt-BR": "pt-BR",
@@ -159,6 +160,9 @@ const PT_BR: TextosWidget = {
 
 const POR_IDIOMA: Record<CodigoIdioma, TextosWidget> = {
   "es-419": ES,
+  // Los textos del widget son los mismos: lo que separa a es-MX de es-419 es
+  // cómo habla el modelo, no estos cuatro rótulos.
+  "es-MX": ES,
   "es-ES": ES_ES,
   en: EN,
   "pt-BR": PT_BR,

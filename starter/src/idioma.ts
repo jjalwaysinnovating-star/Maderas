@@ -29,6 +29,18 @@ export const IDIOMAS = {
     // Lo que se le inyecta al prompt en {{LANGUAGE}}.
     prompt: "español latinoamericano (de tú, natural y cercano; NUNCA uses 'vosotros')",
   },
+  // "Latinoamérica" incluye el Río de la Plata, así que con es-419 el modelo se
+  // va al voseo en cuanto la conversación se pone coloquial: probando el bot de
+  // un asesor de Mexicali salió "vos elegís qué construir". Prohibir 'vosotros'
+  // no lo evita — vosotros es de España; el problema es 'vos'. Un negocio
+  // mexicano necesita decirlo aparte.
+  "es-MX": {
+    etiqueta: "Español (México)",
+    prompt:
+      "español de México (de tú, natural y cercano; NUNCA uses 'vosotros' ni voseo: " +
+      "nada de 'vos', 'tenés', 'querés', 'podés', 'sabés', 'elegís', 'acá' por 'aquí' — " +
+      "se dice 'tienes', 'quieres', 'puedes', 'sabes', 'eliges')",
+  },
   "es-ES": {
     etiqueta: "Español (España)",
     prompt:

@@ -11,6 +11,7 @@ import {
   espejaAlCliente,
   idiomaEfectivo,
 } from "../src/idioma";
+import { codigoDeIdioma, textosWidget } from "../src/web/textos";
 import { safeConfirmReply } from "../src/blindaje/verify";
 
 describe("qué se le dice al modelo en {{LANGUAGE}}", () => {
@@ -23,8 +24,10 @@ describe("qué se le dice al modelo en {{LANGUAGE}}", () => {
   });
 
   it("entiende lo que ya traen los bots instalados", () => {
-    // Nadie va a editar su wrangler.toml: "es-MX" tiene que seguir funcionando.
-    expect(descripcionIdioma("es-MX")).toBe(IDIOMAS["es-419"].prompt);
+    // Nadie va a editar su wrangler.toml: los valores viejos siguen sirviendo.
+    // "es-MX" pasó a ser un idioma del selector con voz propia — ver el bloque
+    // "español de México" más abajo.
+    expect(descripcionIdioma("es-MX")).toBe(IDIOMAS["es-MX"].prompt);
     expect(descripcionIdioma("es")).toBe(IDIOMAS["es-419"].prompt);
     expect(descripcionIdioma("en-US")).toBe(IDIOMAS.en.prompt);
     expect(descripcionIdioma("pt")).toBe(IDIOMAS["pt-BR"].prompt);
@@ -42,7 +45,8 @@ describe("qué se le dice al modelo en {{LANGUAGE}}", () => {
 
   it("solo acepta los códigos del selector", () => {
     expect(esCodigoValido("es-ES")).toBe(true);
-    expect(esCodigoValido("es-MX")).toBe(false); // válido de entrada, no del selector
+    expect(esCodigoValido("es-MX")).toBe(true); // ahora es un idioma del selector
+    expect(esCodigoValido("es-CO")).toBe(false); // válido de entrada, no del selector
     expect(esCodigoValido("klingon")).toBe(false);
     expect(esCodigoValido(undefined)).toBe(false);
   });
@@ -172,5 +176,46 @@ describe("el idioma y la moneda llegan a la prompt de verdad", () => {
     expect(p).not.toContain("<moneda>");
     expect(p).not.toContain("{{CURRENCY_BLOCK}}");
     expect(p).not.toContain("{{LANGUAGE}}");
+  });
+});
+
+/**
+ * Español de México, aparte del latinoamericano genérico.
+ *
+ * "Latinoamérica" incluye el Río de la Plata: con es-419 el modelo se va al
+ * voseo en cuanto la conversación se pone coloquial. Probando el bot de un
+ * asesor de Mexicali salió "vos elegís qué construir", que a su cliente le
+ * suena a call center de fuera. Prohibir 'vosotros' no lo evita: vosotros es
+ * de España, el problema es 'vos'.
+ */
+describe("español de México", () => {
+  it("es-MX ya no cae en el latinoamericano genérico", () => {
+    expect(descripcionIdioma("es-MX")).not.toBe(IDIOMAS["es-419"].prompt);
+  });
+
+  it("su descripción prohíbe el voseo por nombre", () => {
+    const d = descripcionIdioma("es-MX");
+    expect(d).toContain("México");
+    for (const v of ["vos", "tenés", "querés", "podés", "elegís"]) {
+      expect(d, v).toContain(v);
+    }
+  });
+
+  it("sigue prohibiendo 'vosotros', que es el error de España", () => {
+    expect(descripcionIdioma("es-MX")).toContain("vosotros");
+  });
+
+  it("los demás españoles no se movieron", () => {
+    expect(descripcionIdioma("es-419")).toBe(IDIOMAS["es-419"].prompt);
+    expect(descripcionIdioma("es-ES")).toBe(IDIOMAS["es-ES"].prompt);
+    expect(descripcionIdioma("es")).toBe(IDIOMAS["es-419"].prompt);
+    expect(descripcionIdioma("es-CO")).toBe(IDIOMAS["es-419"].prompt);
+  });
+
+  it("el widget de la página no se queda sin textos", () => {
+    // POR_IDIOMA es un Record completo: si faltara es-MX, esto sería undefined
+    // y el chat de la web saldría sin rótulos.
+    expect(textosWidget("es-MX").contestaAlInstante).toBeTruthy();
+    expect(codigoDeIdioma("es-MX")).toBe("es-MX");
   });
 });

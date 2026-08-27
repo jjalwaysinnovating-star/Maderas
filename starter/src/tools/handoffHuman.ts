@@ -179,6 +179,13 @@ export async function messageOwner(
         const j = (await r.json().catch(() => null)) as { ok?: boolean; description?: string } | null;
         if (j && j.ok === false) {
           console.error(`[messageOwner] telegram rechazó: ${j.description ?? "sin descripción"}`);
+        } else {
+          // Rastro del aviso ENTREGADO. Sin él, "no hay errores en el log" era
+          // la única evidencia de que un lead caliente llegó — y eso no
+          // distingue entre entregado y nunca intentado. Con esta línea se
+          // comprueba en `wrangler tail` sin depender de que el dueño mire su
+          // teléfono.
+          console.log(`[messageOwner] telegram entregado: "${msg.heading}"`);
         }
       }
     } catch (e) {
