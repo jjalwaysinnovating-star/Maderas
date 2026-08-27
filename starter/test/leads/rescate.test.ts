@@ -187,3 +187,51 @@ describe("completar el rescate con lo que llega después", () => {
     expect(telegram).toHaveLength(1);
   });
 });
+
+describe("un hilo viejo no tapa al prospecto de hoy", () => {
+  // En Messenger la conversación con una persona NO se cierra nunca. Alguien
+  // volvió a escribir desde un Messenger que ya había consultado la semana
+  // pasada, calificó caliente, y no se registró ni se avisó — la red vio el
+  // lead viejo y creyó que ya estaba hecho.
+  const HACE_DOS_DIAS = Date.now() - 48 * 3600_000;
+
+  async function leadViejo(metadata: Record<string, string>) {
+    await new Db(env.DB).run(
+      `INSERT INTO leads (id, conversation_id, name, intent, metadata, status, created_at, updated_at)
+       VALUES ('viejo', ?, 'Consulta anterior', 'Interesado', ?, 'new', ?, ?)`,
+      [CONV, JSON.stringify(metadata), HACE_DOS_DIAS, HACE_DOS_DIAS],
+    );
+  }
+
+  it("rescata aunque el hilo traiga un lead de hace dos días", async () => {
+    await leadViejo({ prioridad: "caliente" });
+
+    const r = await rescataLeadPrometido(env, CONV, "Un asesor se comunica contigo al 4561347895.");
+
+    expect(r.rescatado).toBe(true);
+    expect(await new LeadsRepo(new Db(env.DB)).list(10)).toHaveLength(2);
+    expect(telegram).toHaveLength(1);
+  });
+
+  it("sigue sin duplicar cuando el lead es de esta misma plática", async () => {
+    await new LeadsRepo(new Db(env.DB)).create({
+      conversationId: CONV,
+      channelUserId: null,
+      name: "Josa",
+      intent: "Interesado en un terreno en Cancún",
+      metadata: { prioridad: "caliente" },
+    });
+
+    const r = await rescataLeadPrometido(env, CONV, "Un asesor se comunica contigo.");
+
+    expect(r.rescatado).toBe(false);
+    expect(telegram).toHaveLength(0);
+  });
+
+  it("reconoce la promesa exacta que se le hizo a Josa", () => {
+    expect(prometioContacto("Listo, Josa. Te registro con el equipo para que te cotice.")).toBe(true);
+    expect(
+      prometioContacto("Perfecto. Un asesor se comunica contigo al 4561347895 para mostrarte los terrenos."),
+    ).toBe(true);
+  });
+});

@@ -68,10 +68,15 @@ la reemplaza (no se puede recuperar la anterior).
   transcripción en las notas, y **avisa siempre**. Si el cliente da su teléfono
   después, completa esa misma ficha en vez de duplicarla. Pruebas en
   `test/leads/rescate.test.ts`. **Vive en `src/`: `forjabot update` lo borra.**
-- **Una conversación = un lead.** `calificarLead` reemplaza el lead pendiente de
-  esa conversación en vez de agregar otro (un prospecto se registraba al dar el
-  plazo y otra vez al dar el teléfono). No pisa los que el asesor ya movió a
-  contactado o vendido.
+- **Una conversación = un lead, pero solo dentro de 6 horas**
+  (`LeadsRepo.VENTANA_MISMA_PLATICA_MS`). `calificarLead` reemplaza el lead
+  pendiente de esa plática en vez de agregar otro (un prospecto se registraba al
+  dar el plazo y otra vez al dar el teléfono), y la red de seguridad no rescata
+  si ya hay uno. **La ventana es imprescindible:** en Messenger el hilo con una
+  persona NO se cierra nunca, así que sin ella un lead viejo tapaba al de hoy —
+  pasó con "Josa", que escribió desde un Messenger ya usado en una prueba del día
+  anterior, calificó caliente y no se registró ni se avisó. Nada de esto pisa los
+  leads que el asesor ya movió a contactado o vendido.
 - **`captureLead` está APAGADO** (`disabled_tools = captureLead` en `settings`).
   Hacía lo mismo que `calificarLead` pero sin calificar, y el modelo llamaba a las
   dos: cada prospecto entraba DOS veces al panel, una con prioridad y otra sin

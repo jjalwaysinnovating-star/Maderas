@@ -62,9 +62,16 @@ export async function rescataLeadPrometido(
   const db = new Db(env.DB);
   const repo = new LeadsRepo(db);
 
+  // Solo cuentan los leads RECIENTES: en Messenger el hilo con una persona no
+  // se cierra nunca, y un lead de la semana pasada hacía creer que el de hoy ya
+  // estaba registrado. Pasó de verdad — alguien volvió a escribir desde un
+  // Messenger que ya había consultado, calificó caliente, y ni se registró ni
+  // se avisó porque "esa conversación ya tenía lead".
   const existente = await db.first<{ id: string; metadata: string | null }>(
-    "SELECT id, metadata FROM leads WHERE conversation_id = ? ORDER BY created_at DESC LIMIT 1",
-    [conversationId],
+    `SELECT id, metadata FROM leads
+      WHERE conversation_id = ? AND created_at > ?
+      ORDER BY created_at DESC LIMIT 1`,
+    [conversationId, Date.now() - LeadsRepo.VENTANA_MISMA_PLATICA_MS],
   );
   // Si el bot sí registró al prospecto, aquí no hay nada que hacer.
   const esRescate = (existente?.metadata ?? "").includes('"origen":"rescate"');

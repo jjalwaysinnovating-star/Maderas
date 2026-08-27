@@ -99,7 +99,22 @@ export class LeadsRepo {
   }
 
   /**
-   * El lead de esta conversación que el asesor todavía NO ha tocado.
+   * Cuánto dura "la misma plática" para efectos de no duplicar al prospecto.
+   *
+   * En Messenger y WhatsApp el hilo con una persona NO se cierra nunca: la
+   * misma conversación puede tener meses. Sin ventana de tiempo, un lead de la
+   * semana pasada hacía creer que el de hoy ya estaba registrado — pasó de
+   * verdad: alguien escribió desde un Messenger que ya había consultado antes,
+   * calificó como caliente, y ni se registró ni se avisó porque "esa
+   * conversación ya tenía lead".
+   *
+   * Seis horas: una calificación se resuelve en minutos, y quien vuelve al día
+   * siguiente es una consulta nueva que el asesor sí quiere ver.
+   */
+  static readonly VENTANA_MISMA_PLATICA_MS = 6 * 3600_000;
+
+  /**
+   * El lead RECIENTE de esta conversación que el asesor todavía NO ha tocado.
    *
    * Sirve para no acumular filas de una misma plática: el bot puede registrar
    * al prospecto y volver a hacerlo cuando dé su teléfono, y la red de
@@ -109,8 +124,10 @@ export class LeadsRepo {
    */
   async pendienteDeConversacion(conversationId: string): Promise<Lead | null> {
     return this.db.first<Lead>(
-      "SELECT * FROM leads WHERE conversation_id = ? AND status = 'new' ORDER BY created_at ASC LIMIT 1",
-      [conversationId],
+      `SELECT * FROM leads
+        WHERE conversation_id = ? AND status = 'new' AND created_at > ?
+        ORDER BY created_at ASC LIMIT 1`,
+      [conversationId, Date.now() - LeadsRepo.VENTANA_MISMA_PLATICA_MS],
     );
   }
 
