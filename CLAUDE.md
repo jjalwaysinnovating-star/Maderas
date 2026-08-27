@@ -123,11 +123,10 @@ Cloudflare para desplegar código.
 - **Instagram** — cabe como la 2ª cuenta gratis de Zernio cuando el dueño quiera.
 - **Saldo de Anthropic** — sin cuota diaria que deje mudo al bot, pero el saldo se
   acaba. Conviene recarga automática antes de abrir WhatsApp.
-- **Leads de prueba** — hay seis falsos (Ana López, Roberto Salinas, Patricia Vega,
-  Jay, Carlos Mendez, Lucia Ramos) en el panel. El panel ya tiene botón **Borrar**
-  (dentro del detalle de cada lead), pero **vive en `src/` y aún no está desplegado**:
-  hace falta un deploy con un API token de Cloudflare. Mientras tanto se pueden
-  marcar "Perdido" desde el menú de estado.
+- **Leads de prueba** — hay siete falsos en el panel (Ana López, Roberto Salinas,
+  Patricia Vega, Jay, Carlos Mendez, Lucia Ramos y uno llamado "PRUEBA — bórrame"
+  que dejó la verificación del formulario). El panel ya tiene botón **Borrar**,
+  desplegado: se abre el detalle del lead y está abajo a la derecha.
 - **Sesión web atada a la IP** — el canal web reemite la sesión si cambia la IP del
   visitante, así que en celular (WiFi → datos) se puede perder el hilo a media
   conversación. Es la defensa antiabuso de la plantilla. En WhatsApp/Instagram no
