@@ -1,13 +1,15 @@
 # Genera la foto de perfil y la portada de Facebook/Messenger del asesor.
 #
-# La idea: para quien vende TERRENOS, el dibujo del plano —los lotes vistos
-# desde arriba— es el producto. Ciudad Maderas ya usa ese trazo en sus planos
-# maestros, así que la marca del asesor se para en el mismo lenguaje en vez de
-# inventar otro. Además resuelve el problema práctico de una foto de perfil:
-# a 40 px en Messenger un logo con texto no se lee, pero una figura sí.
+# NO se inventa logo. El asesor no es la desarrolladora: un símbolo propio
+# compite con la marca y confunde a quien pregunta con quién está tratando.
+# Se reproduce el candado real de Ciudad Maderas —"CIUDAD MADERAS" en serif con
+# versalitas, y debajo "TERRENOS" en negritas + "PREMIUM" en delgada— y en el
+# renglón donde ellos ponen el nombre del desarrollo (Bosques, Corregidora…)
+# aquí va ASESOR AUTORIZADO. Así el rol queda dicho en el mismo lugar y con el
+# mismo peso con que la marca nombra a sus plazas.
 #
-# Se baja solo lo que necesita (fuentes de la marca y la foto aérea del bucket
-# de Ciudad Maderas), así que corre en limpio:
+# Se baja solo lo que necesita (las fuentes de la marca y la foto aérea del
+# bucket de Ciudad Maderas), así que corre en limpio:
 #     python3 marca.py && node captura.js
 import base64, os, subprocess
 
@@ -16,6 +18,7 @@ INSUMOS = f"{DIR}/insumos"
 os.makedirs(INSUMOS, exist_ok=True)
 
 FUENTE_URL = {
+    # Las mismas dos familias que carga ciudadmaderas.com.
     "mont.woff2": "https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2",
     "goudy.woff2": "https://fonts.gstatic.com/s/sortsmillgoudy/v16/Qw3GZR9MED_6PSuS_50nEaVrfzgEbHoEjw.woff2",
     "aerea.webp": "https://storage.googleapis.com/landing-ciudad-maderas/mapa/desarrollo.webp",
@@ -36,93 +39,85 @@ MONT = b64(insumo("mont.woff2"))
 GOUDY = b64(insumo("goudy.woff2"))
 FOTO = b64(insumo("aerea.webp"))
 
-AZUL, AZUL2, ORO, ORO2 = "#00263a", "#001a28", "#b4a269", "#dcce9e"
+AZUL, AZUL2, ORO = "#00263a", "#001a28", "#b4a269"
 
 FUENTES = f"""
 @font-face{{font-family:Mont;src:url(data:font/woff2;base64,{MONT}) format('woff2');font-weight:100 900}}
 @font-face{{font-family:Goudy;src:url(data:font/woff2;base64,{GOUDY}) format('woff2')}}
 """
 
-# ── La marca ───────────────────────────────────────────────────────────────
-def marca(oro=ORO2, piso=0.42):
-    """De lejos es un árbol —Maderas—; de cerca son tres lotes apilados sobre
-    la línea del terreno. Se eligió después de descartar seis intentos más
-    "conceptuales" (parcelas, curvas de nivel, manzanas): a 40 px, que es como
-    se ve en Messenger, ninguno se leía. Este sí, y además dice lo que vende."""
+# El serif del logo va en VERSALITAS: la inicial a tamaño completo y el resto
+# más chico. La fuente web no trae versalitas de verdad, así que se arman con
+# dos tamaños — que es exactamente como se ve en su logo original.
+CAJA = """
+.vs{font-family:Goudy,Georgia,serif;color:#fff;line-height:.96;white-space:nowrap}
+.vs i{font-style:normal;font-size:.74em}
+.bajada{font-family:Mont,sans-serif;color:#fff;white-space:nowrap}
+.bajada b{font-weight:700}
+.bajada span{font-weight:300}
+.rol{font-family:Goudy,Georgia,serif;color:%s;white-space:nowrap}
+.rol i{font-style:normal;font-size:.74em}
+""" % ORO
+
+
+def candado(escala=1.0, apilado=False):
+    """El candado de la marca. `apilado` parte CIUDAD / MADERAS en dos renglones
+    para que en el círculo del perfil la tipografía quepa grande."""
+    nombre = (
+        f'<div class="vs" style="font-size:{116*escala:.0f}px">C<i>IUDAD</i></div>'
+        f'<div class="vs" style="font-size:{116*escala:.0f}px">M<i>ADERAS</i></div>'
+        if apilado
+        else f'<div class="vs" style="font-size:{92*escala:.0f}px">C<i>IUDAD</i> M<i>ADERAS</i></div>'
+    )
     return f"""
-<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M100 20 L131 70 L69 70 Z" fill="{oro}"/>
-  <path d="M70 80 L130 78 L145 118 L55 120 Z" fill="{oro}"/>
-  <path d="M52 128 L148 126 L166 168 L34 170 Z" fill="{oro}"/>
-  <rect x="92" y="170" width="16" height="18" fill="{oro}"/>
-  <path d="M16 188 H184" stroke="{oro}" stroke-opacity="{piso}" stroke-width="9" stroke-linecap="round"/>
-</svg>"""
+{nombre}
+<div class="bajada" style="font-size:{30*escala:.0f}px;letter-spacing:{.055*escala:.3f}em;
+     margin-top:{16*escala:.0f}px"><b>TERRENOS</b> <span>PREMIUM</span></div>
+<div class="rol" style="font-size:{44*escala:.0f}px;letter-spacing:{.06*escala:.3f}em;
+     margin-top:{14*escala:.0f}px">A<i>SESOR AUTORIZADO</i></div>"""
 
 
 PERFIL = f"""<!doctype html><meta charset="utf-8"><style>
-{FUENTES}
+{FUENTES}{CAJA}
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{width:1000px;height:1000px;overflow:hidden}}
-.p{{width:1000px;height:1000px;position:relative;
+.p{{width:1000px;height:1000px;
     background:radial-gradient(circle at 50% 38%, #013b58 0%, {AZUL} 55%, {AZUL2} 100%);
-    display:flex;flex-direction:column;align-items:center;justify-content:center}}
-/* Anillo: ayuda a que se lea como pieza dentro del círculo de Facebook. */
-.anillo{{position:absolute;inset:38px;border:3px solid rgba(220,206,158,.34);border-radius:50%}}
-.marca{{width:390px;height:390px;margin-top:-14px}}
-.nombre{{font-family:Mont,sans-serif;font-weight:800;font-size:57px;letter-spacing:.015em;
-         color:#fff;line-height:1;margin-top:14px;white-space:nowrap}}
-.rol{{font-family:Mont,sans-serif;font-weight:600;font-size:21px;letter-spacing:.26em;
-      color:{ORO2};margin-top:20px;text-transform:uppercase}}
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}}
 </style>
-<div class="p">
-  <div class="anillo"></div>
-  <div class="marca">{marca()}</div>
-  <div class="nombre">CIUDAD MADERAS</div>
-  <div class="rol">Asesor autorizado</div>
-</div>"""
+<div class="p">{candado(escala=1.32, apilado=True)}</div>"""
 
 
 # ── Portada ────────────────────────────────────────────────────────────────
 # Se sube a 1640×624. En computadora se ve completa; en celular Facebook
 # RECORTA LOS LADOS y deja una franja central de ~1109 px. Por eso todo el
-# texto vive centrado dentro de esa franja: si se va a las orillas, en el
-# teléfono —que es donde casi todos lo van a ver— desaparece.
+# contenido vive centrado dentro de esa franja: si se va a las orillas, en el
+# teléfono —que es donde casi todos lo van a ver— desaparece. La esquina
+# inferior izquierda se deja libre: ahí Facebook encima la foto de perfil.
 PORTADA = f"""<!doctype html><meta charset="utf-8"><style>
-{FUENTES}
+{FUENTES}{CAJA}
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{width:1640px;height:624px;overflow:hidden}}
 .c{{width:1640px;height:624px;position:relative;background:{AZUL2};overflow:hidden}}
-.c>img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.42}}
+.c>img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.38}}
 .velo{{position:absolute;inset:0;
-       background:linear-gradient(90deg,rgba(0,26,40,.94) 0%,rgba(0,38,58,.62) 45%,rgba(0,26,40,.90) 100%)}}
-.wrap{{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:56px;
-       padding:0 270px}}
-.sello{{width:190px;height:190px;flex:none;opacity:.95}}
-.tx{{display:flex;flex-direction:column}}
-.eyebrow{{font-family:Mont,sans-serif;font-weight:700;font-size:19px;letter-spacing:.34em;
-          color:{ORO2};text-transform:uppercase;margin-bottom:16px}}
-h1{{font-family:Goudy,serif;font-weight:400;font-size:92px;line-height:.98;color:#fff;
-    letter-spacing:.01em}}
-h1 b{{display:block;font-family:Mont,sans-serif;font-weight:800;font-size:88px;color:{ORO2};
-      letter-spacing:.005em;text-transform:uppercase}}
-.datos{{display:flex;gap:14px;margin-top:26px;flex-wrap:wrap}}
+       background:linear-gradient(180deg,rgba(0,26,40,.86) 0%,rgba(0,38,58,.70) 45%,rgba(0,26,40,.92) 100%)}}
+.wrap{{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+       justify-content:center;text-align:center;padding:0 280px}}
+.datos{{display:flex;gap:13px;margin-top:34px;flex-wrap:nowrap}}
 .datos span{{font-family:Mont,sans-serif;font-weight:600;font-size:17px;letter-spacing:.10em;
-             text-transform:uppercase;color:#fff;border:1px solid rgba(220,206,158,.55);
-             padding:9px 16px;border-radius:3px;white-space:nowrap}}
+             text-transform:uppercase;color:#fff;border:1px solid rgba(180,162,105,.62);
+             padding:9px 17px;border-radius:3px;white-space:nowrap}}
 .regla{{position:absolute;left:0;right:0;bottom:0;height:7px;background:{ORO}}}
 </style>
 <div class="c">
   <img src="data:image/webp;base64,{FOTO}" alt="">
   <div class="velo"></div>
   <div class="wrap">
-    <div class="sello">{marca(piso=0.30)}</div>
-    <div class="tx">
-      <div class="eyebrow">Asesor autorizado</div>
-      <h1>Terrenos<b>Premium</b></h1>
-      <div class="datos">
-        <span>Crédito directo</span><span>Sin aval</span><span>Sin buró</span>
-        <span>Desde 1% de enganche</span>
-      </div>
+    {candado(escala=0.92)}
+    <div class="datos">
+      <span>Crédito directo</span><span>Sin aval</span><span>Sin buró</span>
+      <span>Desde 1% de enganche</span>
     </div>
   </div>
   <div class="regla"></div>
