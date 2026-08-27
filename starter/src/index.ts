@@ -306,13 +306,15 @@ app.post("/contacto", async (c) => {
   if (!nombre || !telefono) return c.redirect("/contacto", 303);
 
   const email = campo("email");
-  const region = campo("region");
-  const uso = campo("uso");
+  // Mismos nombres que el formulario del sitio oficial: `desarrollo` es la
+  // ciudad y `tipo` es el interés (aquí, para qué quiere el terreno).
+  const ciudad = campo("desarrollo");
+  const uso = campo("tipo");
 
   const resumen = [
     `${nombre} pidió informes desde la página`,
-    region ? `Ciudad: ${region}` : null,
-    uso ? `Uso: ${uso}` : null,
+    ciudad ? `Ciudad: ${ciudad}` : null,
+    uso ? `Interés: ${uso}` : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -325,7 +327,7 @@ app.post("/contacto", async (c) => {
     contact: [telefono, email].filter(Boolean).join(" · "),
     intent: resumen,
     notes: "Origen: formulario de la página web",
-    metadata: { origen: "formulario_web", ciudad: region || null, uso: uso || null },
+    metadata: { origen: "formulario_web", ciudad: ciudad || null, uso: uso || null },
   });
 
   c.executionCtx.waitUntil(
@@ -335,7 +337,7 @@ app.post("/contacto", async (c) => {
         `Nombre: ${nombre}`,
         `Teléfono: ${telefono}`,
         email ? `Correo: ${email}` : null,
-        region ? `Ciudad: ${region}` : null,
+        ciudad ? `Ciudad: ${ciudad}` : null,
         uso ? `Para: ${uso}` : null,
       ]
         .filter(Boolean)

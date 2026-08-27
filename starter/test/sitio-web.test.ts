@@ -32,12 +32,49 @@ describe("sitio del asesor — rutas", () => {
     }
   });
 
-  it("hay una página por cada región", async () => {
+  // El sitemap del sitio oficial declara /, /casas-premium y ocho
+  // /proyectos/<region>; el pie agrega los dos legales. Aquí se replican
+  // todas menos casas-premium.
+  it("replica los slugs del sitio oficial", () => {
+    for (const slug of [
+      "queretaro",
+      "guanajuato",
+      "san-luis-potosi",
+      "yucatan",
+      "aguascalientes",
+      "nuevo-leon",
+      "quintana-roo",
+      "puebla",
+    ]) {
+      expect(landingPages[`/proyectos/${slug}`], slug).toBeTruthy();
+    }
+    expect(landingPages["/aviso-de-privacidad"]).toBeTruthy();
+    expect(landingPages["/terminos-y-condiciones"]).toBeTruthy();
+  });
+
+  it("no existe la página de casas del original", async () => {
+    expect(landingPages["/casas-premium"]).toBeUndefined();
+    expect((await get("/casas-premium")).status).toBe(404);
+  });
+
+  it("cada región usa su propio encabezado, precio y desarrollos", async () => {
     for (const r of regiones) {
       const html = await (await get(`/proyectos/${r.slug}`)).text();
-      expect(html, r.slug).toContain(r.region);
-      expect(html, r.slug).toContain(r.ciudad);
+      expect(html, r.slug).toContain(`Eleva tu estilo de vida en ${r.ciudad}`);
+      expect(html, r.slug).toContain(r.precio);
+      for (const d of r.desarrollos) expect(html, `${r.slug} · ${d.n}`).toContain(d.n);
     }
+  });
+
+  it("los precios por región no se pisan entre páginas", () => {
+    // Querétaro publica $1,348 y Mérida $1,683: si una página trae el precio de
+    // otra, alguien cotiza mal.
+    const qro = landingPages["/proyectos/queretaro"];
+    const mer = landingPages["/proyectos/yucatan"];
+    expect(qro).toContain("$1,348");
+    expect(qro).not.toContain("$1,683");
+    expect(mer).toContain("$1,683");
+    expect(mer).not.toContain("$1,348");
   });
 });
 
@@ -59,33 +96,53 @@ describe("sitio del asesor — solo terrenos", () => {
     }
   });
 
-  it("la portada sí habla de terrenos", () => {
-    expect(landingPages["/"]).toMatch(/Terrenos/);
+  it("el bloque que en el original es Casas Premium aquí dice Terrenos Premium", () => {
+    expect(landingPages["/"]).toMatch(/Terrenos<b>Premium<\/b>/);
   });
 });
 
 describe("sitio del asesor — los clics llevan a algún lado", () => {
-  it("ningún enlace interno apunta a una ruta que no existe", async () => {
+  it("ningún enlace interno apunta a una ruta que no existe", () => {
     const rutas = new Set(Object.keys(landingPages));
     const rotos: string[] = [];
-
     for (const [origen, html] of Object.entries(landingPages)) {
       for (const m of html.matchAll(/href="(\/[^"#]*)"/g)) {
         const destino = m[1];
-        if (rutas.has(destino)) continue;
         // /widget.js lo sirve el motor, no el mapa de páginas.
-        if (destino === "/widget.js") continue;
+        if (rutas.has(destino) || destino === "/widget.js") continue;
         rotos.push(`${origen} → ${destino}`);
       }
     }
-
     expect(rotos).toEqual([]);
   });
 
-  it("el aviso legal aparece en todas las páginas", () => {
+  it("ninguna ancla del menú cae en el vacío", () => {
+    const rotas: string[] = [];
+    for (const [origen, html] of Object.entries(landingPages)) {
+      for (const m of html.matchAll(/href="(?:\/)?#([a-z-]+)"/g)) {
+        const ancla = m[1];
+        // Las anclas del menú viven en la portada; las locales, en la página.
+        const destino = m[0].startsWith('href="/#') ? landingPages["/"] : html;
+        if (!destino.includes(`id="${ancla}"`)) rotas.push(`${origen} → #${ancla}`);
+      }
+    }
+    expect(rotas).toEqual([]);
+  });
+
+  it("el aviso legal y los enlaces legales aparecen en todas las páginas", () => {
     for (const [ruta, html] of Object.entries(landingPages)) {
       expect(html, ruta).toContain("garantiza rendimiento alguno");
       expect(html, ruta).toContain("Asesor inmobiliario autorizado");
+      expect(html, ruta).toContain('href="/aviso-de-privacidad"');
+      expect(html, ruta).toContain('href="/terminos-y-condiciones"');
+    }
+  });
+
+  it("el teléfono del asesor sustituye al del corporativo en todas las páginas", () => {
+    for (const [ruta, html] of Object.entries(landingPages)) {
+      expect(html, ruta).toContain("526866066613");
+      // El 442 y el 800 del corporativo se llevarían los prospectos.
+      expect(html, ruta).not.toContain("4426090478");
     }
   });
 });
@@ -95,12 +152,11 @@ describe("formulario de contacto", () => {
     const mf = await createTestMiniflare();
     const d1 = await mf.getD1Database("DB");
     const env = { ...baseEnv, DB: d1 };
-    const body = new URLSearchParams(campos);
     const res = await worker.fetch(
       new Request("https://test/contacto", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
+        body: new URLSearchParams(campos),
       }),
       env,
       ctx,
@@ -109,13 +165,22 @@ describe("formulario de contacto", () => {
     return { res, leads };
   };
 
+  it("usa los mismos nombres de campo que el formulario original", () => {
+    const html = landingPages["/"];
+    for (const n of ["tipo", "desarrollo", "nombre", "email", "telefono"]) {
+      expect(html, n).toContain(`name="${n}"`);
+    }
+    expect(html).toContain("Selecciona tu interés");
+    expect(html).toContain("Selecciona el desarrollo");
+  });
+
   it("guarda el lead y manda a /gracias", async () => {
     const { res, leads } = await enviar({
       nombre: "Joswuar",
       telefono: "6866066613",
       email: "j@ejemplo.com",
-      region: "Querétaro",
-      uso: "Inversión",
+      desarrollo: "Querétaro",
+      tipo: "Invertir",
     });
 
     expect(res.status).toBe(303);
@@ -126,7 +191,7 @@ describe("formulario de contacto", () => {
     expect(leadMetadata(leads[0])).toMatchObject({
       origen: "formulario_web",
       ciudad: "Querétaro",
-      uso: "Inversión",
+      uso: "Invertir",
     });
   });
 

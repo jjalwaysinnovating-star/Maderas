@@ -66,24 +66,40 @@ la reemplaza (no se puede recuperar la anterior).
 | Textos y páginas del sitio | `starter/member/landing.local.ts` |
 | Modelo, idioma, moneda | Panel → Configuración |
 
-### El sitio web
+### El sitio web — réplica de ciudadmaderas.com
 
-Son **15 páginas** servidas por el mismo Worker, todas declaradas en el mapa
+Son **12 páginas** servidas por el mismo Worker, todas declaradas en el mapa
 `landingPages` de `member/landing.local.ts`. `src/index.ts` solo recorre ese mapa,
 así que **agregar una página no requiere tocar `src/`**: basta una entrada más.
 
-`/` · `/desarrollos` · `/proyectos/<region>` (8) · `/amenidades` ·
-`/facilidades-de-pago` · `/nosotros` · `/contacto` · `/gracias`
+`/` · `/proyectos/<region>` (8, mismos slugs del oficial) ·
+`/aviso-de-privacidad` · `/terminos-y-condiciones` · `/gracias`
 
-Las páginas de región **no publican lista de lotes, medidas ni precios cerrados**,
-igual que el sitio oficial: la disponibilidad cambia cada semana y un precio viejo
-en internet hace que el prospecto llegue enojado a la cita. La página lleva a la
-conversación. Si el dueño quiere publicar desarrollos concretos, que dé la lista
-él —es quien sabe cuáles puede vender— y se agregan a `regiones`.
+El sitemap del oficial declara 10 páginas: portada, `/casas-premium` y las 8 de
+región; el pie agrega las dos legales. **Aquí se replican todas menos
+`/casas-premium`** (solo terrenos). El menú de arriba son anclas de la portada,
+igual que el original; los portales de cliente (Bosque Memorial, Mis Pagos,
+Escrituración, Payments, Apartado, Mi Cuenta) no se replican porque un asesor no
+puede prestarlos.
 
-El formulario de `/contacto` hace `POST /contacto`: guarda el lead en la misma
-tabla que el bot (aparece en `/admin/leads` con `origen: formulario_web`) y avisa
-por Telegram. Trae un campo cebo (`apellido2`) contra bots de spam.
+Datos reales sacados del sitio oficial y que **no se inventan**: los desarrollos
+por plaza (los logos de su bucket, todos dicen "Terrenos Premium") y la
+**mensualidad "desde" propia de cada región** — Querétaro $1,348 · Mérida $1,683 ·
+Monterrey $1,474 · Cancún $1,388 · León y SLP $1,288 · Aguascalientes y Puebla
+$1,244. Hay una prueba que impide que el precio de una región se cuele en otra.
+
+Los héroes son imágenes fijas, no los videos del original: cada `.webm` de su
+bucket pesa ~6.7 MB y esta página se abre casi siempre desde un celular.
+
+Los avisos legales son **del asesor**, no copias de los del corporativo: un aviso
+de privacidad declara quién responde por los datos, y aquí quien los recibe es él.
+
+El formulario usa **los mismos nombres de campo que el oficial** (`tipo`,
+`desarrollo`, `nombre`, `email`, `telefono`) y hace `POST /contacto`: guarda el
+lead en la misma tabla que el bot (aparece en `/admin/leads` con
+`origen: formulario_web`) y avisa por Telegram. Trae un campo cebo (`apellido2`)
+contra bots de spam. Con JS enseña el acuse en el mismo formulario, como el
+original; sin JS cae en `/gracias`.
 
 **Tras editar la KB hay que reindexar**, o el bot sigue contestando lo viejo:
 

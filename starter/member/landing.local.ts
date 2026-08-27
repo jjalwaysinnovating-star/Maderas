@@ -1,64 +1,70 @@
 // member/landing.local.ts — el sitio público del asesor.
 // Vive en member/ a propósito: `forjabot update` refresca src/ pero NUNCA toca
 // esta carpeta, así que los textos y datos de contacto sobreviven las
-// actualizaciones del motor.
+// actualizaciones del motor. Se sirve desde el mismo Worker del bot (las rutas
+// se registran recorriendo `landingPages` en src/index.ts), así que el chat
+// queda en el mismo origen: sin CORS, sin hosting aparte, sin costo.
 //
-// Se sirve desde el mismo Worker del bot (ver el registro de rutas en
-// src/index.ts), así que el chat queda en el mismo origen: sin CORS, sin
-// hosting aparte, sin costo.
+// ── RÉPLICA DEL SITIO OFICIAL ───────────────────────────────────────────────
+// Se siguió link por link ciudadmaderas.com. Su sitemap declara 10 páginas:
+// la portada, /casas-premium y ocho /proyectos/<region>; el pie agrega
+// /terminos-y-condiciones y /aviso-de-privacidad. No hay más: el menú de
+// arriba (DESARROLLOS, CASAS PREMIUM, BOSQUE MEMORIAL, MIS PAGOS,
+// ESCRITURACIÓN, PAYMENTS, APARTADO, MI CUENTA) mueve por anclas de la misma
+// portada o abre portales de cliente de la desarrolladora.
 //
-// ── SOLO TERRENOS ───────────────────────────────────────────────────────────
-// El asesor comercializa TERRENOS, no casas. Aquí no hay sección de Casas
-// Premium, ni modelos, ni la mensualidad de casa: publicar un producto que no
-// se vende trae prospectos que hay que rechazar, y rechazar quema el lead.
+// Este sitio replica esa estructura, con los mismos slugs de región, el mismo
+// orden de secciones, los mismos encabezados ("Eleva tu estilo de vida en …",
+// "Tú lo soñaste / Nosotros lo construimos", "El entorno a tu favor"), los
+// mismos desarrollos por plaza, las mismas mensualidades "desde" por región y
+// los mismos campos de formulario (INTERÉS, DESARROLLO DE INTERÉS, nombre,
+// correo, teléfono).
 //
-// ── ESTRUCTURA ──────────────────────────────────────────────────────────────
-// Sitio de varias páginas, con la navegación del sitio oficial: Desarrollos,
-// Amenidades, Facilidades de pago, Nosotros y Contacto, más una página por
-// región bajo /proyectos/<region> — la misma ruta y el mismo encabezado
-// ("Eleva tu estilo de vida en …") que usa ciudadmaderas.com.
+// ── LO QUE SE APARTA, Y POR QUÉ ─────────────────────────────────────────────
+// 1. NO existe /casas-premium. El asesor comercializa TERRENOS. Publicar casas
+//    trae prospectos que hay que rechazar, y rechazar quema el lead. En su
+//    lugar, ese mismo bloque de la portada dice TERRENOS PREMIUM — que además
+//    es lo que dicen los logos reales de todos los desarrollos.
+// 2. NO se replican BOSQUE MEMORIAL, MIS PAGOS, ESCRITURACIÓN, PAYMENTS,
+//    APARTADO ni MI CUENTA: son portales de cliente de la desarrolladora y un
+//    asesor no puede prestarlos.
+// 3. El teléfono y el WhatsApp son los del asesor, no el 442 del corporativo —
+//    si no, los prospectos de esta página se irían al conmutador.
+// 4. El chat es el bot de IA propio, no el widget de agente del corporativo.
+// 5. Los avisos legales son del ASESOR, no copias de los del corporativo: un
+//    aviso de privacidad dice quién responde por los datos, y aquí quien los
+//    recibe es él.
+// 6. Los héroes son imágenes fijas, no los videos del original: cada .webm del
+//    sitio oficial pesa ~6.7 MB y este sitio se abre casi siempre desde un
+//    celular con datos.
 //
-// Las páginas de región NO publican lista de lotes, medidas ni precios
-// cerrados. No es un hueco: el sitio oficial tampoco los publica, la
-// disponibilidad cambia cada semana y un precio viejo en internet es justo lo
-// que hace que un prospecto llegue enojado a la cita. La página lleva a la
-// conversación, que es donde el asesor confirma lo que hay hoy.
-//
-// Del menú original se omiten MIS PAGOS, ESCRITURACIÓN, PAYMENTS, APARTADO,
-// MI CUENTA y BOSQUE MEMORIAL: son portales de cliente de la desarrolladora y
-// un asesor no puede prestarlos.
-//
-// Tres cosas se apartan del sitio oficial a propósito, y son las que hacen que
-// esta página sirva al asesor en vez de al corporativo:
-//   1. El teléfono y el WhatsApp son los del asesor, no el 800 ni el 442 de
-//      Querétaro — si no, los prospectos de esta página se irían al corporativo.
-//   2. El chat es el bot de IA propio, no el widget de agente de Salesforce.
-//   3. Se identifica como asesor autorizado y cierra con aviso legal, para no
-//      pasar por el sitio oficial de la desarrolladora.
-//
-// FOTOS: se referencian desde el bucket público de Ciudad Maderas, el mismo que
-// usa su sitio oficial. El navegador las trae de ahí — no se redistribuyen
-// copias. Cada bloque conserva su color de fondo y el texto nunca depende de
-// que la foto exista: si mueven esas rutas, la página se degrada, no se rompe.
+// FOTOS Y LOGOS: se referencian desde el bucket público de Ciudad Maderas, el
+// mismo que usa su sitio oficial. El navegador los trae de ahí — no se
+// redistribuyen copias. Cada bloque conserva su color de fondo y el texto nunca
+// depende de que la foto exista: si mueven esas rutas, la página se degrada.
 
 export const landingConfig = {
   asesor: "Ciudad Maderas",
   telefono: "686 606 6613",
   telefonoLink: "526866066613",
   horario: "Lunes a domingo · 8:00 a.m. – 6:00 p.m.",
+  // Redes DEL ASESOR. Vacías = no se pintan. Se dejan así a propósito: enlazar
+  // las cuentas oficiales del corporativo mandaría sus prospectos al 800.
+  redes: [] as { nombre: string; url: string }[],
 };
 
-const { telefono, telefonoLink, horario } = landingConfig;
+const { telefono, telefonoLink, horario, redes } = landingConfig;
 const IMG = "https://storage.googleapis.com/landing-ciudad-maderas";
-
 const wa = (t: string) => `https://wa.me/${telefonoLink}?text=${encodeURIComponent(t)}`;
 
 // ── Datos ───────────────────────────────────────────────────────────────────
 
+const clubs = ["Casa Club", "Family Club", "Club Deportivo", "Club Acuático"];
+
 const amenidades = [
   { img: `${IMG}/amenidades/Alberca.jpg`, n: "Albercas" },
   { img: `${IMG}/amenidades/Albercas%20techadas.webp`, n: "Albercas techadas" },
-  { img: `${IMG}/amenidades/Cancha%20Pa%CC%81del.webp`, n: "Canchas de pádel" },
+  { img: `${IMG}/amenidades/Cancha%20Pa%CC%81del.webp`, n: "Canchas de Pádel" },
   { img: `${IMG}/amenidades/Cancha%20de%20tenis.webp`, n: "Canchas de tenis" },
   { img: `${IMG}/amenidades/Chapoteadero.webp`, n: "Chapoteaderos" },
 ];
@@ -66,96 +72,198 @@ const amenidades = [
 const fundacion = [
   { img: `${IMG}/fundacion/Arte%20y%20Cultura.webp`, n: "Arte y cultura" },
   { img: `${IMG}/fundacion/Educaci%C3%B3n.webp`, n: "Educación" },
-  { img: `${IMG}/fundacion/Mascotas.webp`, n: "Dignidad animal" },
+  { img: `${IMG}/fundacion/Mascotas.webp`, n: "Dignidad Animal" },
 ];
 
-// Región = como la nombra el sitio oficial en /proyectos/<slug>. La ciudad es
-// como la busca la gente. Las dos aparecen: la región manda en el encabezado,
-// la ciudad en la tarjeta.
-interface Region {
-  slug: string;
-  region: string;
-  ciudad: string;
-  img: string;
-  /** Por qué esta plaza, en una línea. Nada de rendimientos ni cifras. */
-  nota: string;
+interface Desarrollo {
+  logo: string;
+  n: string;
 }
+
+interface Region {
+  /** Mismo slug que /proyectos/<slug> del sitio oficial. */
+  slug: string;
+  /** El H1 de su página, tal cual: a veces es el estado, a veces la marca. */
+  region: string;
+  /** La ciudad, que es como la busca la gente. */
+  ciudad: string;
+  /** Foto de la tarjeta en la portada. */
+  card: string;
+  /** Héroe de su página. */
+  hero: string;
+  /** Foto del bloque "Eleva tu estilo de vida". */
+  estilo: string;
+  /** Plano maestro de la plaza. */
+  mapa: string;
+  /** Mensualidad "desde" que publica esa región. */
+  precio: string;
+  desc: string;
+  desarrollos: Desarrollo[];
+}
+
+const dev = (ruta: string, n: string): Desarrollo => ({ logo: `${IMG}/desarrollos/${ruta}`, n });
 
 export const regiones: Region[] = [
   {
     slug: "queretaro",
     region: "Querétaro",
     ciudad: "Querétaro",
-    img: `${IMG}/desarrollos/Qro.webp`,
-    nota: "La plaza donde nació Ciudad Maderas y donde más desarrollos tiene. Corredor industrial y crecimiento urbano sostenido.",
+    card: `${IMG}/desarrollos/Qro.webp`,
+    hero: `${IMG}/desarrollos/Qro/qro_mobile.webp`,
+    estilo: `${IMG}/desarrollos/Qro/qro_estilodevida.webp`,
+    mapa: `${IMG}/desarrollos/Qro/qro_mapa.webp`,
+    precio: "$1,348",
+    desc:
+      "Además de su cercanía a la Ciudad de México, Querétaro cuenta con una de las " +
+      "concentraciones industriales más importantes del centro del país; provocando que se " +
+      "proyecte como uno de los estados con mejor red de comunicación y gran crecimiento económico.",
+    desarrollos: [
+      dev("Qro/desarrollos/qro_bosques.svg", "Ciudad Maderas Bosques"),
+      dev("Qro/desarrollos/qro_corregidora.svg", "Ciudad Maderas Corregidora"),
+      dev("Qro/desarrollos/qro_hacienda.svg", "Ciudad Maderas Hacienda"),
+      dev("Qro/desarrollos/qro_norte.svg", "Ciudad Maderas Norte"),
+      dev("Qro/desarrollos/qro_priv_corregidora.svg", "Privada Maderas Corregidora"),
+    ],
   },
   {
     slug: "guanajuato",
     region: "Guanajuato",
     ciudad: "León",
-    img: `${IMG}/desarrollos/Guanajuato.webp`,
-    nota: "El Bajío, con León como centro económico y una de las zonas industriales más activas del país.",
+    card: `${IMG}/desarrollos/Guanajuato.webp`,
+    hero: `${IMG}/desarrollos/guanajuato/gto_mobile.webp`,
+    estilo: `${IMG}/desarrollos/guanajuato/gto_invertir.webp`,
+    mapa: `${IMG}/desarrollos/guanajuato/gto_mapa.webp`,
+    precio: "$1,288",
+    desc:
+      "Invertir en Guanajuato es invertir en calidad de vida. Un proyecto de urbanización " +
+      "único, con biofísica aplicada, ubicado en una zona de gran crecimiento económico, donde " +
+      "cada espacio y amenidad está pensada para elevar tu estilo de vida.",
+    desarrollos: [
+      dev("guanajuato/proyectos/gto_allende.svg", "Ciudad Maderas San Miguel de Allende"),
+      dev("guanajuato/proyectos/gto_canada.svg", "Ciudad Maderas Cañada"),
+      dev("guanajuato/proyectos/gto_leon.svg", "Ciudad Maderas León"),
+      dev("guanajuato/proyectos/gto_montana.svg", "Ciudad Maderas Montaña León"),
+      dev("guanajuato/proyectos/gto_norte.svg", "Ciudad Maderas Norte León"),
+      dev("guanajuato/proyectos/gto_priv_leon.svg", "Privada Maderas León"),
+    ],
   },
   {
     slug: "yucatan",
     region: "Península",
     ciudad: "Mérida",
-    img: `${IMG}/desarrollos/Me%CC%81rida.webp`,
-    nota: "Mérida y su zona conurbada: de las ciudades más seguras de México y con fuerte llegada de gente de otros estados.",
+    card: `${IMG}/desarrollos/Me%CC%81rida.webp`,
+    hero: `${IMG}/desarrollos/merida/merida_mobile.webp`,
+    estilo: `${IMG}/desarrollos/merida/merida_invertir.webp`,
+    mapa: `${IMG}/desarrollos/merida/merida_mapa.webp`,
+    precio: "$1,683",
+    desc:
+      "En un entorno cálido y seguro, Ciudad Maderas Península es una excelente opción para " +
+      "disfrutar tanto de la tranquilidad de la Ciudad Blanca como de su cercanía a playas y " +
+      "cenotes, en una de las zonas de mayor crecimiento del país.",
+    desarrollos: [
+      dev("merida/proyectos/merida_hacienda.svg", "Ciudad Maderas Hacienda Península"),
+      dev("merida/proyectos/merida_peninsula.svg", "Ciudad Maderas Península"),
+      dev("merida/proyectos/merida_priv_peninsula.svg", "Ciudad Maderas Privada Península"),
+    ],
   },
   {
     slug: "quintana-roo",
     region: "Caribe",
     ciudad: "Cancún",
-    img: `${IMG}/desarrollos/Quintana%20Roo.webp`,
-    nota: "Cancún y la Riviera Maya, con demanda de vivienda empujada por el turismo y el Tren Maya.",
+    card: `${IMG}/desarrollos/Quintana%20Roo.webp`,
+    hero: `${IMG}/desarrollos/quintanaRoo/caribe_mobile.webp`,
+    estilo: `${IMG}/desarrollos/quintanaRoo/caribe_estilodevida.webp`,
+    mapa: `${IMG}/desarrollos/quintanaRoo/caribe_mapa.webp`,
+    precio: "$1,388",
+    desc:
+      "En Ciudad Maderas Caribe, disfruta la calidez del clima caribeño, paisajes de postal y " +
+      "un estilo de vida relajado que combina lujo y naturaleza. Con amenidades premium y un " +
+      "espectacular Club Acuático, en un paraíso con alto potencial de plusvalía internacional.",
+    desarrollos: [],
   },
   {
     slug: "nuevo-leon",
-    region: "Nuevo León",
+    region: "Monterrey",
     ciudad: "Monterrey",
-    img: `${IMG}/desarrollos/Mty.webp`,
-    nota: "Zona metropolitana de Monterrey, el polo industrial más fuerte del norte del país.",
+    card: `${IMG}/desarrollos/Mty.webp`,
+    hero: `${IMG}/desarrollos/monterrey/mty_mobile.webp`,
+    estilo: `${IMG}/desarrollos/monterrey/mty_estilodevida.webp`,
+    mapa: `${IMG}/desarrollos/monterrey/mty_mapa.webp`,
+    precio: "$1,474",
+    desc:
+      "Invertir en Monterrey es invertir en calidad de vida. Un proyecto de urbanización único, " +
+      "con biofísica aplicada, ubicado en una zona de gran crecimiento económico, donde cada " +
+      "espacio y amenidad está pensada para elevar tu estilo de vida.",
+    desarrollos: [],
   },
   {
     slug: "aguascalientes",
     region: "Aguascalientes",
     ciudad: "Aguascalientes",
-    img: `${IMG}/desarrollos/Ags.webp`,
-    nota: "Ciudad compacta y ordenada, con industria automotriz consolidada y buena calidad de vida.",
+    card: `${IMG}/desarrollos/Ags.webp`,
+    hero: `${IMG}/desarrollos/Ags/ags_mobile.webp`,
+    estilo: `${IMG}/desarrollos/Ags/ags_estilodevida.webp`,
+    mapa: `${IMG}/desarrollos/Ags/ags_mapa.webp`,
+    precio: "$1,244",
+    desc:
+      "Invertir en Aguascalientes es invertir en calidad de vida. Un proyecto de urbanización " +
+      "único, con biofísica aplicada, ubicado en una zona de gran crecimiento económico, donde " +
+      "cada espacio y amenidad está pensada para elevar tu estilo de vida.",
+    desarrollos: [],
   },
   {
     slug: "san-luis-potosi",
     region: "San Luis Potosí",
     ciudad: "San Luis Potosí",
-    img: `${IMG}/desarrollos/SLP.webp`,
-    nota: "Cruce logístico del país y sede de plantas armadoras: mucha gente llegando por trabajo.",
+    card: `${IMG}/desarrollos/SLP.webp`,
+    hero: `${IMG}/desarrollos/sanLuisPotosi/slp_mobile.webp`,
+    estilo: `${IMG}/desarrollos/sanLuisPotosi/slp_estilodevida.webp`,
+    mapa: `${IMG}/desarrollos/sanLuisPotosi/slp_mapa.webp`,
+    precio: "$1,288",
+    desc:
+      "Invertir en San Luis Potosí es invertir en calidad de vida. Un proyecto de urbanización " +
+      "único, con biofísica aplicada, ubicado en una zona de gran crecimiento económico, donde " +
+      "cada espacio y amenidad está pensada para elevar tu estilo de vida.",
+    desarrollos: [
+      dev("sanLuisPotosi/proyectos/slp_montana.svg", "Ciudad Maderas Montaña San Luis Potosí"),
+      dev("sanLuisPotosi/proyectos/slp_sierra.svg", "Ciudad Maderas Sierra San Luis Potosí"),
+      dev("sanLuisPotosi/proyectos/slp_slp.svg", "Ciudad Maderas San Luis Potosí"),
+    ],
   },
   {
     slug: "puebla",
     region: "Puebla",
     ciudad: "Puebla",
-    img: `${IMG}/desarrollos/puebla/puebla.webp`,
-    nota: "Una de las áreas metropolitanas más grandes de México, a hora y media de la Ciudad de México.",
+    card: `${IMG}/desarrollos/puebla/puebla.webp`,
+    hero: `${IMG}/desarrollos/puebla/puebla_mobile.webp`,
+    estilo: `${IMG}/desarrollos/puebla/puebla_invertir.webp`,
+    mapa: `${IMG}/desarrollos/puebla/puebla_mapa.webp`,
+    precio: "$1,244",
+    desc:
+      "Invertir en Puebla es invertir en calidad de vida. Un proyecto de urbanización único, " +
+      "con biofísica aplicada, ubicado en una zona de gran crecimiento económico, donde cada " +
+      "espacio y amenidad está pensada para elevar tu estilo de vida.",
+    desarrollos: [],
   },
 ];
 
 // ── Cascarón ────────────────────────────────────────────────────────────────
-
+// El menú del sitio oficial son anclas de la portada, no páginas. Se replica
+// igual: desde una página de región, cada una regresa a la portada con su
+// ancla. (Del original se omiten los portales de cliente — ver la nota de
+// arriba.)
 const NAV = [
-  { href: "/desarrollos", t: "Desarrollos", k: "desarrollos" },
-  { href: "/amenidades", t: "Amenidades", k: "amenidades" },
-  { href: "/facilidades-de-pago", t: "Facilidades de pago", k: "facilidades" },
-  { href: "/nosotros", t: "Nosotros", k: "nosotros" },
-  { href: "/contacto", t: "Contáctanos", k: "contacto" },
+  { href: "desarrollos", t: "Desarrollos" },
+  { href: "amenidades", t: "Amenidades" },
+  { href: "facilidades", t: "Facilidades de pago" },
+  { href: "contacto", t: "Contáctanos" },
 ];
 
 const CSS = `
   :root{--azul:#00263a;--azul-2:#0d1f33;--azul-3:#001e2d;--oro:#b4a269;
-        --oro-2:#dcce9e;--crema:#f3f0e8;--crema-2:#e9e6dc;--linea:#ddd9ce;
-        --texto:#0b2538;--gris:#5a6672}
+        --oro-2:#dcce9e;--crema:#f3f0e8;--linea:#ddd9ce;--texto:#0b2538;--gris:#5a6672}
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
+  html{scroll-behavior:smooth;scroll-padding-top:76px}
   body{font-family:Montserrat,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
        color:var(--texto);line-height:1.6;background:#fff;-webkit-font-smoothing:antialiased}
   img{display:block;max-width:100%}
@@ -164,134 +272,174 @@ const CSS = `
   .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
   .serif{font-family:"Sorts Mill Goudy",Georgia,serif}
 
-  /* header + menú móvil (checkbox, sin JS) */
+  /* header + menú de celular (checkbox, sin JS) */
   header{background:var(--azul);color:#fff;position:sticky;top:0;z-index:70}
-  header .wrap{display:flex;align-items:center;justify-content:space-between;
-               gap:16px;min-height:72px}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px}
   .logo{font-weight:800;font-size:17px;letter-spacing:.06em;text-transform:uppercase;line-height:1.1}
   .logo span{display:block;font-weight:400;font-size:9.5px;letter-spacing:.22em;
              color:var(--oro-2);margin-top:3px}
   nav{display:flex;gap:26px;font-size:12px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
-  nav a{opacity:.9}nav a:hover,nav a.on{color:var(--oro-2);opacity:1}
-  nav a.on{border-bottom:1px solid var(--oro)}
+  nav a{opacity:.9}nav a:hover{color:var(--oro-2);opacity:1}
   .btn-nav{border:1px solid var(--oro);color:var(--oro-2);padding:10px 20px;border-radius:3px;
            font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;white-space:nowrap}
-  #mnu{display:none}
   .burger{display:none;cursor:pointer;padding:8px;margin:-8px}
   .burger span{display:block;width:24px;height:2px;background:#fff;margin:5px 0}
-  @media(max-width:980px){
+  @media(max-width:1040px){
     .burger{display:block}
     header .wrap>nav,header .wrap>.btn-nav{display:none}
-    #mnu:checked~.wrap nav{display:flex;position:absolute;top:72px;left:0;right:0;
-      flex-direction:column;gap:0;background:var(--azul-3);padding:8px 24px 20px;
+    #mnu:checked~.wrap nav{display:flex;position:absolute;top:76px;left:0;right:0;
+      flex-direction:column;gap:0;background:var(--azul-3);padding:8px 24px 68px;
       border-top:1px solid rgba(255,255,255,.12)}
     #mnu:checked~.wrap nav a{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.09)}
     #mnu:checked~.wrap .btn-nav{display:block;position:absolute;top:100%;left:24px;right:24px;
-      text-align:center;margin-top:-14px;transform:translateY(-6px)}
+      text-align:center;transform:translateY(-56px)}
   }
 
-  /* hero */
-  .hero{position:relative;display:flex;align-items:flex-end;
-        background:var(--azul-3);color:#fff;overflow:hidden;min-height:min(78vh,600px)}
-  .hero.tall{min-height:min(84vh,660px)}
-  .hero.short{min-height:min(52vh,400px)}
+  /* héroe */
+  .hero{position:relative;display:flex;align-items:flex-end;background:var(--azul-3);
+        color:#fff;overflow:hidden;min-height:min(82vh,640px)}
   .hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
   .hero:after{content:"";position:absolute;inset:0;
-    background:linear-gradient(180deg,rgba(0,30,45,.55) 0%,rgba(0,30,45,.1) 40%,rgba(0,30,45,.92) 100%)}
-  .hero .wrap{position:relative;z-index:2;padding-bottom:52px;padding-top:64px}
-  .hero h1{font-size:clamp(32px,5.6vw,58px);line-height:1.06;letter-spacing:.01em;font-weight:300;
+    background:linear-gradient(180deg,rgba(0,30,45,.5) 0%,rgba(0,30,45,.08) 38%,rgba(0,30,45,.93) 100%)}
+  .hero .wrap{position:relative;z-index:2;padding-bottom:54px;padding-top:64px}
+  .hero h1{font-size:clamp(34px,6vw,62px);line-height:1.05;letter-spacing:.01em;font-weight:300;
            text-transform:uppercase;margin-bottom:18px;text-wrap:balance}
   .hero h1 b{display:block;font-weight:800;color:var(--oro-2)}
-  .hero p{font-size:clamp(15px,2vw,19px);max-width:54ch;opacity:.93;margin-bottom:28px}
+  .hero p{font-size:clamp(15px,2vw,19px);max-width:56ch;opacity:.93;margin-bottom:28px}
   .miga{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--oro-2);
         margin-bottom:14px;opacity:.9}
   .cta{display:flex;gap:12px;flex-wrap:wrap}
   .btn{display:inline-block;padding:15px 30px;border-radius:3px;font-weight:700;font-size:13px;
-       letter-spacing:.12em;text-transform:uppercase;border:1px solid transparent;cursor:pointer}
+       letter-spacing:.12em;text-transform:uppercase;border:1px solid transparent;cursor:pointer;
+       font-family:inherit}
   .btn-oro{background:var(--oro);color:var(--azul)}
   .btn-wa{background:#25D366;color:#05301a}
   .btn-line{border-color:rgba(255,255,255,.55);color:#fff}
 
-  /* bloques */
+  /* somos + cifras */
   .somos{background:var(--azul);color:#fff;padding:58px 0}
   .somos .lbl{font-family:"Sorts Mill Goudy",serif;font-size:26px;color:var(--oro-2);margin-bottom:26px}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:26px}
   @media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr);gap:34px}}
   .st b{display:block;font-size:clamp(28px,4.4vw,44px);font-weight:800;color:var(--oro-2);
         line-height:1;letter-spacing:-.02em;margin-bottom:8px;font-variant-numeric:tabular-nums}
-  .st span{font-size:13.5px;opacity:.88;font-weight:400;display:block}
+  .st span{font-size:13.5px;opacity:.88;display:block}
 
-  .creadores{background:var(--crema);text-align:center;padding:70px 0}
-  .creadores h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(30px,5.4vw,54px);
-                font-weight:400;line-height:1.14;color:var(--azul);text-wrap:balance}
-  .creadores h2 em{font-style:italic;color:var(--oro)}
-  .creadores p{margin-top:16px;color:var(--gris);font-size:16.5px;max-width:62ch;margin-inline:auto}
+  .creadores{position:relative;text-align:center;padding:96px 0;background:var(--azul-3);color:#fff;
+             overflow:hidden}
+  .creadores>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.38}
+  .creadores .wrap{position:relative;z-index:2}
+  .creadores h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(32px,5.6vw,56px);
+                font-weight:400;line-height:1.12;text-wrap:balance}
+  .creadores h2 em{font-style:italic;color:var(--oro-2)}
+  .creadores p{margin-top:16px;font-size:16.5px;max-width:62ch;margin-inline:auto;opacity:.9}
 
-  section{padding:72px 0}
+  /* presencia */
+  .presencia{background:var(--crema)}
+  .presencia .cols{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:center}
+  @media(max-width:880px){.presencia .cols{grid-template-columns:1fr;gap:26px}}
+  .presencia img{border-radius:4px;width:100%;aspect-ratio:16/10;object-fit:cover;background:var(--azul-2)}
+
+  section{padding:74px 0}
   .kick{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;
         color:var(--oro);margin-bottom:12px}
   h2.sec{font-family:"Sorts Mill Goudy",serif;font-size:clamp(27px,4.2vw,42px);font-weight:400;
          line-height:1.16;color:var(--azul);margin-bottom:14px;text-wrap:balance}
   .sub{color:var(--gris);font-size:16.5px;max-width:62ch;margin-bottom:34px}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+  .tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px}
+  .tab{border:1px solid var(--linea);background:var(--crema);border-radius:3px;padding:11px 22px;
+       font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--azul)}
+
+  .amen{background:var(--azul);padding:8px 0 74px}
+  .amen .kick{color:var(--oro-2)}
+  .amen h2.sec{color:#fff}
+  .amen .tab{background:transparent;border-color:rgba(220,206,158,.4);color:var(--oro-2)}
+  .amen .nota{color:rgba(255,255,255,.72);font-size:15px;max-width:66ch;margin-top:24px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:18px}
   .card{position:relative;border-radius:4px;overflow:hidden;background:var(--azul-2);aspect-ratio:4/3}
   .card img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
   .card:hover img{transform:scale(1.06)}
-  .card figcaption{position:absolute;inset:auto 0 0 0;padding:30px 16px 14px;color:#fff;
+  .card figcaption{position:absolute;inset:auto 0 0 0;padding:32px 16px 14px;color:#fff;
     font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-    background:linear-gradient(transparent,rgba(0,30,45,.92))}
+    background:linear-gradient(transparent,rgba(0,30,45,.93))}
   .card figcaption i{display:block;font-style:normal;font-size:10.5px;letter-spacing:.16em;
     color:var(--oro-2);font-weight:700;margin-bottom:3px}
   @media(prefers-reduced-motion:reduce){.card img{transition:none}.card:hover img{transform:none}}
-  .tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
-  .tab{border:1px solid var(--linea);background:var(--crema);border-radius:3px;padding:10px 20px;
-       font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--azul)}
 
+  /* Terrenos Premium — el bloque que el original dedica a su otra linea */
+  .premium{position:relative;background:var(--azul-3);color:#fff;overflow:hidden;padding:0}
+  .premium>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.34}
+  .premium:after{content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(0,30,45,.94),rgba(0,30,45,.5))}
+  .premium .wrap{position:relative;z-index:2;padding:80px 24px}
+  .premium .tag{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--oro-2);
+                font-weight:700;margin-bottom:10px}
+  .premium h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(34px,6vw,60px);font-weight:400;
+              line-height:1.04;text-transform:uppercase;margin-bottom:16px}
+  .premium h2 b{display:block;font-weight:800;color:var(--oro-2)}
+  .premium p{font-size:clamp(16px,2.2vw,21px);max-width:48ch;margin-bottom:26px}
+  .desde{display:inline-block;border:1px solid var(--oro);padding:14px 22px;border-radius:3px;
+         margin-bottom:26px}
+  .desde i{display:block;font-style:normal;font-size:10.5px;letter-spacing:.22em;
+           text-transform:uppercase;color:var(--oro-2)}
+  .desde b{display:block;font-size:34px;font-weight:800;letter-spacing:-.02em;margin:2px 0;
+           font-variant-numeric:tabular-nums}
+  .desde s{display:block;text-decoration:none;font-size:10.5px;opacity:.7}
+
+  /* desarrollos de una plaza (logos sobre azul) */
+  .logos{background:var(--azul-3);color:#fff}
+  .logos h2.sec{color:#fff}
+  .logos .kick{color:var(--oro-2)}
+  .lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .lg{border:1px solid rgba(255,255,255,.13);border-radius:4px;padding:26px 20px;
+      background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center}
+  .lg img{height:64px;width:auto;object-fit:contain}
+  .plano{margin-top:34px;border:1px solid rgba(255,255,255,.13);border-radius:4px;padding:18px;
+         background:rgba(255,255,255,.03)}
+  .plano img{width:100%;border-radius:3px}
+  .plano figcaption{font-size:12.5px;color:rgba(255,255,255,.66);margin-top:12px;text-align:center}
+
+  /* soñaste / entorno */
   .entorno{background:var(--crema)}
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:center}
   @media(max-width:880px){.cols{grid-template-columns:1fr;gap:28px}}
   .entorno p{color:var(--gris);font-size:16px;margin-bottom:14px}
   .entorno img{border-radius:4px;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--azul-2)}
+  .sonaste h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(28px,4.6vw,46px);font-weight:400;
+              color:var(--azul);line-height:1.1}
+  .sonaste h3{font-family:"Sorts Mill Goudy",serif;font-size:clamp(28px,4.6vw,46px);font-weight:400;
+              color:var(--oro);line-height:1.1;margin-bottom:20px}
 
-  .facil{background:var(--azul);color:#fff}
-  .facil h2.sec{color:#fff}
-  .facil .sub{color:rgba(255,255,255,.82)}
+  /* facilidades */
+  .facil{position:relative;background:#fff;overflow:hidden}
+  .facil>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5}
+  .facil .wrap{position:relative;z-index:2}
+  .precio-mes{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+              border-left:3px solid var(--oro);padding-left:20px;margin-bottom:28px}
+  .precio-mes i{font-style:normal;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+                color:var(--gris)}
+  .precio-mes b{font-size:clamp(32px,5.4vw,46px);font-weight:800;letter-spacing:-.02em;
+                color:var(--azul);font-variant-numeric:tabular-nums}
   .fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:30px}
   @media(max-width:880px){.fgrid{grid-template-columns:repeat(2,1fr)}}
-  .fitem{border:1px solid rgba(180,162,105,.4);border-radius:3px;padding:22px;
-         background:rgba(255,255,255,.05);text-align:center}
-  .fitem b{display:block;font-size:13px;font-weight:700;letter-spacing:.11em;
-           text-transform:uppercase;color:var(--oro-2)}
-  .fitem span{display:block;font-size:12.5px;opacity:.8;margin-top:6px;letter-spacing:0;
-              text-transform:none;font-weight:400;line-height:1.45}
-  .precio-mes{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
-              border-left:3px solid var(--oro);padding-left:20px;margin-bottom:26px}
-  .precio-mes i{font-style:normal;font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
-  .precio-mes b{font-size:clamp(30px,5vw,40px);font-weight:800;letter-spacing:-.02em;
-                font-variant-numeric:tabular-nums}
+  .fitem{border:1px solid var(--linea);border-radius:3px;padding:22px;background:#fff;text-align:center}
+  .fitem b{display:block;font-size:12.5px;font-weight:700;letter-spacing:.11em;
+           text-transform:uppercase;color:var(--azul)}
+  .fitem span{display:block;font-size:12.5px;color:var(--gris);margin-top:6px;line-height:1.45}
 
-  .pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:p}
-  @media(max-width:880px){.pasos{grid-template-columns:1fr}}
-  .paso{border-top:2px solid var(--oro);padding-top:16px;counter-increment:p}
-  .paso b{display:block;font-size:14.5px;color:var(--azul);margin-bottom:6px}
-  .paso b:before{content:counter(p) ". ";color:var(--oro);font-weight:800}
-  .paso span{font-size:14.5px;color:var(--gris);display:block}
+  /* contacto */
+  .contacto{background:var(--crema)}
+  .contacto h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(28px,4.4vw,44px);
+               font-weight:400;color:var(--azul);line-height:1.15;margin-bottom:14px;text-wrap:balance}
+  .contacto p{color:var(--gris);max-width:52ch;font-size:16.5px}
+  .tel-big{margin-top:24px;font-size:15.5px;color:var(--gris)}
+  .tel-big a{color:var(--azul);font-weight:800}
 
-  /* preguntas */
-  .faq{border-top:1px solid var(--linea)}
-  .faq summary{cursor:pointer;padding:20px 0;font-weight:600;font-size:15.5px;color:var(--azul);
-               list-style:none;display:flex;justify-content:space-between;gap:18px;align-items:center}
-  .faq summary::-webkit-details-marker{display:none}
-  .faq summary:after{content:"+";color:var(--oro);font-size:22px;font-weight:400;line-height:1}
-  .faq[open] summary:after{content:"–"}
-  .faq p{padding-bottom:20px;color:var(--gris);font-size:15px;max-width:70ch}
-
-  /* formulario */
   .form{background:#fff;border:1px solid var(--linea);border-radius:4px;padding:28px}
-  .form h3{font-family:"Sorts Mill Goudy",serif;font-size:24px;font-weight:400;color:var(--azul);
-           margin-bottom:6px}
-  .form .hint{font-size:13.5px;color:var(--gris);margin-bottom:22px}
+  .form h3{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--oro);
+           font-weight:700;margin-bottom:18px}
   .campo{margin-bottom:16px}
   .campo label{display:block;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
                font-weight:700;color:var(--azul);margin-bottom:7px}
@@ -300,17 +448,27 @@ const CSS = `
   .campo input:focus,.campo select:focus{border-color:var(--oro);outline:none}
   .form .btn{width:100%;border:none}
   .form .aviso{font-size:11.5px;color:var(--gris);margin-top:14px;line-height:1.55}
+  .form .aviso a{color:var(--azul);text-decoration:underline}
   .trampa{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  .ok{display:none;text-align:center;padding:26px 6px}
+  .ok b{display:block;font-family:"Sorts Mill Goudy",serif;font-size:26px;font-weight:400;
+        color:var(--azul);margin-bottom:8px}
+  .ok span{color:var(--gris);font-size:15px}
+  form.enviado .campo,form.enviado .btn,form.enviado .aviso,form.enviado h3{display:none}
+  form.enviado .ok{display:block}
 
-  .contacto{background:var(--crema)}
-  .contacto h2{font-family:"Sorts Mill Goudy",serif;font-size:clamp(28px,4.4vw,44px);
-               font-weight:400;color:var(--azul);line-height:1.15;margin-bottom:14px;text-wrap:balance}
-  .contacto p{color:var(--gris);max-width:52ch;font-size:16.5px}
-  .tel-big{margin-top:26px;font-size:15.5px;color:var(--gris)}
-  .tel-big a{color:var(--azul);font-weight:800}
+  /* legales */
+  .legalpg{background:#fff}
+  .legalpg h1{font-family:"Sorts Mill Goudy",serif;font-size:clamp(30px,5vw,46px);font-weight:400;
+              color:var(--azul);margin-bottom:10px}
+  .legalpg .fecha{color:var(--gris);font-size:13px;margin-bottom:34px}
+  .legalpg h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--oro);
+              font-weight:700;margin:32px 0 12px}
+  .legalpg p,.legalpg li{color:var(--gris);font-size:15.5px;max-width:78ch;margin-bottom:12px}
+  .legalpg ul{padding-left:20px}
 
   footer{background:var(--azul-3);color:rgba(255,255,255,.72);padding:44px 0;font-size:13.5px}
-  .fbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:26px;
+  .fbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:26px;
         padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.13)}
   .fbar h4{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--oro-2);
            margin-bottom:10px;font-weight:700}
@@ -323,14 +481,11 @@ const CSS = `
 interface Pagina {
   titulo: string;
   desc: string;
-  activo?: string;
   cuerpo: string;
 }
 
-function shell({ titulo, desc, activo, cuerpo }: Pagina): string {
-  const nav = NAV.map(
-    (n) => `<a href="${n.href}"${n.k === activo ? ' class="on" aria-current="page"' : ""}>${n.t}</a>`,
-  ).join("");
+function shell({ titulo, desc, cuerpo }: Pagina): string {
+  const nav = NAV.map((n) => `<a href="/#${n.href}">${n.t}</a>`).join("");
   return `<!doctype html>
 <html lang="es">
 <head>
@@ -341,7 +496,7 @@ function shell({ titulo, desc, activo, cuerpo }: Pagina): string {
 <meta name="theme-color" content="#00263a">
 <meta property="og:title" content="${titulo}">
 <meta property="og:description" content="${desc}">
-<meta property="og:image" content="${IMG}/desarrollos/SLP.webp">
+<meta property="og:image" content="${IMG}/mapa/desarrollo.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Sorts+Mill+Goudy:ital@0;1&display=swap" rel="stylesheet">
@@ -353,7 +508,7 @@ function shell({ titulo, desc, activo, cuerpo }: Pagina): string {
 <header>
   <input type="checkbox" id="mnu" hidden>
   <div class="wrap">
-    <a href="/" class="logo">Ciudad Maderas<span>Asesor autorizado</span></a>
+    <a href="/" class="logo">Ciudad Maderas<span>Terrenos Premium · Asesor autorizado</span></a>
     <nav>${nav}</nav>
     <a class="btn-nav" href="${wa("Hola, quiero contactar a un asesor")}">Contacta a un asesor</a>
     <label class="burger" for="mnu" aria-label="Abrir menú"><span></span><span></span><span></span></label>
@@ -366,22 +521,28 @@ ${cuerpo}
   <div class="wrap">
     <div class="fbar">
       <div>
-        <strong>Ciudad Maderas</strong> · Asesor autorizado<br>
-        ${horario}<br>
+        <strong>Ciudad Maderas</strong> · Terrenos Premium<br>
+        Asesor autorizado<br>${horario}<br>
         <a href="tel:+${telefonoLink}">${telefono}</a> ·
         <a href="https://wa.me/${telefonoLink}">WhatsApp</a>
       </div>
       <div>
         <h4>Explora</h4>
-        ${NAV.map((n) => `<a href="${n.href}">${n.t}</a>`).join("")}
+        ${NAV.map((n) => `<a href="/#${n.href}">${n.t}</a>`).join("")}
       </div>
       <div>
-        <h4>Regiones</h4>
+        <h4>Desarrollos</h4>
         ${regiones.slice(0, 4).map((r) => `<a href="/proyectos/${r.slug}">${r.ciudad}</a>`).join("")}
       </div>
       <div>
         <h4>&nbsp;</h4>
         ${regiones.slice(4).map((r) => `<a href="/proyectos/${r.slug}">${r.ciudad}</a>`).join("")}
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="/aviso-de-privacidad">Aviso de privacidad</a>
+        <a href="/terminos-y-condiciones">Términos y condiciones</a>
+        ${redes.map((s) => `<a href="${s.url}" rel="noopener">${s.nombre}</a>`).join("")}
       </div>
     </div>
     <p class="legal">
@@ -392,59 +553,87 @@ ${cuerpo}
       disponibilidad al momento de la cotización. Las condiciones de crédito están sujetas a
       aprobación y a los términos vigentes de la desarrolladora; aplican restricciones. La
       plusvalía de un inmueble depende del comportamiento del mercado y de la zona; no se
-      garantiza rendimiento alguno. Imágenes propiedad de Ciudad Maderas, usadas con fines
-      informativos.
+      garantiza rendimiento alguno. Marcas e imágenes propiedad de Ciudad Maderas, usadas con
+      fines informativos.
     </p>
   </div>
 </footer>
 
+<script>
+// El formulario del sitio oficial no recarga: manda los datos y enseña el
+// acuse en el mismo lugar. Aquí igual — y si el navegador no corre esto, el
+// POST normal sigue funcionando y cae en /gracias.
+document.addEventListener("submit", function (e) {
+  var f = e.target;
+  if (!f.classList.contains("form")) return;
+  e.preventDefault();
+  fetch("/contacto", { method: "POST", body: new FormData(f) })
+    .then(function () { f.classList.add("enviado"); f.scrollIntoView({ block: "center" }); })
+    .catch(function () { f.submit(); });
+});
+</script>
 <script src="/widget.js" defer></script>
 </body>
 </html>`;
 }
 
-// ── Piezas que se repiten ───────────────────────────────────────────────────
+// ── Piezas compartidas ──────────────────────────────────────────────────────
 
-const bloqueStats = `
-<div class="somos">
-  <div class="wrap">
-    <div class="lbl serif">Somos:</div>
-    <div class="stats">
-      <div class="st"><b>+40</b><span>Años de experiencia en el sector</span></div>
-      <div class="st"><b>+124,000</b><span>Lotes habitacionales y comerciales</span></div>
-      <div class="st"><b>28</b><span>Desarrollos en toda la república</span></div>
-      <div class="st"><b>+30</b><span>Amenidades de lujo en cada desarrollo</span></div>
-    </div>
-  </div>
-</div>`;
+// Mismos campos que el formulario del sitio oficial (INTERÉS, DESARROLLO DE
+// INTERÉS, nombre, correo, teléfono). En INTERÉS el original ofrece Terrenos
+// Premium, Casas Premium, Bosque Memorial y Postventa; aquí solo hay terrenos,
+// así que ese selector pregunta PARA QUÉ lo quiere — que además es justo el
+// dato que decide si el prospecto es caliente.
+const OPC_INTERES = ["Invertir", "Construir mi casa", "Asegurar patrimonio", "Terreno comercial"];
 
-const bloqueFacilidades = `
-<section class="facil">
-  <div class="wrap">
-    <div class="kick">Facilidades de pago</div>
-    <h2 class="sec">El mejor crédito directo de todo México</h2>
-    <p class="sub">No pasa por un banco. Por eso las condiciones son distintas a todo lo que
-       ya te dijeron que no.</p>
-    <div class="precio-mes">
-      <i>Terrenos desde</i><b>$1,244</b><i>al mes · aplican restricciones</i>
-    </div>
-    <div class="fgrid">
-      <div class="fitem"><b>Crédito directo</b><span>Con la desarrolladora, sin intermediarios</span></div>
-      <div class="fitem"><b>Sin aval</b><span>No necesitas que alguien más firme por ti</span></div>
-      <div class="fitem"><b>Sin buró</b><span>No se revisa tu historial crediticio</span></div>
-      <div class="fitem"><b>Desde 1%</b><span>De enganche para apartar tu terreno</span></div>
-    </div>
-    <a class="btn btn-oro" href="/contacto">Quiero mi cotización</a>
+const formulario = `
+<form class="form" method="POST" action="/contacto">
+  <h3>Contáctanos</h3>
+  <div class="ok"><b>¡Gracias!</b><span>Ya me llegaron tus datos. Te busco dentro del horario de atención.</span></div>
+  <div class="campo trampa" aria-hidden="true">
+    <label for="apellido2">No llenar</label>
+    <input type="text" id="apellido2" name="apellido2" tabindex="-1" autocomplete="off">
   </div>
-</section>`;
+  <div class="campo">
+    <label for="f-tipo">Interés</label>
+    <select id="f-tipo" name="tipo">
+      <option value="">Selecciona tu interés</option>
+      ${OPC_INTERES.map((o) => `<option value="${o}">${o}</option>`).join("")}
+    </select>
+  </div>
+  <div class="campo">
+    <label for="f-des">Desarrollo de interés</label>
+    <select id="f-des" name="desarrollo">
+      <option value="">Selecciona el desarrollo</option>
+      ${regiones.map((r) => `<option value="${r.ciudad}">${r.ciudad}</option>`).join("")}
+      <option value="Aún no lo sé">Aún no lo sé</option>
+    </select>
+  </div>
+  <div class="campo">
+    <label for="f-nombre">Nombre</label>
+    <input type="text" id="f-nombre" name="nombre" required autocomplete="name" placeholder="Tu nombre">
+  </div>
+  <div class="campo">
+    <label for="f-mail">Correo</label>
+    <input type="email" id="f-mail" name="email" autocomplete="email" placeholder="correo@ejemplo.com">
+  </div>
+  <div class="campo">
+    <label for="f-tel">Teléfono</label>
+    <input type="tel" id="f-tel" name="telefono" required autocomplete="tel" placeholder="55 0000 0000">
+  </div>
+  <button class="btn btn-oro" type="submit">Enviar</button>
+  <p class="aviso">Al enviar aceptas que te contacte por teléfono, WhatsApp o correo.
+     Consulta el <a href="/aviso-de-privacidad">aviso de privacidad</a>.</p>
+</form>`;
 
 function bloqueContacto(texto: string): string {
   return `
-<section class="contacto">
+<section class="contacto" id="contacto">
   <div class="wrap">
     <div class="cols">
       <div>
-        <h2>Agenda una asesoría<br>personalizada gratis</h2>
+        <div class="kick">Contáctanos</div>
+        <h2>Agenda una asesoría<br>personalizada gratis hoy.</h2>
         <p>${texto}</p>
         <div class="cta" style="margin-top:26px">
           <a class="btn btn-wa" href="${wa("Hola, quiero agendar una asesoría")}">Escríbeme por WhatsApp</a>
@@ -459,55 +648,46 @@ function bloqueContacto(texto: string): string {
 </section>`;
 }
 
-// Formulario de contacto. Mismos campos que el del sitio oficial, menos el
-// selector de casa/terreno: aquí todo es terreno. `trampa` es un campo cebo
-// invisible — los bots de spam lo llenan, las personas no; el Worker descarta
-// el envío si viene con algo (ver src/index.ts).
-const formulario = `
-<form class="form" method="POST" action="/contacto">
-  <h3>Déjame tus datos</h3>
-  <p class="hint">Te contesto yo, no un conmutador. Dentro del horario, normalmente el mismo día.</p>
-  <div class="campo trampa" aria-hidden="true">
-    <label for="apellido2">No llenar</label>
-    <input type="text" id="apellido2" name="apellido2" tabindex="-1" autocomplete="off">
+function bloqueFacilidades(precio: string): string {
+  return `
+<section class="facil" id="facilidades">
+  <img src="${IMG}/desarrollos/generales/facilidad_fondo.webp" alt="" loading="lazy">
+  <div class="wrap">
+    <div class="kick">Facilidades de pago</div>
+    <h2 class="sec">Tenemos el mejor crédito directo de todo México</h2>
+    <div class="precio-mes">
+      <i>Terrenos desde</i><b>${precio}</b><i>al mes · *aplican restricciones</i>
+    </div>
+    <div class="fgrid">
+      <div class="fitem"><b>Crédito directo</b><span>Con la desarrolladora, sin intermediarios</span></div>
+      <div class="fitem"><b>Sin aval</b><span>No necesitas que alguien más firme por ti</span></div>
+      <div class="fitem"><b>Sin revisión de buró</b><span>No se consulta tu historial crediticio</span></div>
+      <div class="fitem"><b>Desde 1% de enganche</b><span>Para apartar tu terreno a tu nombre</span></div>
+    </div>
+    <a class="btn btn-oro" href="#contacto">Quiero mi cotización</a>
   </div>
-  <div class="campo">
-    <label for="f-nombre">Nombre</label>
-    <input type="text" id="f-nombre" name="nombre" required autocomplete="name" placeholder="Tu nombre">
-  </div>
-  <div class="campo">
-    <label for="f-tel">Teléfono / WhatsApp</label>
-    <input type="tel" id="f-tel" name="telefono" required autocomplete="tel" placeholder="10 dígitos">
-  </div>
-  <div class="campo">
-    <label for="f-mail">Correo <span style="opacity:.55;letter-spacing:0;text-transform:none;font-weight:400">(opcional)</span></label>
-    <input type="email" id="f-mail" name="email" autocomplete="email" placeholder="tucorreo@ejemplo.com">
-  </div>
-  <div class="campo">
-    <label for="f-region">Desarrollo de interés</label>
-    <select id="f-region" name="region">
-      <option value="">Selecciona la ciudad</option>
-      ${regiones.map((r) => `<option value="${r.ciudad}">${r.ciudad}</option>`).join("")}
-      <option value="Otra">Otra / no sé todavía</option>
-    </select>
-  </div>
-  <div class="campo">
-    <label for="f-uso">¿Para qué lo buscas?</label>
-    <select id="f-uso" name="uso">
-      <option value="">Selecciona una opción</option>
-      <option value="Inversión">Invertir</option>
-      <option value="Construir">Construir mi casa</option>
-      <option value="Patrimonio">Asegurar patrimonio</option>
-      <option value="Comercial">Terreno comercial</option>
-      <option value="No sé">Todavía no lo decido</option>
-    </select>
-  </div>
-  <button class="btn btn-oro" type="submit">Quiero que me contacten</button>
-  <p class="aviso">Al enviar aceptas que te contacte por teléfono, WhatsApp o correo para
-     darte información. No comparto tus datos con terceros ni te mando publicidad masiva.</p>
-</form>`;
+</section>`;
+}
 
-// ── Páginas ─────────────────────────────────────────────────────────────────
+const bloqueEntorno = `
+<section class="entorno">
+  <div class="wrap">
+    <div class="cols sonaste">
+      <div>
+        <div class="kick">Innovación para tu bienestar</div>
+        <h2>Tú lo soñaste</h2>
+        <h3>Nosotros lo construimos</h3>
+        <p><strong>El entorno a tu favor.</strong> Única desarrolladora inmobiliaria en
+           Latinoamérica en aplicar biofísica aplicada y conocimiento clásico oriental Kan Yu.</p>
+        <p>Cada espacio está pensado para aprovechar las ondas de energía que se generan en el
+           entorno y así mejorar tu calidad de vida.</p>
+      </div>
+      <img src="${IMG}/biofisica/biofisica.webp" alt="Planeación urbana con biofísica aplicada" loading="lazy">
+    </div>
+  </div>
+</section>`;
+
+// ── Portada ─────────────────────────────────────────────────────────────────
 
 const inicio = shell({
   titulo: "Terrenos Premium | Ciudad Maderas — Asesor autorizado",
@@ -515,133 +695,168 @@ const inicio = shell({
     "Terrenos en comunidades planificadas con crédito directo desde 1% de enganche, " +
     "sin aval y sin revisión de buró. Asesoría personalizada gratis.",
   cuerpo: `
-<div class="hero tall">
-  <img src="${IMG}/desarrollos/SLP.webp" alt="" decoding="async">
+<div class="hero" id="inicio">
+  <img src="${IMG}/mapa/desarrollo.webp" alt="" decoding="async">
   <div class="wrap">
     <h1>Terrenos<b>Premium</b></h1>
     <p>Crédito directo con la desarrolladora, sin aval y sin revisión de buró.
        Comunidades planificadas con más de 30 amenidades de lujo.</p>
     <div class="cta">
       <a class="btn btn-wa" href="${wa("Hola, me interesa un terreno")}">Escríbeme por WhatsApp</a>
-      <a class="btn btn-line" href="/facilidades-de-pago">Ver facilidades de pago</a>
+      <a class="btn btn-line" href="#desarrollos">Ver desarrollos</a>
     </div>
   </div>
 </div>
 
-${bloqueStats}
-
-<div class="creadores">
+<div class="somos">
   <div class="wrap">
-    <h2>Somos <em>creadores</em><br>de ciudades</h2>
-    <p>Nuestra presencia es internacional: 20 ciudades de México y 4 en Estados Unidos,
-       con más de 30 desarrollos y 40 oficinas.</p>
+    <div class="lbl serif">Somos:</div>
+    <div class="stats">
+      <div class="st"><b>+40</b><span>Años de experiencia en el sector</span></div>
+      <div class="st"><b>+124,000</b><span>Lotes habitacionales y comerciales</span></div>
+      <div class="st"><b>28</b><span>Desarrollos en toda la república</span></div>
+      <div class="st"><b>+30</b><span>Amenidades de lujo en cada desarrollo</span></div>
+    </div>
   </div>
 </div>
 
-<section>
+<div class="creadores">
+  <img src="${IMG}/website-ciudad-maderas/somos/colinas-1.webp" alt="" loading="lazy">
+  <div class="wrap">
+    <h2>Somos <em>creadores</em><br>de ciudades</h2>
+  </div>
+</div>
+
+<section class="presencia">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <div class="kick">Nuestra presencia es</div>
+        <h2 class="sec">Internacional</h2>
+        <p class="sub" style="margin-bottom:0">20 ciudades de México y 4 en Estados Unidos, con
+           más de 30 desarrollos y 40 oficinas. Estas son las plazas donde te puedo atender.</p>
+      </div>
+      <img src="${IMG}/mapa/desarrollo.webp" alt="Desarrollo urbanizado de Ciudad Maderas" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="amen" id="amenidades" style="padding-top:74px">
+  <div class="wrap">
+    <div class="kick">Nuestras principales</div>
+    <h2 class="sec">Amenidades</h2>
+    <div class="tabs">${clubs.map((c) => `<span class="tab">${c}</span>`).join("")}</div>
+    <div class="grid">
+      ${amenidades
+        .map((a) => `<figure class="card"><img src="${a.img}" alt="${a.n}" loading="lazy"><figcaption>${a.n}</figcaption></figure>`)
+        .join("")}
+    </div>
+    <p class="nota">El catálogo exacto varía por desarrollo y por etapa, y no todas están
+       construidas desde el primer día. Pregúntame por el que te interese y te digo cuáles ya
+       existen y cuáles están proyectadas.</p>
+  </div>
+</section>
+
+<section class="premium">
+  <img src="${IMG}/desarrollos/Qro/qro_estilodevida.webp" alt="" loading="lazy">
+  <div class="wrap">
+    <div class="desde"><i>Mensualidades desde</i><b>$1,244</b><s>*Aplican restricciones</s></div>
+    <div class="tag">Crédito directo · Sin aval · Sin revisión de buró</div>
+    <h2>Terrenos<b>Premium</b></h2>
+    <p>El crédito directo más accesible de todo México, sin banco de por medio.</p>
+    <a class="btn btn-oro" href="#desarrollos">Conócelos</a>
+  </div>
+</section>
+
+<section id="desarrollos">
   <div class="wrap">
     <div class="kick">Elige el mejor estilo de vida</div>
     <h2 class="sec">Nuestros desarrollos</h2>
-    <p class="sub">Terrenos habitacionales y comerciales dentro de comunidades cerradas.
-       Toca tu ciudad para ver de qué se trata.</p>
+    <p class="sub">Toca tu ciudad para ver los desarrollos de esa plaza, su plano y desde cuánto
+       sale la mensualidad.</p>
     <div class="grid">
       ${regiones
-        .slice(0, 4)
         .map(
           (r) => `<a class="card" href="/proyectos/${r.slug}">
-            <img src="${r.img}" alt="Terrenos en ${r.ciudad}" loading="lazy">
+            <img src="${r.card}" alt="Terrenos en ${r.ciudad}" loading="lazy">
             <figcaption><i>${r.region}</i>${r.ciudad}</figcaption>
           </a>`,
         )
         .join("")}
     </div>
-    <div class="cta" style="margin-top:24px">
-      <a class="btn btn-oro" href="/desarrollos">Ver las 8 ciudades</a>
-    </div>
   </div>
 </section>
 
-<section style="background:var(--crema)">
+${bloqueEntorno}
+
+<section style="background:#fff">
   <div class="wrap">
-    <div class="kick">Nuestras principales</div>
-    <h2 class="sec">Amenidades</h2>
-    <p class="sub">Un terreno dentro de una comunidad planificada, no un lote suelto en medio
-       de la nada. Eso es lo que cambia cómo se vive —y cómo se revalora— con el tiempo.</p>
+    <div class="kick">Impacto social</div>
+    <h2 class="sec">Fundación Ciudad Maderas</h2>
+    <p class="sub">Promueve desarrollo social a través de educación, salud, arte, deporte y
+       protección animal, creando impacto humano, inclusión y esperanza.</p>
     <div class="grid">
-      ${amenidades
-        .slice(0, 4)
-        .map((a) => `<figure class="card"><img src="${a.img}" alt="${a.n}" loading="lazy"><figcaption>${a.n}</figcaption></figure>`)
+      ${fundacion
+        .map((f) => `<figure class="card"><img src="${f.img}" alt="${f.n}" loading="lazy"><figcaption>${f.n}</figcaption></figure>`)
         .join("")}
     </div>
-    <div class="cta" style="margin-top:24px">
-      <a class="btn btn-oro" href="/amenidades">Ver todas las amenidades</a>
-    </div>
   </div>
 </section>
 
-${bloqueFacilidades}
+${bloqueFacilidades("$1,244")}
 ${bloqueContacto(
   "Cuéntame qué buscas —invertir, construir o asegurar patrimonio— y te muestro las opciones que te hacen sentido en la ciudad que te interese.",
 )}`,
 });
 
-const desarrollos = shell({
-  titulo: "Desarrollos | Ciudad Maderas — Asesor autorizado",
-  activo: "desarrollos",
-  desc:
-    "Terrenos Ciudad Maderas en Querétaro, León, Mérida, Cancún, Monterrey, " +
-    "Aguascalientes, San Luis Potosí y Puebla.",
-  cuerpo: `
-<div class="hero short">
-  <img src="${IMG}/desarrollos/Mty.webp" alt="" decoding="async">
-  <div class="wrap">
-    <div class="miga">Inicio · Desarrollos</div>
-    <h1>Nuestros<b>desarrollos</b></h1>
-    <p>28 desarrollos en 20 ciudades de México. Estas son las plazas donde te puedo atender.</p>
-  </div>
-</div>
-
-<section>
-  <div class="wrap">
-    <div class="kick">Elige el mejor estilo de vida</div>
-    <h2 class="sec">Ocho ciudades, un mismo crédito</h2>
-    <p class="sub">Si tu ciudad no aparece aquí, pregúntame de todos modos: hay presencia en
-       20 ciudades del país y es probable que haya algo cerca de ti.</p>
-    <div class="grid">
-      ${regiones
-        .map(
-          (r) => `<a class="card" href="/proyectos/${r.slug}">
-            <img src="${r.img}" alt="Terrenos en ${r.ciudad}" loading="lazy">
-            <figcaption><i>${r.region}</i>${r.ciudad}</figcaption>
-          </a>`,
-        )
-        .join("")}
-    </div>
-  </div>
-</section>
-
-${bloqueFacilidades}
-${bloqueContacto(
-  "Dime qué ciudad te interesa y te digo qué etapas están abiertas hoy, con qué superficies y desde cuánto sale la mensualidad.",
-)}`,
-});
+// ── Página de región ────────────────────────────────────────────────────────
 
 function paginaRegion(r: Region): string {
   const otras = regiones.filter((o) => o.slug !== r.slug).slice(0, 4);
+  const logos = r.desarrollos.length
+    ? `
+<section class="logos">
+  <div class="wrap">
+    <div class="kick">Desarrollos en ${r.ciudad}</div>
+    <h2 class="sec">Dónde puedes elegir tu terreno</h2>
+    <div class="lgrid">
+      ${r.desarrollos
+        .map((d) => `<div class="lg"><img src="${d.logo}" alt="${d.n}" loading="lazy"></div>`)
+        .join("")}
+    </div>
+    <figure class="plano">
+      <img src="${r.mapa}" alt="Plano maestro de ${r.ciudad}" loading="lazy">
+      <figcaption>Plano maestro. Las etapas abiertas y las superficies disponibles cambian
+         seguido — pregúntame por las de hoy.</figcaption>
+    </figure>
+  </div>
+</section>`
+    : `
+<section class="logos">
+  <div class="wrap">
+    <div class="kick">${r.ciudad}</div>
+    <h2 class="sec">El plano de la plaza</h2>
+    <figure class="plano" style="margin-top:8px">
+      <img src="${r.mapa}" alt="Plano maestro de ${r.ciudad}" loading="lazy">
+      <figcaption>Plano maestro. Las etapas abiertas y las superficies disponibles cambian
+         seguido — pregúntame por las de hoy.</figcaption>
+    </figure>
+  </div>
+</section>`;
+
   return shell({
-    titulo: `Terrenos en ${r.ciudad} | Ciudad Maderas — Asesor autorizado`,
-    activo: "desarrollos",
-    desc: `Terrenos Ciudad Maderas en ${r.ciudad}. Crédito directo desde 1% de enganche, sin aval y sin revisión de buró.`,
+    titulo: `Eleva tu estilo de vida en ${r.region} | Ciudad Maderas — Asesor autorizado`,
+    desc: `Terrenos Ciudad Maderas en ${r.ciudad}. Crédito directo desde 1% de enganche, sin aval y sin revisión de buró. Desde ${r.precio} al mes.`,
     cuerpo: `
 <div class="hero">
-  <img src="${r.img}" alt="" decoding="async">
+  <img src="${r.hero}" alt="" decoding="async">
   <div class="wrap">
-    <div class="miga"><a href="/desarrollos">Desarrollos</a> · ${r.region}</div>
-    <h1>Eleva tu estilo<br>de vida en<b>${r.region}</b></h1>
-    <p>${r.nota}</p>
+    <div class="miga"><a href="/#desarrollos">Desarrollos</a> · ${r.region}</div>
+    <h1>${r.region}</h1>
+    <p>Eleva tu estilo de vida en ${r.ciudad}.</p>
     <div class="cta">
       <a class="btn btn-wa" href="${wa(`Hola, me interesan los terrenos en ${r.ciudad}`)}">Preguntar por ${r.ciudad}</a>
-      <a class="btn btn-line" href="/contacto">Pedir cotización</a>
+      <a class="btn btn-line" href="#contacto">Pedir cotización</a>
     </div>
   </div>
 </div>
@@ -651,28 +866,20 @@ function paginaRegion(r: Region): string {
     <div class="cols">
       <div>
         <div class="kick">${r.ciudad}</div>
-        <h2 class="sec">Qué te puedo conseguir aquí</h2>
-        <p class="sub" style="margin-bottom:22px">Terrenos habitacionales y comerciales dentro de
-           comunidades cerradas, con urbanización completa, accesos controlados y amenidades.
-           Todos con el mismo crédito directo: desde 1% de enganche, sin aval y sin buró.</p>
-        <p class="sub">
-          <strong>Las etapas y las superficies disponibles cambian seguido</strong>, y por eso no
-          las publico aquí: un precio viejo en internet no le sirve a nadie. Escríbeme y te paso
-          lo que hay hoy en ${r.ciudad}, con la mensualidad exacta según el lote.
-        </p>
-        <div class="cta">
-          <a class="btn btn-oro" href="/contacto">Ver disponibilidad de hoy</a>
-        </div>
+        <h2 class="sec">Eleva tu estilo de vida en ${r.ciudad}</h2>
+        <p class="sub" style="margin-bottom:0">${r.desc}</p>
       </div>
-      <img src="${r.img}" alt="Desarrollo en ${r.ciudad}" loading="lazy"
+      <img src="${r.estilo}" alt="${r.ciudad}" loading="lazy"
            style="border-radius:4px;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--azul-2)">
     </div>
   </div>
 </section>
 
-${bloqueFacilidades}
+${logos}
+${bloqueEntorno}
+${bloqueFacilidades(r.precio)}
 
-<section style="background:var(--crema)">
+<section style="background:#fff">
   <div class="wrap">
     <div class="kick">Otras plazas</div>
     <h2 class="sec">¿Buscabas en otra ciudad?</h2>
@@ -680,7 +887,7 @@ ${bloqueFacilidades}
       ${otras
         .map(
           (o) => `<a class="card" href="/proyectos/${o.slug}">
-            <img src="${o.img}" alt="Terrenos en ${o.ciudad}" loading="lazy">
+            <img src="${o.card}" alt="Terrenos en ${o.ciudad}" loading="lazy">
             <figcaption><i>${o.region}</i>${o.ciudad}</figcaption>
           </a>`,
         )
@@ -693,216 +900,126 @@ ${bloqueContacto(`Dime qué superficie andas buscando en ${r.ciudad} y para qué
   });
 }
 
-const amenidadesPag = shell({
-  titulo: "Amenidades | Ciudad Maderas — Asesor autorizado",
-  activo: "amenidades",
-  desc: "Más de 30 amenidades de lujo en las comunidades de Ciudad Maderas: casa club, albercas, canchas y áreas verdes.",
-  cuerpo: `
-<div class="hero short">
-  <img src="${IMG}/amenidades/Alberca.jpg" alt="" decoding="async">
-  <div class="wrap">
-    <div class="miga">Inicio · Amenidades</div>
-    <h1>Más de 30<b>amenidades</b></h1>
-    <p>Lo que hace que un terreno dentro de la comunidad no se compare con un lote suelto.</p>
-  </div>
-</div>
+// ── Legales ─────────────────────────────────────────────────────────────────
+// Redactados para el ASESOR. No son copia de los del corporativo: un aviso de
+// privacidad declara quién responde por los datos, y aquí quien los recibe es
+// él. Mismas rutas y mismo lugar en el pie que en el sitio oficial.
 
-<section>
+const aviso = shell({
+  titulo: "Aviso de privacidad | Ciudad Maderas — Asesor autorizado",
+  desc: "Cómo se usan los datos que dejas en este sitio.",
+  cuerpo: `
+<section class="legalpg">
   <div class="wrap">
-    <div class="kick">Nuestras principales</div>
-    <h2 class="sec">Cuatro clubes dentro de tu comunidad</h2>
-    <div class="tabs">
-      <span class="tab">Casa Club</span><span class="tab">Family Club</span>
-      <span class="tab">Club Deportivo</span><span class="tab">Club Acuático</span>
-    </div>
-    <div class="grid">
-      ${amenidades
-        .map((a) => `<figure class="card"><img src="${a.img}" alt="${a.n}" loading="lazy"><figcaption>${a.n}</figcaption></figure>`)
-        .join("")}
-    </div>
-    <p class="sub" style="margin-top:26px;margin-bottom:0">
-      <strong>El catálogo exacto varía por desarrollo y por etapa</strong>, y no todas están
-      construidas desde el primer día. Pregúntame por el desarrollo que te interesa y te digo
-      cuáles ya existen y cuáles están proyectadas — sin adornos.
-    </p>
+    <h1>Aviso de privacidad</h1>
+    <p class="fecha">Sitio operado por un asesor inmobiliario autorizado de Ciudad Maderas ·
+       Contacto: ${telefono}</p>
+
+    <h2>Quién trata tus datos</h2>
+    <p>El responsable del tratamiento de los datos que dejas en este sitio es el asesor
+       inmobiliario que lo opera, localizable en el teléfono ${telefono}. Este sitio no es el
+       sitio oficial de la desarrolladora y no la sustituye.</p>
+
+    <h2>Información que se recaba</h2>
+    <p>Únicamente la que tú escribes en el formulario o en el chat: nombre, teléfono, correo
+       electrónico, la ciudad que te interesa y para qué buscas el terreno. No se piden ni se
+       reciben por este medio datos bancarios, números de tarjeta ni documentos oficiales.</p>
+
+    <h2>Para qué se usan</h2>
+    <ul>
+      <li>Contactarte para darte información y cotizaciones de terrenos.</li>
+      <li>Agendar una asesoría o una visita al desarrollo que te interese.</li>
+      <li>Dar seguimiento a tu solicitud hasta que tú pidas que se detenga.</li>
+    </ul>
+    <p>No se usan para publicidad masiva ni se venden, rentan o comparten con terceros ajenos a
+       la operación. Cuando avanzas hacia un apartado, los datos necesarios se transfieren a
+       Ciudad Maderas para formalizar la operación.</p>
+
+    <h2>Cuánto tiempo se conservan</h2>
+    <p>El tiempo necesario para atender tu solicitud y cumplir las obligaciones legales que
+       deriven de ella. Si pides que se eliminen y no hay una obligación legal que lo impida,
+       se eliminan.</p>
+
+    <h2>Tus derechos</h2>
+    <p>Puedes pedir en cualquier momento acceder a tus datos, rectificarlos, cancelarlos u
+       oponerte a su uso, así como revocar tu consentimiento. Basta con escribir por WhatsApp
+       o llamar al ${telefono} y decirlo; se atiende sin costo.</p>
+
+    <h2>Cambios a este aviso</h2>
+    <p>Si cambia la forma en que se tratan los datos, este aviso se actualiza en esta misma
+       página.</p>
   </div>
 </section>
 
-${bloqueContacto("Dime qué desarrollo te interesa y te mando el plano de amenidades y el estado real de cada una.")}`,
+${bloqueContacto("¿Dudas sobre tus datos o sobre un terreno? Escríbeme y te contesto yo.")}`,
 });
 
-const facilidades = shell({
-  titulo: "Facilidades de pago | Ciudad Maderas — Asesor autorizado",
-  activo: "facilidades",
-  desc: "Crédito directo con la desarrolladora: desde 1% de enganche, sin aval y sin revisión de buró. Terrenos desde $1,244 al mes.",
+const terminos = shell({
+  titulo: "Términos y condiciones | Ciudad Maderas — Asesor autorizado",
+  desc: "Condiciones de uso del sitio del asesor autorizado.",
   cuerpo: `
-<div class="hero short">
-  <img src="${IMG}/desarrollos/Ags.webp" alt="" decoding="async">
+<section class="legalpg">
   <div class="wrap">
-    <div class="miga">Inicio · Facilidades de pago</div>
-    <h1>Crédito<b>directo</b></h1>
-    <p>Sin banco de por medio. Por eso pasa gente que en otro lado ya oyó que no.</p>
-  </div>
-</div>
+    <h1>Términos y condiciones</h1>
+    <p class="fecha">Sitio operado por un asesor inmobiliario autorizado de Ciudad Maderas ·
+       Contacto: ${telefono}</p>
 
-${bloqueFacilidades}
+    <h2>I. Información contenida en el sitio</h2>
+    <p>La información de este sitio es de carácter informativo y puede cambiar sin previo
+       aviso. Las imágenes, planos y representaciones son ilustrativos y no constituyen una
+       reproducción exacta del producto final.</p>
 
-<section>
-  <div class="wrap">
-    <div class="kick">Sin sorpresas</div>
-    <h2 class="sec">Cómo funciona, paso a paso</h2>
-    <p class="sub">Son cuatro momentos. Ninguno pide que pagues nada por el chat ni por esta página.</p>
-    <div class="pasos">
-      <div class="paso"><b>Platicamos</b><span>Me dices qué ciudad, qué superficie y para qué lo quieres. Sin compromiso.</span></div>
-      <div class="paso"><b>Te cotizo</b><span>Te paso los lotes disponibles hoy con el enganche y la mensualidad de cada uno.</span></div>
-      <div class="paso"><b>Apartas</b><span>Con el enganche se aparta el lote a tu nombre y se firma el contrato.</span></div>
-      <div class="paso"><b>Pagas y escrituras</b><span>Mensualidades directo con la desarrolladora hasta liquidar y escriturar.</span></div>
-    </div>
-  </div>
-</section>
+    <h2>II. Marcas comerciales</h2>
+    <p>Ciudad Maderas y los nombres de sus desarrollos son marcas de su titular. Se usan aquí
+       con fines informativos, en el marco de la autorización otorgada al asesor para
+       comercializar dichos desarrollos. Este sitio no es el sitio oficial de la desarrolladora.</p>
 
-<section style="background:var(--crema)">
-  <div class="wrap">
-    <div class="kick">Lo que más me preguntan</div>
-    <h2 class="sec">Preguntas frecuentes</h2>
-    <div style="max-width:80ch">
-      <details class="faq"><summary>¿De verdad no revisan buró de crédito?</summary>
-        <p>Correcto: el crédito es directo con la desarrolladora, no pasa por un banco, así que
-           no se consulta tu historial crediticio ni necesitas aval. Las condiciones sí están
-           sujetas a aprobación y a los términos vigentes.</p></details>
-      <details class="faq"><summary>¿Cuánto necesito para empezar?</summary>
-        <p>El enganche arranca desde el 1% del valor del terreno. El monto exacto depende del
-           lote, de su superficie y del plazo que elijas; te lo confirmo en la cotización.</p></details>
-      <details class="faq"><summary>¿La mensualidad de $1,244 es real?</summary>
-        <p>Es un monto <em>desde</em>: existe, pero corresponde a lotes y plazos específicos y
-           aplican restricciones. Dime qué buscas y te doy el número que te tocaría a ti, no el
-           del anuncio.</p></details>
-      <details class="faq"><summary>¿El terreno sube de valor?</summary>
-        <p>Son zonas de alto crecimiento urbano y con fuerte potencial de plusvalía, pero la
-           plusvalía depende del mercado y de la zona: nadie serio te puede garantizar un
-           rendimiento, y yo no lo voy a hacer.</p></details>
-      <details class="faq"><summary>¿Se puede escriturar antes de liquidar?</summary>
-        <p>La escrituración ocurre al liquidar el terreno. Los tiempos y requisitos los maneja
-           la desarrolladora; te acompaño en el trámite.</p></details>
-      <details class="faq"><summary>¿Puedo pagar de contado?</summary>
-        <p>Sí, y normalmente hay mejores condiciones que a plazos. También se acepta
-           transferencia bancaria. Nunca pagos por chat ni datos de tarjeta por mensaje.</p></details>
-    </div>
+    <h2>III. Precios y promociones</h2>
+    <p>Todos los montos publicados son cantidades <em>desde</em>: existen para lotes, plazos y
+       condiciones específicos, y aplican restricciones. El precio final depende del lote, su
+       superficie, su ubicación y la disponibilidad al momento de la cotización. Nada de lo
+       publicado aquí constituye una oferta vinculante.</p>
+
+    <h2>IV. Crédito directo</h2>
+    <p>El crédito directo lo otorga la desarrolladora, no el asesor. Sus condiciones —enganche,
+       plazo, mensualidad— están sujetas a aprobación y a los términos vigentes de la
+       desarrolladora al momento de la operación.</p>
+
+    <h2>V. Apartado y pagos</h2>
+    <p>Este sitio no procesa pagos ni apartados. Cualquier pago se realiza directamente con
+       Ciudad Maderas por los canales oficiales que la desarrolladora indique. Nunca se piden
+       datos bancarios ni de tarjeta por chat, WhatsApp o correo.</p>
+
+    <h2>VI. Plusvalía</h2>
+    <p>La plusvalía de un inmueble depende del comportamiento del mercado y de la zona. No se
+       garantiza rendimiento, revalorización ni retorno alguno, y ninguna comunicación de este
+       sitio debe entenderse como tal.</p>
+
+    <h2>VII. Chat y asistente automático</h2>
+    <p>El chat de esta página lo atiende un asistente automático que orienta y toma tus datos.
+       Sus respuestas son informativas y no sustituyen la confirmación de un asesor ni la
+       documentación oficial de la desarrolladora.</p>
+
+    <h2>VIII. Fallas en el sistema</h2>
+    <p>Se procura la disponibilidad del sitio, pero no se garantiza que esté libre de
+       interrupciones o errores. No se asume responsabilidad por daños derivados de su uso o de
+       la imposibilidad de usarlo.</p>
+
+    <h2>IX. Legislación y jurisdicción</h2>
+    <p>Estos términos se rigen por la legislación aplicable en los Estados Unidos Mexicanos.</p>
   </div>
 </section>
 
-${bloqueContacto("Dime tu presupuesto mensual y la ciudad, y te digo con qué terreno alcanzas hoy.")}`,
+${bloqueContacto("¿Alguna duda sobre estas condiciones? Pregúntame directo.")}`,
 });
 
-const nosotros = shell({
-  titulo: "Nosotros | Ciudad Maderas — Asesor autorizado",
-  activo: "nosotros",
-  desc: "Más de 40 años creando ciudades: planeación urbana con Kan Yu y biofísica aplicada, y la Fundación Ciudad Maderas.",
-  cuerpo: `
-<div class="hero short">
-  <img src="${IMG}/biofisica/biofisica.webp" alt="" decoding="async">
-  <div class="wrap">
-    <div class="miga">Inicio · Nosotros</div>
-    <h1>Creadores<b>de ciudades</b></h1>
-    <p>Más de 40 años, 28 desarrollos y +124,000 lotes entregados en toda la república.</p>
-  </div>
-</div>
-
-${bloqueStats}
-
-<section class="entorno">
-  <div class="wrap">
-    <div class="cols">
-      <div>
-        <div class="kick">El entorno a tu favor</div>
-        <h2 class="sec">Planes urbanos pensados<br>para vivirse</h2>
-        <p>En Ciudad Maderas se desarrollan planes urbanos combinando la ciencia clásica
-           oriental Kan Yu con técnicas de biofísica aplicada, de manera que calles, avenidas,
-           jardines, montañas y lagos se conecten en una gran red.</p>
-        <p>Así se genera un flujo constante, dinámico y productivo, enfocado en mejorar
-           la calidad de vida de todos los residentes.</p>
-      </div>
-      <img src="${IMG}/biofisica/biofisica.webp" alt="Planeación urbana" loading="lazy">
-    </div>
-
-    <div style="margin-top:60px">
-      <div class="kick">Impacto social</div>
-      <h2 class="sec" style="font-size:clamp(24px,3.4vw,32px)">Fundación Ciudad Maderas</h2>
-      <p class="sub">Promueve desarrollo social a través de educación, salud, arte, deporte y
-         protección animal, creando impacto humano, inclusión y esperanza.</p>
-      <div class="grid">
-        ${fundacion
-          .map((f) => `<figure class="card"><img src="${f.img}" alt="${f.n}" loading="lazy"><figcaption>${f.n}</figcaption></figure>`)
-          .join("")}
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="cols">
-      <div>
-        <div class="kick">Quién te atiende</div>
-        <h2 class="sec">Tu asesor</h2>
-        <p class="sub">Soy asesor inmobiliario <strong>autorizado</strong> para comercializar los
-           desarrollos de Ciudad Maderas. No soy la desarrolladora: soy con quien vas a tratar
-           desde la primera pregunta hasta la firma, y quien te contesta el teléfono después.</p>
-        <p class="sub" style="margin-bottom:0">Atiendo ${horario.toLowerCase()}.
-           Puedes escribirme por WhatsApp, llamarme, o preguntarle al asistente del chat de esta
-           página a cualquier hora —él me pasa el recado.</p>
-      </div>
-      ${formulario}
-    </div>
-  </div>
-</section>`,
-});
-
-const contacto = shell({
-  titulo: "Contacto | Ciudad Maderas — Asesor autorizado",
-  activo: "contacto",
-  desc: `Habla con un asesor autorizado de Ciudad Maderas. ${telefono} · ${horario}`,
-  cuerpo: `
-<div class="hero short">
-  <img src="${IMG}/desarrollos/Quintana%20Roo.webp" alt="" decoding="async">
-  <div class="wrap">
-    <div class="miga">Inicio · Contáctanos</div>
-    <h1>Hablemos de<b>tu terreno</b></h1>
-    <p>Asesoría personalizada, gratis y sin compromiso.</p>
-  </div>
-</div>
-
-<section>
-  <div class="wrap">
-    <div class="cols">
-      <div>
-        <div class="kick">Tres formas de llegarme</div>
-        <h2 class="sec">Como te acomode</h2>
-        <p class="sub">Contesto yo, no un conmutador ni un call center. Dentro del horario,
-           normalmente el mismo día.</p>
-        <div class="cta" style="margin-bottom:26px">
-          <a class="btn btn-wa" href="${wa("Hola, quiero información de terrenos")}">WhatsApp</a>
-          <a class="btn btn-oro" href="tel:+${telefonoLink}">Llamar</a>
-        </div>
-        <p class="sub" style="margin-bottom:0">
-          <strong>${telefono}</strong><br>${horario}<br><br>
-          ¿Fuera de horario? Déjale tu pregunta al asistente del chat de esta página: guarda tus
-          datos y me avisa. En cuanto abro, te busco.
-        </p>
-      </div>
-      ${formulario}
-    </div>
-  </div>
-</section>
-
-${bloqueFacilidades}`,
-});
-
+// Acuse sin JavaScript: el envío normal del formulario cae aquí. Con JS, el
+// acuse se pinta dentro del propio formulario y esta página no se ve.
 const gracias = shell({
   titulo: "Gracias | Ciudad Maderas — Asesor autorizado",
   desc: "Recibimos tus datos. Te contacto en breve.",
   cuerpo: `
-<section style="background:var(--crema);min-height:56vh;display:flex;align-items:center">
+<section style="background:var(--crema);min-height:58vh;display:flex;align-items:center">
   <div class="wrap" style="max-width:70ch;text-align:center">
     <div class="kick" style="text-align:center">Listo</div>
     <h2 class="sec" style="font-size:clamp(28px,4.4vw,42px)">Ya me llegaron tus datos</h2>
@@ -911,7 +1028,7 @@ const gracias = shell({
        contesto ahí mismo.</p>
     <div class="cta" style="justify-content:center">
       <a class="btn btn-wa" href="${wa("Hola, acabo de dejar mis datos en tu página")}">Escribirme por WhatsApp</a>
-      <a class="btn btn-oro" href="/desarrollos">Seguir viendo desarrollos</a>
+      <a class="btn btn-oro" href="/#desarrollos">Seguir viendo desarrollos</a>
     </div>
   </div>
 </section>`,
@@ -919,15 +1036,13 @@ const gracias = shell({
 
 // ── Registro de rutas ───────────────────────────────────────────────────────
 // src/index.ts recorre este mapa y sirve cada entrada. Todo el contenido vive
-// aquí, en member/, así que `forjabot update` no lo toca.
+// aquí, en member/, así que `forjabot update` no lo toca y agregar una página
+// no obliga a tocar src/.
 
 export const landingPages: Record<string, string> = {
   "/": inicio,
-  "/desarrollos": desarrollos,
-  "/amenidades": amenidadesPag,
-  "/facilidades-de-pago": facilidades,
-  "/nosotros": nosotros,
-  "/contacto": contacto,
+  "/aviso-de-privacidad": aviso,
+  "/terminos-y-condiciones": terminos,
   "/gracias": gracias,
   ...Object.fromEntries(regiones.map((r) => [`/proyectos/${r.slug}`, paginaRegion(r)])),
 };
