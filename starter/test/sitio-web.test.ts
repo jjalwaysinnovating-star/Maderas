@@ -129,17 +129,30 @@ describe("sitio del asesor — los clics llevan a algún lado", () => {
     expect(rotas).toEqual([]);
   });
 
-  // En celular el botón "Contacta a un asesor" se colocaba en absoluto sobre el
-  // encabezado y quedaba encimado con el logo. El menú ya lleva CONTÁCTANOS y la
-  // página está llena de botones de WhatsApp, así que sobra.
-  it("el encabezado solo lleva logo, menú y el botón de abrir el menú", () => {
+  it("el encabezado lleva logo, menú, botón de asesor y hamburguesa", () => {
     for (const [ruta, html] of Object.entries(landingPages)) {
       const header = html.slice(html.indexOf("<header>"), html.indexOf("</header>"));
-      expect(header, ruta).not.toContain("btn-nav");
-      expect(header, ruta).not.toMatch(/Contacta a un asesor/i);
       expect(header, ruta).toContain('class="logo"');
+      expect(header, ruta).toContain('class="btn-nav"');
       expect(header, ruta).toContain('class="burger"');
     }
+  });
+
+  // En celular ese botón se colgaba del menú en posición absoluta, y el cálculo
+  // lo dejaba ENCIMA de la barra, montado sobre el logo. Abajo de 1040px se
+  // esconde y ya no vuelve a aparecer ni con el menú abierto.
+  it("el botón de asesor no entra al menú del celular", () => {
+    const css = landingPages["/"].slice(
+      landingPages["/"].indexOf("<style>"),
+      landingPages["/"].indexOf("</style>"),
+    );
+    const movil = css.slice(css.indexOf("@media(max-width:1040px)"));
+    const bloque = movil.slice(0, movil.indexOf("\n  }") + 4);
+
+    expect(bloque).toMatch(/header \.wrap>nav,header \.wrap>\.btn-nav\{display:none\}/);
+    // Nada dentro del menú abierto puede volver a mostrarlo.
+    expect(bloque).not.toMatch(/#mnu:checked[^\n]*\.btn-nav/);
+    expect(bloque).not.toMatch(/\.btn-nav\{[^}]*position:absolute/);
   });
 
   it("el aviso legal y los enlaces legales aparecen en todas las páginas", () => {
