@@ -796,6 +796,17 @@ export class SupportAgent extends Agent<Env, SupportAgentState> {
       cfg.interChunkDelayMs,
     );
 
+    // Red de seguridad del lead: si el bot acaba de prometer que un asesor
+    // contactará y NO registró a nadie, lo levantamos nosotros. Va después de
+    // enviar para no retrasarle la respuesta al cliente, y nunca tumba el turno:
+    // el mensaje ya salió, lo peor que puede pasar es que el rescate falle.
+    try {
+      const { rescataLeadPrometido } = await import("./leads/rescate");
+      await rescataLeadPrometido(this.env, convId, assistantText);
+    } catch (e) {
+      console.error("[SupportAgent.processBuffer] rescate de lead falló:", e);
+    }
+
     console.log(
       `[SupportAgent.processBuffer] sent ${chunks.length} chunks, model=${usedModelId}, cost=$${costOfUsage(
         usedModelId,

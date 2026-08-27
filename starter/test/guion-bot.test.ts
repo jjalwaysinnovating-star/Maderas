@@ -162,6 +162,22 @@ describe("el guion que eligió el dueño", () => {
     for (const e of etiquetas) expect(e.length, e).toBeLessThanOrEqual(20);
   });
 
+  // En Messenger el cliente dio ciudad, forma de pago y plazo; el bot contestó
+  // "un asesor se comunica contigo" y NUNCA registró el lead. El asesor no se
+  // enteró y el cliente quedó esperando una llamada. Es el peor fallo posible:
+  // por fuera se ve como si todo hubiera salido bien.
+  it("no se promete contacto sin registrar antes al prospecto", () => {
+    expect(campos.guion).toMatch(/PROHIBIDO decir 'un asesor te contacta'/);
+    expect(campos.guion).toMatch(/Primero registras,\s+luego prometes/);
+  });
+
+  it("bastan plazo y forma de pago para registrar — el uso es opcional", () => {
+    // Antes decía "los TRES datos", así que si el cliente nunca decía para qué
+    // lo quería, el bot se quedaba esperando un dato que no iba a llegar.
+    expect(campos.guion).toMatch(/EN CUANTO sepas el PLAZO y\s+la FORMA DE PAGO/);
+    expect(campos.guion).toMatch(/el uso es opcional/);
+  });
+
   it("se pide un dato a la vez", () => {
     expect(campos.capturaDeDatos).toMatch(/UN dato a la vez/);
     expect(campos.capturaDeDatos).toMatch(/Nunca los pidas\s+juntos/);

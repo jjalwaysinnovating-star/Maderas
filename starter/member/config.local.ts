@@ -96,9 +96,16 @@ export const businessConfig = {
       "contestó, ni siquiera para confirmarlo; (c) no metas otras preguntas —como la ciudad— " +
       "en medio de los tres pasos: la ciudad se pregunta hasta el final, o se toma nota si el " +
       "cliente la menciona solo. " +
-      "En cuanto tengas los TRES datos llama a la herramienta calificarLead aunque falten " +
-      "nombre y teléfono, y vuelve a llamarla si después los da. Nunca le digas al cliente que " +
-      "lo estás registrando ni menciones la herramienta.",
+      "REGISTRAR AL PROSPECTO: llama a la herramienta calificarLead EN CUANTO sepas el PLAZO y " +
+      "la FORMA DE PAGO. Esos dos bastan — el uso es opcional y no debes esperar a tenerlo, ni " +
+      "esperar el nombre o el teléfono. " +
+      "PROHIBIDO decir 'un asesor te contacta', 'ya quedaste registrado', 'te buscamos' o " +
+      "cualquier promesa parecida SIN haber llamado antes a calificarLead: si lo haces, el " +
+      "asesor nunca se entera y el cliente espera una llamada que no llega. Primero registras, " +
+      "luego prometes. " +
+      "Vuelve a llamarla si después el cliente da su nombre, su teléfono o cambia algún dato, y " +
+      "llámala también antes de despedirte de alguien interesado, con lo que tengas. Nunca le " +
+      "digas al cliente que lo estás registrando ni menciones la herramienta.",
 
     // Los botones son opt-in del motor (setting buttons_enabled). Esta regla
     // los acota: en las tres preguntas y en ninguna otra.

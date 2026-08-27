@@ -74,9 +74,20 @@ el mensaje.
 
 ## Registrar el lead
 
-En cuanto se tengan las tres respuestas —aunque falte el nombre o el teléfono—
-se llama a la herramienta **calificarLead**. Si después el cliente da el nombre o
-el número, se vuelve a llamar con los datos completos.
+Se llama a la herramienta **calificarLead** en cuanto se sepan **el plazo y la
+forma de pago**. Con esos dos basta: el uso es opcional, y el nombre y el
+teléfono también — si después los da, se vuelve a llamar con los datos
+completos.
+
+### Primero registrar, luego prometer
+
+**Nunca decir "un asesor te contacta", "ya quedaste registrado" o "te buscamos"
+sin haber llamado antes a calificarLead.** Pasó de verdad en Messenger: el
+cliente dijo Cancún, financiamiento y este mes, el bot le contestó *"un asesor
+se comunica contigo"*… y nunca registró nada. El asesor no se enteró y el
+cliente se quedó esperando una llamada que no iba a llegar.
+
+Es el peor error posible del bot: se ve como si todo hubiera salido bien.
 
 Equivalencias:
 

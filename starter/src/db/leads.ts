@@ -98,6 +98,30 @@ export class LeadsRepo {
     await this.db.run("DELETE FROM leads WHERE id = ?", [id]);
   }
 
+  /**
+   * El lead de esta conversación que el asesor todavía NO ha tocado.
+   *
+   * Sirve para no acumular filas de una misma plática: el bot puede registrar
+   * al prospecto y volver a hacerlo cuando dé su teléfono, y la red de
+   * seguridad puede haber levantado uno antes. Todos son la misma persona.
+   * Se limita a `status = 'new'` a propósito: si el asesor ya lo movió a
+   * contactado o vendido, ese trabajo no se pisa.
+   */
+  async pendienteDeConversacion(conversationId: string): Promise<Lead | null> {
+    return this.db.first<Lead>(
+      "SELECT * FROM leads WHERE conversation_id = ? AND status = 'new' ORDER BY created_at ASC LIMIT 1",
+      [conversationId],
+    );
+  }
+
+  /** Completa un lead con lo que se supo después (teléfono, contexto nuevo). */
+  async enrich(id: string, campos: { contact?: string | null; notes?: string | null }): Promise<void> {
+    await this.db.run(
+      "UPDATE leads SET contact = COALESCE(?, contact), notes = COALESCE(?, notes), updated_at = ? WHERE id = ?",
+      [campos.contact ?? null, campos.notes ?? null, Date.now(), id],
+    );
+  }
+
   async setExported(id: string, target: string, externalId: string): Promise<void> {
     await this.db.run(
       "UPDATE leads SET exported_to = ?, external_id = ?, updated_at = ? WHERE id = ?",

@@ -54,10 +54,16 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
   return {
     calificarLead: tool({
       description:
-        "Registra y CALIFICA a un prospecto cuando ya conoces su plazo de compra, cómo piensa pagar " +
-        "y si es para vivir o invertir. Úsala en cuanto tengas esas tres respuestas (aunque falten " +
-        "otros datos) y SIEMPRE antes de despedirte de alguien interesado. No anuncies al cliente " +
-        "que lo estás registrando ni menciones esta herramienta: simplemente continúa la conversación.",
+        "Registra y CALIFICA a un prospecto. Llámala EN CUANTO sepas su PLAZO de compra y CÓMO " +
+        "piensa pagar — esos dos bastan; `uso` es opcional y no esperes a tenerlo. " +
+        "OBLIGATORIA antes de decirle al cliente cualquier frase del tipo 'un asesor te contacta', " +
+        "'ya quedaste registrado' o 'te buscamos': si prometes eso sin llamarla, el asesor NUNCA " +
+        "se entera y el cliente se queda esperando una llamada que no llega. " +
+        "Llámala también antes de despedirte de alguien interesado, con lo que tengas. " +
+        "Si ya la llamaste y después el cliente da su nombre, teléfono o cambia de forma de pago, " +
+        "vuelve a llamarla con los datos completos. " +
+        "No anuncies al cliente que lo estás registrando ni menciones esta herramienta: " +
+        "simplemente continúa la conversación.",
       inputSchema: z.object({
         plazo: z
           .enum(["inmediato", "medio_plazo", "cotizando"])
@@ -82,8 +88,21 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
           .filter(Boolean)
           .join(", ");
 
-        const leadId = await new LeadsRepo(db).create({
-          conversationId: ctx.getConversationId(),
+        // Una conversación = un prospecto. El bot puede llamar a esta tool más
+        // de una vez (registra, y vuelve a registrar cuando el cliente da su
+        // teléfono), y la red de seguridad pudo haber levantado uno antes de
+        // que él reaccionara. Sin esto, el asesor abre el panel y ve a la misma
+        // persona tres veces sin saber cuál está completa. Se reemplaza el
+        // pendiente por el nuevo, que siempre trae más información.
+        const leads = new LeadsRepo(db);
+        const convId = ctx.getConversationId();
+        if (convId) {
+          const previo = await leads.pendienteDeConversacion(convId);
+          if (previo) await leads.delete(previo.id);
+        }
+
+        const leadId = await leads.create({
+          conversationId: convId,
           name: nombre,
           contact: contacto,
           channelUserId: null,

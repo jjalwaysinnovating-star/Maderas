@@ -57,6 +57,21 @@ la reemplaza (no se puede recuperar la anterior).
   D1). Nativos en Messenger/WhatsApp; en la web salen como lista numerada — esa
   conversión la hace `/web/poll`, no `sendReply`, porque el canal web no pasa por
   ahí (su `sendReply` es no-op y el navegador lee lo guardado en D1).
+- **Red de seguridad del lead** (`src/leads/rescate.ts`, enganchada al final de
+  `processBuffer`). El modelo tiene la tool y el prompt le ordena llamarla antes
+  de prometer nada, y aun así en conversaciones de varios turnos a veces contesta
+  "un asesor te contactará" **sin llamar a ninguna herramienta**: pasó con un
+  cliente real en Messenger —dio ciudad, pago, plazo, nombre y teléfono— y en el
+  panel no quedó nada. Es el peor fallo posible porque por fuera se ve bien.
+  Ahora, si la respuesta promete contacto y esa conversación no tiene lead, el
+  Worker levanta uno solo (`origen: rescate`, sin calificar), con la
+  transcripción en las notas, y **avisa siempre**. Si el cliente da su teléfono
+  después, completa esa misma ficha en vez de duplicarla. Pruebas en
+  `test/leads/rescate.test.ts`. **Vive en `src/`: `forjabot update` lo borra.**
+- **Una conversación = un lead.** `calificarLead` reemplaza el lead pendiente de
+  esa conversación en vez de agregar otro (un prospecto se registraba al dar el
+  plazo y otra vez al dar el teléfono). No pisa los que el asesor ya movió a
+  contactado o vendido.
 - **`captureLead` está APAGADO** (`disabled_tools = captureLead` en `settings`).
   Hacía lo mismo que `calificarLead` pero sin calificar, y el modelo llamaba a las
   dos: cada prospecto entraba DOS veces al panel, una con prioridad y otra sin

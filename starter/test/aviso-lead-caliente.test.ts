@@ -167,3 +167,86 @@ describe("cuando Telegram falla", () => {
     expect(logs.some((l) => l.includes("[messageOwner] telegram entregado"))).toBe(true);
   });
 });
+
+describe("qué basta para registrar", () => {
+  // El fallo real: el cliente dio plazo y forma de pago pero nunca dijo para
+  // qué quería el terreno. La descripción de la tool pedía "las tres
+  // respuestas", así que el modelo se quedó esperando la que faltaba, prometió
+  // que un asesor llamaría y no registró nada.
+  it("sin `uso` el lead se registra igual y se califica", async () => {
+    const r = await califica({
+      plazo: "inmediato",
+      formaPago: "financiamiento",
+      nombre: "Jay",
+      contacto: "6866067984",
+      ciudad: "Cancún",
+    });
+
+    expect(r.registrado).toBe(true);
+    expect(r.prioridad).toContain("CALIENTE");
+    expect(telegram()).toHaveLength(1);
+    expect(telegram()[0].body.text).toContain("Cancún");
+  });
+
+  it("la tool le dice al modelo que no espere el uso ni prometa sin registrar", () => {
+    const tools = memberTools({ env, getConversationId: () => null }) as any;
+    const d: string = tools.calificarLead.description;
+    expect(d).toMatch(/PLAZO de compra y CÓMO/);
+    expect(d).toMatch(/`uso` es opcional/);
+    expect(d).toMatch(/OBLIGATORIA antes de decirle al cliente/);
+    expect(d).toMatch(/un asesor te contacta/);
+  });
+});
+
+describe("una conversación, un prospecto", () => {
+  // El bot registra en cuanto sabe plazo y pago, y vuelve a registrar cuando el
+  // cliente da su teléfono. Antes eso dejaba dos filas de la misma persona y el
+  // asesor no sabía cuál estaba completa. Ahora la última reemplaza a la
+  // anterior mientras nadie la haya tocado.
+  it("registrar dos veces deja UNA fila, la más completa", async () => {
+    await califica({ plazo: "inmediato", formaPago: "contado", ciudad: "Cancún" });
+    await califica({
+      plazo: "inmediato",
+      formaPago: "contado",
+      ciudad: "Cancún",
+      nombre: "Jorge",
+      contacto: "6861112233",
+    });
+
+    const leads = await new LeadsRepo(new Db(env.DB)).list(10);
+    expect(leads).toHaveLength(1);
+    expect(leads[0].name).toBe("Jorge");
+    expect(leads[0].contact).toBe("6861112233");
+  });
+
+  it("reemplaza el lead que levantó la red de seguridad", async () => {
+    const { rescataLeadPrometido } = await import("../src/leads/rescate");
+    await new Db(env.DB).run(
+      `INSERT INTO conversations (id, channel, channel_user_id, started_at, last_message_at)
+       VALUES ('conv-web-1','web','u',?,?)`,
+      [Date.now(), Date.now()],
+    );
+    await rescataLeadPrometido(env, "conv-web-1", "Un asesor te contactará hoy mismo.");
+    expect(await new LeadsRepo(new Db(env.DB)).list(10)).toHaveLength(1);
+
+    await califica(CALIENTE);
+
+    const leads = await new LeadsRepo(new Db(env.DB)).list(10);
+    expect(leads).toHaveLength(1);
+    expect(leadMetadata(leads[0]).prioridad).toBe("caliente");
+  });
+
+  it("NO pisa un lead que el asesor ya movió", async () => {
+    const repo = new LeadsRepo(new Db(env.DB));
+    await califica({ plazo: "inmediato", formaPago: "contado", ciudad: "Cancún" });
+    const [primero] = await repo.list(10);
+    await repo.setStatus(primero.id, "contacted");
+
+    await califica({ plazo: "inmediato", formaPago: "contado", nombre: "Jorge" });
+
+    // El trabajo del asesor se respeta: quedan los dos.
+    const leads = await repo.list(10);
+    expect(leads).toHaveLength(2);
+    expect(leads.find((l) => l.id === primero.id)?.status).toBe("contacted");
+  });
+});
