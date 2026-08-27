@@ -45,7 +45,11 @@
 
 export const landingConfig = {
   asesor: "Ciudad Maderas",
-  telefono: "686 606 6613",
+  // El número NO se escribe en la página ni hay botón de llamar: decisión del
+  // dueño. Un teléfono a la vista se lo copian los bots de spam y los call
+  // centers, y cae en llamadas frías que no son prospectos. Solo se usa para
+  // armar el enlace de WhatsApp, donde el contacto queda por escrito y con
+  // nombre. Si algún día quiere volver a publicarlo, se agrega aquí y se pinta.
   telefonoLink: "526866066613",
   horario: "Lunes a domingo · 8:00 a.m. – 6:00 p.m.",
   // Redes DEL ASESOR. Vacías = no se pintan. Se dejan así a propósito: enlazar
@@ -53,7 +57,7 @@ export const landingConfig = {
   redes: [] as { nombre: string; url: string }[],
 };
 
-const { telefono, telefonoLink, horario, redes } = landingConfig;
+const { telefonoLink, horario, redes } = landingConfig;
 const IMG = "https://storage.googleapis.com/landing-ciudad-maderas";
 const wa = (t: string) => `https://wa.me/${telefonoLink}?text=${encodeURIComponent(t)}`;
 
@@ -523,8 +527,7 @@ ${cuerpo}
       <div>
         <strong>Ciudad Maderas</strong> · Terrenos Premium<br>
         Asesor autorizado<br>${horario}<br>
-        <a href="tel:+${telefonoLink}">${telefono}</a> ·
-        <a href="https://wa.me/${telefonoLink}">WhatsApp</a>
+        <a href="https://wa.me/${telefonoLink}">Escríbeme por WhatsApp</a>
       </div>
       <div>
         <h4>Explora</h4>
@@ -637,10 +640,10 @@ function bloqueContacto(texto: string): string {
         <p>${texto}</p>
         <div class="cta" style="margin-top:26px">
           <a class="btn btn-wa" href="${wa("Hola, quiero agendar una asesoría")}">Escríbeme por WhatsApp</a>
-          <a class="btn btn-oro" href="tel:+${telefonoLink}">Llámame ahora</a>
+          <a class="btn btn-oro" href="#f-nombre">Déjame tus datos</a>
         </div>
-        <p class="tel-big">O pregúntale al asistente en el chat de esta página<br>
-           <a href="tel:+${telefonoLink}">${telefono}</a> · ${horario}</p>
+        <p class="tel-big">O pregúntale al asistente en el chat de esta página.<br>
+           Atiendo ${horario.toLowerCase()}</p>
       </div>
       ${formulario}
     </div>
@@ -913,12 +916,13 @@ const aviso = shell({
   <div class="wrap">
     <h1>Aviso de privacidad</h1>
     <p class="fecha">Sitio operado por un asesor inmobiliario autorizado de Ciudad Maderas ·
-       Contacto: ${telefono}</p>
+       Contacto: <a href="https://wa.me/${telefonoLink}">WhatsApp</a> o el chat de esta página</p>
 
     <h2>Quién trata tus datos</h2>
     <p>El responsable del tratamiento de los datos que dejas en este sitio es el asesor
-       inmobiliario que lo opera, localizable en el teléfono ${telefono}. Este sitio no es el
-       sitio oficial de la desarrolladora y no la sustituye.</p>
+       inmobiliario que lo opera, localizable por
+       <a href="https://wa.me/${telefonoLink}">WhatsApp</a> y por el chat de esta página. Este
+       sitio no es el sitio oficial de la desarrolladora y no la sustituye.</p>
 
     <h2>Información que se recaba</h2>
     <p>Únicamente la que tú escribes en el formulario o en el chat: nombre, teléfono, correo
@@ -942,8 +946,9 @@ const aviso = shell({
 
     <h2>Tus derechos</h2>
     <p>Puedes pedir en cualquier momento acceder a tus datos, rectificarlos, cancelarlos u
-       oponerte a su uso, así como revocar tu consentimiento. Basta con escribir por WhatsApp
-       o llamar al ${telefono} y decirlo; se atiende sin costo.</p>
+       oponerte a su uso, así como revocar tu consentimiento. Basta con pedirlo por
+       <a href="https://wa.me/${telefonoLink}">WhatsApp</a> o por el chat de esta página;
+       se atiende sin costo.</p>
 
     <h2>Cambios a este aviso</h2>
     <p>Si cambia la forma en que se tratan los datos, este aviso se actualiza en esta misma
@@ -962,7 +967,7 @@ const terminos = shell({
   <div class="wrap">
     <h1>Términos y condiciones</h1>
     <p class="fecha">Sitio operado por un asesor inmobiliario autorizado de Ciudad Maderas ·
-       Contacto: ${telefono}</p>
+       Contacto: <a href="https://wa.me/${telefonoLink}">WhatsApp</a> o el chat de esta página</p>
 
     <h2>I. Información contenida en el sitio</h2>
     <p>La información de este sitio es de carácter informativo y puede cambiar sin previo

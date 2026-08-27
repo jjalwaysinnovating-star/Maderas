@@ -138,11 +138,24 @@ describe("sitio del asesor — los clics llevan a algún lado", () => {
     }
   });
 
-  it("el teléfono del asesor sustituye al del corporativo en todas las páginas", () => {
+  it("el WhatsApp del asesor sustituye al contacto del corporativo", () => {
     for (const [ruta, html] of Object.entries(landingPages)) {
-      expect(html, ruta).toContain("526866066613");
-      // El 442 y el 800 del corporativo se llevarían los prospectos.
+      expect(html, ruta).toContain("wa.me/526866066613");
+      // El 442 del corporativo se llevaría los prospectos.
       expect(html, ruta).not.toContain("4426090478");
+    }
+  });
+
+  // El dueño pidió que su número no se publique: a la vista se lo copian los
+  // bots de spam y los call centers. WhatsApp sí queda — ahí el contacto llega
+  // por escrito y con nombre.
+  it("el número no se escribe en ninguna página ni hay botón de llamar", () => {
+    for (const [ruta, html] of Object.entries(landingPages)) {
+      // Con separador: así es como se escribe un teléfono para leerlo. Los
+      // dígitos pegados sí aparecen, pero solo dentro del enlace de wa.me.
+      expect(html, `${ruta}: número a la vista`).not.toMatch(/686[\s.–-]+606[\s.–-]+6613/);
+      expect(html, `${ruta}: enlace de llamada`).not.toContain('href="tel:');
+      expect(html, `${ruta}: botón de llamar`).not.toMatch(/Llámame|Llamar ahora/i);
     }
   });
 });
