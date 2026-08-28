@@ -69,6 +69,28 @@ describe("detectar la promesa", () => {
     }
   });
 
+  it("no confunde una PREGUNTA con una promesa", () => {
+    // El caso de Instagram ("Jahir"): el bot iba bien, apenas pidiendo el
+    // teléfono, y el rescate se disparó porque la pregunta trae las mismas
+    // palabras que una promesa. El asesor recibió un "prospecto sin registrar"
+    // cuando no había fallado nada.
+    for (const f of [
+      "¿Y tu teléfono para que un asesor te contacte?",
+      "¿Me pasas tu número y un asesor se comunica contigo?",
+      "Perfecto, Jahir. ¿Cuál es tu teléfono para que un asesor te busque?",
+    ]) {
+      expect(prometioContacto(f), f).toBe(false);
+    }
+  });
+
+  it("sí se dispara cuando la promesa acompaña a una pregunta", () => {
+    // Media respuesta puede ser promesa y la otra media pregunta. Basta con que
+    // UNA frase afirme para que cuente.
+    expect(
+      prometioContacto("Listo, ya quedaste registrado. ¿Hay alguna ciudad que te interese?"),
+    ).toBe(true);
+  });
+
   it("no se dispara con información normal", () => {
     for (const f of [
       "Los terrenos arrancan desde $550,000 MXN.",
@@ -177,6 +199,45 @@ describe("completar el rescate con lo que llega después", () => {
     expect(leads, "no debe duplicar").toHaveLength(1);
     expect(leads[0].contact?.replace(/\D/g, "")).toBe("6864445566");
     expect(leads[0].notes).toContain("Sergio");
+  });
+
+  it("AVISA cuando por fin llega el teléfono", async () => {
+    // El aviso del rescate sale casi siempre antes de que el cliente dé su
+    // número, y dice "todavía no lo da". El momento en que llega es justo
+    // cuando el asesor puede hacer algo — y era el único en que no se avisaba
+    // nada: el teléfono entraba al panel en silencio. Pasó con "Jahir".
+    const db = new Db(env.DB);
+    const msgs = new MessagesRepo(db);
+
+    await db.run("DELETE FROM messages WHERE conversation_id = ?", [CONV]);
+    await msgs.append(CONV, "user", "En cancun, financiamiento, este mes");
+    await rescataLeadPrometido(env, CONV, "Un asesor te contactará hoy mismo.");
+
+    expect(telegram).toHaveLength(1);
+    expect(telegram[0].text).toContain("todavía no lo da");
+
+    await msgs.append(CONV, "user", "Jahir, 676 263 5178");
+    await rescataLeadPrometido(env, CONV, "Listo, Jahir. Un asesor te contactará en breve.");
+
+    expect(telegram, "el teléfono tardío merece su propio aviso").toHaveLength(2);
+    expect(telegram[1].text).toContain("teléfono");
+    expect(telegram[1].text.replace(/\s/g, "")).toContain("6762635178");
+    expect(telegram[1].text).toContain("/admin/leads");
+  });
+
+  it("no repite el aviso del teléfono en los turnos siguientes", async () => {
+    const db = new Db(env.DB);
+    const msgs = new MessagesRepo(db);
+
+    await db.run("DELETE FROM messages WHERE conversation_id = ?", [CONV]);
+    await msgs.append(CONV, "user", "En cancun, financiamiento, este mes");
+    await rescataLeadPrometido(env, CONV, "Un asesor te contactará hoy mismo.");
+    await msgs.append(CONV, "user", "Jahir, 676 263 5178");
+    await rescataLeadPrometido(env, CONV, "Listo, un asesor te contactará.");
+    await rescataLeadPrometido(env, CONV, "Ya quedaste registrado.");
+    await rescataLeadPrometido(env, CONV, "Un asesor te busca hoy.");
+
+    expect(telegram).toHaveLength(2);
   });
 
   it("solo avisa la primera vez, no en cada turno", async () => {

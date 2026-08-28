@@ -66,8 +66,16 @@ la reemplaza (no se puede recuperar la anterior).
   Ahora, si la respuesta promete contacto y esa conversación no tiene lead, el
   Worker levanta uno solo (`origen: rescate`, sin calificar), con la
   transcripción en las notas, y **avisa siempre**. Si el cliente da su teléfono
-  después, completa esa misma ficha en vez de duplicarla. Pruebas en
-  `test/leads/rescate.test.ts`. **Vive en `src/`: `forjabot update` lo borra.**
+  después, completa esa misma ficha en vez de duplicarla — y **vuelve a avisar**,
+  porque ese es el momento en que el asesor por fin puede llamar y era el único
+  en que no se le decía nada (el teléfono entraba al panel en silencio).
+  Las **preguntas no cuentan como promesa**: "¿tu teléfono para que un asesor te
+  contacte?" trae las mismas palabras y es lo contrario — el bot está pidiendo,
+  no prometiendo. Sin eso el rescate se disparaba a media plática y mandaba
+  "prospecto sin registrar" cuando nada había fallado; avisar de lo que no es
+  problema entrena a ignorar los avisos. Ambas cosas salieron de la prueba de
+  Instagram con "Jahir". Pruebas en `test/leads/rescate.test.ts`.
+  **Vive en `src/`: `forjabot update` lo borra.**
 - **Una conversación = un lead, pero solo dentro de 6 horas**
   (`LeadsRepo.VENTANA_MISMA_PLATICA_MS`). `calificarLead` reemplaza el lead
   pendiente de esa plática en vez de agregar otro (un prospecto se registraba al

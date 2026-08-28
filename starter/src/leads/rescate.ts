@@ -34,8 +34,26 @@ const PROMESA =
 /** Un teléfono mexicano tal como lo escribe la gente: 10 dígitos, con o sin separadores. */
 const TELEFONO = /(?:\+?52\s?)?(?:\d[\s.-]?){10}/;
 
+/**
+ * Las frases del texto que AFIRMAN algo — sin las preguntas.
+ *
+ * "¿Y tu teléfono para que un asesor te contacte?" trae exactamente las mismas
+ * palabras que una promesa, pero dice lo contrario: el bot está PIDIENDO el
+ * dato, no diciendo que ya lo tiene. Sin esta distinción el rescate se
+ * disparaba a media conversación — pasó en Instagram con "Jahir": el bot iba
+ * bien, apenas preguntando el teléfono, y al asesor le llegó un "prospecto sin
+ * registrar" como si algo hubiera fallado. Un aviso que suena cuando no pasa
+ * nada malo enseña a ignorar los avisos, que es justo lo que no queremos.
+ */
+function afirmaciones(texto: string): string[] {
+  return texto
+    .split(/(?<=[.!?\n])/)
+    .map((frase) => frase.trim())
+    .filter((frase) => frase.length > 0 && !frase.endsWith("?"));
+}
+
 export function prometioContacto(texto: string): boolean {
-  return PROMESA.test(texto);
+  return afirmaciones(texto).some((frase) => PROMESA.test(frase));
 }
 
 /** Primer teléfono que aparezca en lo que escribió el cliente. */
@@ -67,8 +85,8 @@ export async function rescataLeadPrometido(
   // estaba registrado. Pasó de verdad — alguien volvió a escribir desde un
   // Messenger que ya había consultado, calificó caliente, y ni se registró ni
   // se avisó porque "esa conversación ya tenía lead".
-  const existente = await db.first<{ id: string; metadata: string | null }>(
-    `SELECT id, metadata FROM leads
+  const existente = await db.first<{ id: string; contact: string | null; metadata: string | null }>(
+    `SELECT id, contact, metadata FROM leads
       WHERE conversation_id = ? AND created_at > ?
       ORDER BY created_at DESC LIMIT 1`,
     [conversationId, Date.now() - LeadsRepo.VENTANA_MISMA_PLATICA_MS],
@@ -89,10 +107,33 @@ export async function rescataLeadPrometido(
   // el rescate suele dispararse antes de que dé su teléfono, y sin esto el
   // asesor se quedaba con un lead sin forma de llamarle.
   if (existente && esRescate) {
+    const yaTeniaTelefono = (existente.contact ?? "").trim().length > 0;
     await repo.enrich(existente.id, {
       contact: telefono,
       notes: `El bot le dijo que un asesor lo contactaría, pero no lo registró. Aquí va la conversación completa:\n\n${transcripcion}`.slice(0, 4000),
     });
+
+    // El aviso del rescate casi siempre sale ANTES de que el cliente suelte su
+    // teléfono, y decía "Contacto detectado: todavía no lo da". Cuando el
+    // teléfono llega después, ese es EL momento en que el asesor por fin puede
+    // hacer algo — y hasta ahora era el único momento en que no se le avisaba
+    // nada. Pasó en Instagram con "Jahir": el asesor supo que había un
+    // prospecto sin datos, el cliente dejó su número tres minutos después, y
+    // el teléfono se guardó en el panel en silencio.
+    if (telefono && !yaTeniaTelefono) {
+      try {
+        await messageOwner(env, {
+          heading: "📞 Ya dio su teléfono — el prospecto del aviso anterior",
+          body:
+            `Es el mismo prospecto que el bot no había registrado. Ya se le puede llamar.\n` +
+            `Teléfono: ${telefono}\n\n` +
+            `Últimas frases del cliente:\n${delCliente.slice(-3).join("\n")}`,
+          url: `${await selfOrigin(env)}/admin/leads`,
+        });
+      } catch (e) {
+        console.error("[rescate] aviso de teléfono tardío falló:", e);
+      }
+    }
     return { rescatado: false };
   }
 
