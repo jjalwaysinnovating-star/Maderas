@@ -207,13 +207,26 @@ Cloudflare para desplegar código.
 
 ## Pendientes
 
-- **WhatsApp por YCloud** — el dueño eligió coexistencia para NO perder su app de
-  WhatsApp Business (Zernio, Twilio y la Cloud API dedican el número y se la
-  quitarían). La cuenta y el número ya se enlazaron, pero Meta tiene pendiente la
-  verificación del negocio: hasta que llegue su correo, la API de YCloud reporta
-  cero números y no hay nada que configurar. Al aprobarse faltan
-  `YCLOUD_API_KEY`, `YCLOUD_WEBHOOK_SECRET` y `YCLOUD_WA_FROM`. Guía:
-  `starter/skill/references/channel-setup-guides/ycloud-whatsapp.md`.
+- **WhatsApp por YCloud — configurado, esperando la verificación del negocio.**
+  El dueño eligió coexistencia para NO perder su app de WhatsApp Business
+  (Zernio, Twilio y la Cloud API dedican el número y se la quitarían). **De
+  nuestro lado ya no falta nada:** `YCLOUD_API_KEY` y `YCLOUD_WEBHOOK_SECRET`
+  como secrets, `YCLOUD_WA_FROM = "+526866066613"` en `wrangler.toml`, y el
+  webhook dado de alta en YCloud con los dos eventos que pide la coexistencia
+  (`whatsapp.inbound_message.received` y `whatsapp.smb.message.echoes` — el
+  segundo es el que hace que el bot se calle cuando el asesor contesta desde su
+  app). **El webhook nace `disabled`:** YCloud los crea apagados y hay que
+  ponerlos en `active` aparte (`PATCH /v2/webhookEndpoints/<id>`, con `active`,
+  no `enabled`). Ya está activo.
+  Lo que falta no es nuestro: la pantalla del enlace dice *"YCloud will need to
+  verify your business. You'll receive an email"*. Hasta ese correo,
+  `GET /v2/whatsapp/phoneNumbers` y `/businessAccounts` contestan **cero** y no
+  se puede ni mandar ni recibir. Cuando llegue: probar en vivo, nada más.
+  El **saldo de YCloud está en $0.50 USD** — alcanza para probar y poco más;
+  Meta cobra $0.008–$0.07 por conversación y sale de ese wallet.
+  Las **dos API keys del panel (la "default" y la de "Ciudad Maderas") son de la
+  misma cuenta** — mismo saldo, mismo webhook. No hay subcuentas que confundan.
+  Guía: `starter/skill/references/channel-setup-guides/ycloud-whatsapp.md`.
 - **Embudo de comentarios** — el dueño lo quiere: quien comenta "info" en una
   publicación recibe un DM y ahí arranca la conversación normal. Se pospuso a
   propósito hasta que los tres canales de hoy lleven días estables. La plantilla
