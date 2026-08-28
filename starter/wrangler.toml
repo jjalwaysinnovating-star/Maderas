@@ -70,6 +70,10 @@ LLM_PROVIDER = "anthropic"
 # tokens de entrada por turno se cobran a 0.1× a partir del segundo mensaje.
 ANTHROPIC_MODEL_FAST = "claude-haiku-4-5-20251001"
 ANTHROPIC_MODEL_SMART = "claude-haiku-4-5-20251001"
+# WhatsApp por YCloud, en COEXISTENCIA: el número lo comparten el bot y el
+# asesor desde su app de WhatsApp Business. No es secreto (es el número que el
+# cliente ve), por eso va aquí y no en `wrangler secret put`.
+YCLOUD_WA_FROM = "+526866066613"
 #
 # Gemini queda configurado como respaldo: si algún día quitas el saldo de
 # Anthropic, cambia LLM_PROVIDER a "google" y el bot sigue con estos modelos.
