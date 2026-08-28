@@ -32,10 +32,27 @@ la reemplaza (no se puede recuperar la anterior).
   como respaldo — sus modelos 2.5 ya no se sirven a cuentas nuevas, por eso están
   fijados los 3.5.
 - **Canales:** web, servido por el mismo Worker (`WEB_SITES` lo enciende), y
-  **Facebook Messenger vía Zernio** (`/webhooks/zernio`, firma HMAC fail-closed:
-  sin `ZERNIO_WEBHOOK_SECRET` correcto el bot rechaza todo con 403). El demo
-  público (`DEMO_MODE`) está APAGADO a propósito: era acceso sin autenticar a la
-  llave de IA.
+  **Facebook Messenger + Instagram vía Zernio** (`/webhooks/zernio`, firma HMAC
+  fail-closed: sin `ZERNIO_WEBHOOK_SECRET` correcto el bot rechaza todo con 403).
+  Instagram no necesitó código ni secrets nuevos: el adapter guarda el `platform`
+  que venga y solo trata distinto a `whatsapp` (la ventana de 24h), así que
+  conectar la cuenta en el panel de Zernio bastó — son las 2 cuentas gratis de su
+  plan. La cuenta es `ciudadmaderaswoodcity`, profesional y ligada a la página.
+  **Conéctala por "Connect with Facebook", no por "Connect with Instagram":** los
+  permisos de mensajes cuelgan de la página, y por la otra puerta no siempre
+  vienen. El demo público (`DEMO_MODE`) está APAGADO a propósito: era acceso sin
+  autenticar a la llave de IA.
+- **El "Talk to human" era ManyChat** (resuelto 2026-08-28). Durante días, antes
+  de que contestara el Worker, a quien escribía le llegaba un mensaje en inglés
+  —"J&J Always Innovating typically replies in 1 day… press the 'Talk to human'
+  button"— con su botón. Se buscó en `src/`, `member/`, `scripts/`, en las
+  automatizaciones de Meta Business Suite (todas apagadas menos las FAQ) y en
+  Zernio. Era **ManyChat**, que seguía conectado a la página de una prueba vieja:
+  Meta entrega los mensajes a TODAS las apps conectadas, así que ManyChat y el
+  bot contestaban en paralelo. El nombre viejo de la página fue la pista — el
+  texto se escribió cuando la página se llamaba así. Si algún día vuelve a
+  aparecer un mensaje que nadie escribió: **revisa qué otras apps están
+  conectadas a la página**, no el código.
 - **Avisos:** Telegram al dueño (`@ciudadmaderas_avisos_bot`). Solo se avisa de los
   leads **calientes** — avisar de todos entrena a ignorar los avisos. El aviso NO
   depende del canal: `calificarLead` solo recibe `env` y el id de conversación, así
@@ -197,17 +214,27 @@ Cloudflare para desplegar código.
   cero números y no hay nada que configurar. Al aprobarse faltan
   `YCLOUD_API_KEY`, `YCLOUD_WEBHOOK_SECRET` y `YCLOUD_WA_FROM`. Guía:
   `starter/skill/references/channel-setup-guides/ycloud-whatsapp.md`.
-- **El "Talk to human" de Messenger NO sale de este bot.** Antes de que conteste
-  el Worker, a quien escribe le llega un mensaje en inglés —"J&J Always
-  Innovating typically replies in 1 day… press the 'Talk to human' button"— con
-  su botón. Se comprobó: esa cadena no existe en `src/`, `member/` ni `scripts/`,
-  y trae el nombre VIEJO de la página, así que es una automatización guardada
-  fuera (Meta Business Suite → Bandeja de entrada → Automatizaciones, o el
-  panel de Zernio). El bot sí responde en paralelo — en D1 se ve su respuesta un
-  segundo después. Solo el dueño puede apagarla desde esos paneles.
-- **Instagram** — cabe como la 2ª cuenta gratis de Zernio cuando el dueño quiera.
+- **Embudo de comentarios** — el dueño lo quiere: quien comenta "info" en una
+  publicación recibe un DM y ahí arranca la conversación normal. Se pospuso a
+  propósito hasta que los tres canales de hoy lleven días estables. La plantilla
+  ya trae `src/channels/comment-funnel.ts` (comentario → DM con botón → recurso;
+  el botón NO es adorno: Instagram deja mandar UN solo mensaje a quien nunca te
+  ha escrito, y el toque abre la ventana de 24h), pero está colgado del webhook
+  **oficial de Meta**, que aquí no se usa, y `commentFunnels` está vacío. Por
+  Zernio habría que registrar el evento de comentarios —el webhook está dado de
+  alta solo con `message.received`— y enseñarle al adapter a leerlo.
+- **Cuál Instagram es el oficial** — Meta Business Suite muestra
+  `jjalwaysinnovating` como el IG de la página, pero el bot vive en
+  `ciudadmaderaswoodcity`. No rompe nada (Zernio va directo a la cuenta), pero
+  hay que decidir cuál es la del negocio antes de publicar en serio.
+- **La página de Facebook se llama "Ciudad Maderas Terrenos y Casas Premium"** —
+  con *Casas*, y el asesor solo vende terrenos. Todo lo demás dice lo contrario
+  (sitio, KB, prompt, y una prueba que lo vigila). Conviene quitarle "y Casas
+  Premium" desde Meta Business Suite.
 - **Saldo de Anthropic** — sin cuota diaria que deje mudo al bot, pero el saldo se
-  acaba. Conviene recarga automática antes de abrir WhatsApp.
+  acaba. Conviene recarga automática (console.anthropic.com/settings/billing →
+  Auto-reload) antes de abrir WhatsApp: si se acaba a media plática el bot deja
+  de contestar sin error visible para el cliente.
 - **Leads de prueba** — hay nueve falsos en el panel (Ana López, Roberto Salinas,
   Patricia Vega, Jay, Carlos Mendez, Lucia Ramos, "PRUEBA — bórrame" del
   formulario, y Jorge Prueba y Sofía Prueba de la verificación del guion). El panel
