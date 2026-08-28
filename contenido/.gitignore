@@ -1,0 +1,5 @@
+insumos/
+node_modules/
+*.html
+salida/_tmp/
+package*.json
