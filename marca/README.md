@@ -15,7 +15,15 @@ serif con versalitas. Debajo va el mismo ritmo de dos renglones que el original
 —uno dorado y uno claro—, pero diciendo lo que aquí sí aplica: **TERRENOS
 PREMIUM** (no "y casas", que el asesor no vende) y **ASESOR AUTORIZADO**.
 
-La **portada** usa el candado horizontal, como el encabezado de su sitio.
+La **portada** usa el candado horizontal, como el encabezado de su sitio, sobre
+una **foto real de un desarrollo**: la casa club vista desde el aire (alberca,
+cancha de tenis y de fútbol en una sola toma), del propio bucket de Ciudad
+Maderas. Se eligió esa de entre ocho candidatas porque es la única que dice
+"comunidad con amenidades" completa en el formato ancho de una portada.
+
+El velo encima es suave y centrado, no una cortina: oscurece lo justo debajo del
+texto y deja ver el desarrollo. Un primer intento lo tapaba tanto que no se
+distinguía qué era la foto, que era justamente el punto de ponerla.
 
 Las versalitas se arman con dos tamaños (inicial completa, resto al 74%) porque
 la fuente web no las trae de verdad — que es exactamente como se ve el original.

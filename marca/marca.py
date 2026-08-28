@@ -21,7 +21,10 @@ FUENTE_URL = {
     # Las mismas dos familias que carga ciudadmaderas.com.
     "mont.woff2": "https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459Wlhyw.woff2",
     "goudy.woff2": "https://fonts.gstatic.com/s/sortsmillgoudy/v16/Qw3GZR9MED_6PSuS_50nEaVrfzgEbHoEjw.woff2",
-    "aerea.webp": "https://storage.googleapis.com/landing-ciudad-maderas/mapa/desarrollo.webp",
+    # Casa club de un desarrollo real, desde el aire: alberca, cancha de tenis y
+    # de fútbol en una sola toma. Es la foto que mejor dice "comunidad con
+    # amenidades" en el formato ancho de una portada.
+    "desarrollo.webp": "https://storage.googleapis.com/landing-ciudad-maderas/website-ciudad-maderas/somos/colinas-1.webp",
 }
 
 
@@ -37,7 +40,7 @@ b64 = lambda p: base64.b64encode(open(p, "rb").read()).decode()
 
 MONT = b64(insumo("mont.woff2"))
 GOUDY = b64(insumo("goudy.woff2"))
-FOTO = b64(insumo("aerea.webp"))
+FOTO = b64(insumo("desarrollo.webp"))
 
 # Muestreados de la foto de perfil real de Ciudad Maderas.
 AZUL, AZUL2, ORO = "#11253a", "#001a28", "#b4a269"
@@ -52,12 +55,13 @@ FUENTES = f"""
 # más chico. La fuente web no trae versalitas de verdad, así que se arman con
 # dos tamaños — que es exactamente como se ve en su logo original.
 CAJA = """
-.vs{font-family:Goudy,Georgia,serif;color:#fff;line-height:.90;white-space:nowrap}
+.vs{font-family:Goudy,Georgia,serif;color:#fff;line-height:.90;white-space:nowrap;
+     text-shadow:0 2px 24px rgba(0,20,32,.75)}
 .vs i{font-style:normal;font-size:.74em}
-.bajada{font-family:Mont,sans-serif;color:#fff;white-space:nowrap}
+.bajada{font-family:Mont,sans-serif;color:#fff;white-space:nowrap;text-shadow:0 2px 16px rgba(0,20,32,.8)}
 .bajada b{font-weight:700}
 .bajada span{font-weight:300}
-.rol{font-family:Goudy,Georgia,serif;color:%s;white-space:nowrap}
+.rol{font-family:Goudy,Georgia,serif;color:%s;white-space:nowrap;text-shadow:0 2px 16px rgba(0,20,32,.8)}
 .rol i{font-style:normal;font-size:.74em}
 """ % ORO
 
@@ -124,15 +128,18 @@ PORTADA = f"""<!doctype html><meta charset="utf-8"><style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{width:1640px;height:624px;overflow:hidden}}
 .c{{width:1640px;height:624px;position:relative;background:{AZUL2};overflow:hidden}}
-.c>img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.38}}
-.velo{{position:absolute;inset:0;
-       background:linear-gradient(180deg,rgba(0,26,40,.86) 0%,rgba(0,38,58,.70) 45%,rgba(0,26,40,.92) 100%)}}
+.c>img{{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.92}}
+/* Velo suave y centrado: deja ver el desarrollo y aun así sostiene el texto.
+   Antes tapaba casi toda la foto y no se distinguía qué era. */
+.velo{{position:absolute;inset:0;background:
+  radial-gradient(ellipse 62% 78% at 50% 50%, rgba(3,22,36,.78) 0%, rgba(3,22,36,.40) 55%, rgba(3,22,36,.26) 100%),
+  linear-gradient(180deg, rgba(3,22,36,.40) 0%, rgba(3,22,36,.08) 40%, rgba(3,22,36,.60) 100%)}}
 .wrap{{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
        justify-content:center;text-align:center;padding:0 280px}}
 .datos{{display:flex;gap:13px;margin-top:34px;flex-wrap:nowrap}}
 .datos span{{font-family:Mont,sans-serif;font-weight:600;font-size:17px;letter-spacing:.10em;
-             text-transform:uppercase;color:#fff;border:1px solid rgba(180,162,105,.62);
-             padding:9px 17px;border-radius:3px;white-space:nowrap}}
+             text-transform:uppercase;color:#fff;border:1px solid rgba(220,206,158,.72);
+             padding:9px 17px;border-radius:3px;white-space:nowrap;background:rgba(3,22,36,.42)}}
 .regla{{position:absolute;left:0;right:0;bottom:0;height:7px;background:{ORO}}}
 </style>
 <div class="c">
