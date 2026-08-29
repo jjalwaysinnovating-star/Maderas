@@ -3,6 +3,8 @@ import {
   parseZernioEvents,
   normalizeZernioEvents,
   verifyZernioSignature,
+  separaPregunta,
+  TOPE_TEXTO_CON_BOTONES,
 } from "../../src/channels/zernio";
 
 // Payload `message.received` REAL, capturado por Santi (2026-08-07). Campos intactos.
@@ -90,5 +92,61 @@ describe("zernio · verifyZernioSignature", () => {
   it("fail-closed: sin secret o sin firma → false", async () => {
     expect(await verifyZernioSignature(body, await sign(secret, body), undefined)).toBe(false);
     expect(await verifyZernioSignature(body, null, secret)).toBe(false);
+  });
+});
+
+/**
+ * Messenger e Instagram truncan a 80 el texto de un mensaje CON BOTONES.
+ *
+ * Pasó con un cliente real: le llegó *"En Cancún tenemos terrenos premium con
+ * excelente ubicación y potencial de crecim…"* — cortado a media palabra, sin
+ * el dato que seguía. WhatsApp ya estaba protegido por su tope de 1024; estas
+ * dos no, y su tope es doce veces más chico.
+ */
+describe("zernio · texto largo con botones", () => {
+  // El mensaje EXACTO que se cortó en Messenger.
+  const REAL_CORTADO =
+    "En Cancún tenemos terrenos premium con excelente ubicación y potencial de " +
+    "crecimiento. ¿Para qué estás buscando el terreno?";
+
+  it("el caso real se corta sin el arreglo", () => {
+    expect(REAL_CORTADO.length).toBeGreaterThan(TOPE_TEXTO_CON_BOTONES);
+  });
+
+  it("separa el cuerpo de la pregunta final", () => {
+    const partido = separaPregunta(REAL_CORTADO);
+    expect(partido).not.toBeNull();
+    const [cuerpo, pregunta] = partido!;
+    expect(cuerpo).toBe(
+      "En Cancún tenemos terrenos premium con excelente ubicación y potencial de crecimiento.",
+    );
+    expect(pregunta).toBe("¿Para qué estás buscando el terreno?");
+    // La pregunta es la que se lleva los botones: tiene que caber.
+    expect(pregunta.length).toBeLessThanOrEqual(TOPE_TEXTO_CON_BOTONES);
+  });
+
+  it("no parte lo que ya cabe entero", () => {
+    expect(separaPregunta("¿Para cuándo lo estás pensando?")).toBeNull();
+  });
+
+  it("no parte cuando ni la última frase cabe", () => {
+    // Sin frase final corta no hay dónde colgar los botones: el llamador cae a
+    // lista numerada, que entrega el texto completo.
+    const sinCorte =
+      "Este es un párrafo larguísimo y sin ninguna pregunta breve al final que " +
+      "pudiera quedarse con los botones sin que Meta lo corte a la mitad";
+    expect(separaPregunta(sinCorte)).toBeNull();
+  });
+
+  it("no parte un texto de una sola frase, por largo que sea", () => {
+    expect(separaPregunta("a".repeat(200))).toBeNull();
+  });
+
+  it("respeta los signos de apertura del español", () => {
+    const partido = separaPregunta(
+      "Los terrenos arrancan desde alrededor de $550,000 MXN según la ciudad. " +
+        "¿Cómo lo estarías viendo?",
+    );
+    expect(partido?.[1]).toBe("¿Cómo lo estarías viendo?");
   });
 });

@@ -105,6 +105,15 @@ la reemplaza (no se puede recuperar la anterior).
   D1). Nativos en Messenger/WhatsApp; en la web salen como lista numerada — esa
   conversión la hace `/web/poll`, no `sendReply`, porque el canal web no pasa por
   ahí (su `sendReply` es no-op y el navegador lee lo guardado en D1).
+  **Messenger e Instagram cortan a los 80 caracteres el texto de un mensaje CON
+  botones** y le pegan "…". No da error: entrega el mensaje mutilado, que es
+  peor. Le pasó a un cliente real —*"…potencial de crecim…"*—. Ahora
+  `separaPregunta` (en `src/channels/zernio.ts`) parte el último chunk: el
+  cuerpo sale como su propio mensaje y los botones viajan con la última frase,
+  que en este guion es siempre la pregunta y es corta por diseño. Si ni esa
+  cabe, cae a lista numerada — mejor el texto completo sin botones que una
+  frase a medias. WhatsApp ya tenía su tope de 1024; Telegram no trunca.
+  **Vive en `src/`: `forjabot update` lo borra.**
 - **Red de seguridad del lead** (`src/leads/rescate.ts`, enganchada al final de
   `processBuffer`). El modelo tiene la tool y el prompt le ordena llamarla antes
   de prometer nada, y aun así en conversaciones de varios turnos a veces contesta

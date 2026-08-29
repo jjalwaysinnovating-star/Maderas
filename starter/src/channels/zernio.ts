@@ -246,6 +246,44 @@ export async function sendZernioTemplate(
   }
 }
 
+/**
+ * Cuánto texto cabe en un mensaje CON BOTONES antes de que Meta lo corte.
+ *
+ * Messenger e Instagram truncan el texto del button_template a los 80
+ * caracteres y le pegan "…". Le pasó al bot con un cliente real: el mensaje
+ * llegó como *"…terrenos premium con excelente ubicación y potencial de
+ * crecim…"* y la persona se quedó sin la frase.
+ *
+ * WhatsApp ya estaba protegido (el tope de 1024 de su body interactivo); estas
+ * dos no lo estaban, y su tope es DOCE veces más chico. Telegram no trunca.
+ */
+export const TOPE_TEXTO_CON_BOTONES = 80;
+
+/**
+ * Parte un texto en [cuerpo, última frase] cuando no cabe con botones.
+ *
+ * No recorta: el cuerpo largo sale como su propio mensaje y los botones viajan
+ * con la última frase — que en este guion es siempre la pregunta, y es corta
+ * por diseño ("¿Para qué estás buscando el terreno?" son 36 caracteres).
+ *
+ * Devuelve null si no se puede partir bien; ahí el llamador cae a lista
+ * numerada, que es preferible: mejor el texto completo sin botones que una
+ * frase mutilada.
+ */
+export function separaPregunta(
+  texto: string,
+  tope = TOPE_TEXTO_CON_BOTONES,
+): [string, string] | null {
+  const t = texto.trim();
+  if (t.length <= tope) return null; // ya cabe entero, no hay nada que partir
+  const frases = t.match(/[^.!?\n]+[.!?]*\s*/g);
+  if (!frases || frases.length < 2) return null;
+  const ultima = frases[frases.length - 1].trim();
+  const cuerpo = frases.slice(0, -1).join("").trim();
+  if (!ultima || !cuerpo || ultima.length > tope) return null;
+  return [cuerpo, ultima];
+}
+
 // ── adapter ───────────────────────────────────────────────────────────────────
 export const zernioAdapter: ChannelAdapter = {
   // Existe por la interfaz; la ruta /webhooks/zernio usa parseZernioEvents directo.
@@ -268,22 +306,36 @@ export const zernioAdapter: ChannelAdapter = {
       return;
     }
     const url = `${zernioBase(env)}/inbox/conversations/${encodeURIComponent(ctx.conversation_id)}/messages`;
-    for (let i = 0; i < reply.chunks.length; i++) {
+    const plataforma = (ctx.platform ?? "").toLowerCase();
+    // Meta trunca a 80 el texto de un mensaje con botones. Si el último chunk
+    // no cabe, se parte AQUÍ —cuerpo por un lado, pregunta con los botones por
+    // el otro— en vez de dejar que llegue cortado. Puede sumar un mensaje por
+    // encima del tope de chunks del panel: es una necesidad de la plataforma,
+    // no una decisión de estilo.
+    let chunks = reply.chunks;
+    if (reply.buttons?.length && ["instagram", "facebook", "messenger"].includes(plataforma)) {
+      const partido = separaPregunta(chunks[chunks.length - 1] ?? "");
+      if (partido) chunks = [...chunks.slice(0, -1), partido[0], partido[1]];
+    }
+
+    for (let i = 0; i < chunks.length; i++) {
       const delay = i === 0 ? 0 : reply.interChunkDelayMs ?? 1000;
       if (delay > 0) await new Promise((r) => setTimeout(r, delay));
       // El campo es `message` (con `text` Zernio lo rechaza); accountId obligatorio.
-      const body: Record<string, unknown> = { accountId: ctx.account_id, message: reply.chunks[i] };
+      const body: Record<string, unknown> = { accountId: ctx.account_id, message: chunks[i] };
       // Botones (opt-in) en el ÚLTIMO chunk. `buttons` postback funciona en
       // WhatsApp (reply buttons), IG/FB (button_template, visible en Message
       // Requests — mejor que chips para leads fríos) y Telegram (inline). En
       // plataformas SIN soporte (X, SMS, Slack…) van como lista numerada.
-      if (reply.buttons?.length && i === reply.chunks.length - 1) {
-        const plat = (ctx.platform ?? "").toLowerCase();
-        // El body interactivo de WhatsApp tope a 1024 chars (límite de Meta):
-        // con un chunk más largo, mejor lista numerada que arriesgar el envío.
+      if (reply.buttons?.length && i === chunks.length - 1) {
+        // Cada plataforma tiene su tope, y pasarse NO da error: entrega el
+        // mensaje cortado, que es peor. Si no cabe, lista numerada — el texto
+        // llega completo aunque se pierda el toque.
         const soporta =
-          ["instagram", "facebook", "messenger", "telegram"].includes(plat) ||
-          (plat === "whatsapp" && reply.chunks[i].length <= 1024);
+          plataforma === "telegram" ||
+          (["instagram", "facebook", "messenger"].includes(plataforma) &&
+            chunks[i].length <= TOPE_TEXTO_CON_BOTONES) ||
+          (plataforma === "whatsapp" && chunks[i].length <= 1024);
         if (soporta) {
           body.buttons = reply.buttons.map((b) => ({
             type: "postback",
@@ -291,7 +343,7 @@ export const zernioAdapter: ChannelAdapter = {
             payload: b.payload,
           }));
         } else {
-          body.message = `${reply.chunks[i]}\n\n${reply.buttons.map((b, n) => `${n + 1}) ${b.title}`).join("\n")}`;
+          body.message = `${chunks[i]}\n\n${reply.buttons.map((b, n) => `${n + 1}) ${b.title}`).join("\n")}`;
         }
       }
       const res = await fetch(url, {
