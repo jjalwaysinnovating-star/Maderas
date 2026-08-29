@@ -63,6 +63,22 @@ la reemplaza (no se puede recuperar la anterior).
   texto se escribió cuando la página se llamaba así. Si algún día vuelve a
   aparecer un mensaje que nadie escribió: **revisa qué otras apps están
   conectadas a la página**, no el código.
+- **Embudo de comentarios: LO HACE ZERNIO, no nuestro código** (2026-08-29).
+  Quien comenta *info*, *información*, *precio* o *precios* en cualquier
+  publicación recibe un DM automático y una respuesta pública; el DM termina con
+  una PREGUNTA a propósito, porque cuando la persona contesta ese mensaje entra
+  por `message.received` y **el bot toma la conversación** con su guion normal.
+  Son dos automatizaciones (`GET /api/v1/comment-automations`), una por cuenta:
+  Instagram `6a92f975894af1fc0642775c` y Facebook `6a92f9769470b63456aa16c3`.
+  **`alsoMatchInDms` va en `false` y NO se debe prender:** el bot ya atiende los
+  DMs, y encenderlo haría que a la misma persona le lleguen dos respuestas — el
+  problema de ManyChat sembrado de nuevo.
+  La plantilla trae su propio `src/channels/comment-funnel.ts`, pero **no se usa**:
+  cuelga del webhook oficial de Meta, que aquí no está conectado, y
+  `commentFunnels` sigue vacío. No hay que tocarlo.
+  El DM no lleva botones a propósito: los de Zernio son de enlace, y un enlace
+  NO abre la ventana de 24h de Instagram — solo abre esa ventana un mensaje de
+  la persona. Por eso se pide respuesta en vez de un toque.
 - **Avisos:** Telegram al dueño (`@ciudadmaderas_avisos_bot`). Solo se avisa de los
   leads **calientes** — avisar de todos entrena a ignorar los avisos. El aviso NO
   depende del canal: `calificarLead` solo recibe `env` y el id de conversación, así
@@ -237,15 +253,6 @@ Cloudflare para desplegar código.
   Las **dos API keys del panel (la "default" y la de "Ciudad Maderas") son de la
   misma cuenta** — mismo saldo, mismo webhook. No hay subcuentas que confundan.
   Guía: `starter/skill/references/channel-setup-guides/ycloud-whatsapp.md`.
-- **Embudo de comentarios** — el dueño lo quiere: quien comenta "info" en una
-  publicación recibe un DM y ahí arranca la conversación normal. Se pospuso a
-  propósito hasta que los tres canales de hoy lleven días estables. La plantilla
-  ya trae `src/channels/comment-funnel.ts` (comentario → DM con botón → recurso;
-  el botón NO es adorno: Instagram deja mandar UN solo mensaje a quien nunca te
-  ha escrito, y el toque abre la ventana de 24h), pero está colgado del webhook
-  **oficial de Meta**, que aquí no se usa, y `commentFunnels` está vacío. Por
-  Zernio habría que registrar el evento de comentarios —el webhook está dado de
-  alta solo con `message.received`— y enseñarle al adapter a leerlo.
 - **Cuál Instagram es el oficial** — Meta Business Suite muestra
   `jjalwaysinnovating` como el IG de la página, pero el bot vive en
   `ciudadmaderaswoodcity`. No rompe nada (Zernio va directo a la cuenta), pero
