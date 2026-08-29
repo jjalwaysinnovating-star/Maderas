@@ -56,7 +56,6 @@ function tarjeta(sl, x, y, w, h, relleno) {
     x, y, w, h, rectRadius: 0.09,
     fill: { color: relleno || BLANCO },
     line: { color: "DDE3E8", width: 1 },
-    shadow: { type: "outer", angle: 90, blur: 10, offset: 2, color: "9AA7B2", opacity: 0.18 },
   });
 }
 
@@ -525,7 +524,7 @@ preguntas.forEach((q) => {
   // Simulación del aviso
   sl.addShape(p.ShapeType.roundRect, {
     x: 7.6, y: 1.75, w: 4.9, h: 4.6, rectRadius: 0.16,
-    fill: { color: BLANCO }, shadow: { type: "outer", angle: 90, blur: 16, offset: 3, color: "000000", opacity: 0.3 },
+    fill: { color: BLANCO }, line: { color: "C9D4DC", width: 1 },
   });
   sl.addText("🔥 Lead caliente — contáctalo hoy", {
     x: 7.95, y: 2.05, w: 4.2, h: 0.42, isTextBox: true, margin: 0,
