@@ -16,7 +16,7 @@ const D = __dirname;
   `});
   await pg.waitForTimeout(900);
   await pg.pdf({
-    path: `${D}/sistema-ciudad-maderas.pdf`,
+    path: `${D}/${process.argv[2] || "sistema-ciudad-maderas"}.pdf`,
     width: "13.333in", height: "7.5in",
     printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 },
   });
