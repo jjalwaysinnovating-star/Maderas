@@ -289,8 +289,9 @@ Cloudflare para desplegar código.
   acaba. Conviene recarga automática (console.anthropic.com/settings/billing →
   Auto-reload) antes de abrir WhatsApp: si se acaba a media plática el bot deja
   de contestar sin error visible para el cliente.
-- **Leads de prueba** — hay nueve falsos en el panel (Ana López, Roberto Salinas,
-  Patricia Vega, Jay, Carlos Mendez, Lucia Ramos, "PRUEBA — bórrame" del
-  formulario, y Jorge Prueba y Sofía Prueba de la verificación del guion). El panel
-  ya tiene botón **Borrar**, desplegado: se abre el detalle del lead y está abajo a
-  la derecha.
+- **Leads de prueba: BORRADOS** (2026-08-29). El panel quedó en cero, así que el
+  primer lead que aparezca ya es de verdad. Eran 26 — los 21 inventados en las
+  pruebas, más "Jay" (cuatro copias, el caso que destapó el duplicado de
+  `captureLead`) y "Josa" (el que destapó el hilo eterno de Messenger); esos dos
+  venían de conversaciones reales y el dueño confirmó borrarlos también.
+  El panel tiene botón **Borrar** en el detalle de cada lead, abajo a la derecha.
