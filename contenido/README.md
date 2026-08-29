@@ -41,8 +41,24 @@ y de escrituración solo que sí se escritura, con costos y tiempos que explica 
 asesor. En su lugar van "sin comprobante de ingresos" y "crédito directo con la
 desarrolladora", que sí están en `starter/member/kb/03-financiamiento.md`.
 
+También se cayó "a un paso de la playa" en el post de Cancún: la marca habla de
+clima caribeño y paisajes, nunca de distancia a la playa. Una cercanía inventada
+es de las que el cliente comprueba al llegar.
+
 **Regla para lo que venga después: si un dato no está en la KB, no va en un
 post.** Ahí es donde vive lo que el asesor puede sostener.
+
+## Plaza ≠ desarrollo
+
+Trampa fácil y ya cayó una vez. **Caribe, Península, Bajío** son los nombres con
+que Ciudad Maderas llama a sus **plazas** (Quintana Roo, Yucatán, Guanajuato),
+no desarrollos con ese nombre. El post decía "Ciudad Maderas Caribe, en Cancún"
+como si fuera un desarrollo con dirección; ahora dice "es la plaza de Cancún".
+
+En Querétaro, León, Mérida y San Luis Potosí la marca **sí** publica los nombres
+de cada desarrollo, y esos se pueden usar tal cual (están en `landing.local.ts`).
+En **Cancún, Monterrey, Aguascalientes y Puebla no los publica** — ahí se nombra
+la ciudad y el detalle lo da un asesor.
 
 ## Rehacerlas o hacer más
 

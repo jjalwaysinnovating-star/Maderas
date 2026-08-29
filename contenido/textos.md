@@ -37,8 +37,8 @@ mensaje**, que es donde el bot toma la conversación y califica al prospecto.
 
 > Un terreno en el Caribe desde $1,388 al mes.
 >
-> Ciudad Maderas Caribe, en Cancún: terrenos premium con club acuático y
-> amenidades, a un paso de la playa.
+> Ciudad Maderas Caribe es la plaza de Cancún: terrenos premium con Club
+> Acuático y amenidades.
 >
 > La mensualidad exacta depende del lote y del plazo que elijas — dime cuánto
 > puedes dar de enganche y te la calculo.

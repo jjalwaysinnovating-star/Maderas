@@ -130,9 +130,12 @@ post(
 <div class="eyebrow">Cancún · Mensualidad desde</div>
 <div class="cifra">$1,388</div>
 <div class="grande" style="font-size:52px;margin-top:12px">al mes</div>
-<div class="pie">Ciudad Maderas Caribe: terrenos premium con club acuático y
-  amenidades, a un paso del Caribe. La mensualidad exacta depende del lote y
-  del plazo — te la calculo.</div>
+<!-- "Caribe" es la PLAZA de Quintana Roo, no un desarrollo con ese nombre: la
+     marca no publica nombres por separado en Cancún (ver la KB). Decirlo como
+     desarrollo suena bien y es falso. -->
+<div class="pie">Ciudad Maderas Caribe es la plaza de Cancún: terrenos premium
+  con Club Acuático y amenidades. La mensualidad exacta depende del lote y del
+  plazo — te la calculo.</div>
 <div class="cta">Comenta INFO</div>""",
 )
 
