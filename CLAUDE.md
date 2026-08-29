@@ -64,10 +64,15 @@ la reemplaza (no se puede recuperar la anterior).
   aparecer un mensaje que nadie escribió: **revisa qué otras apps están
   conectadas a la página**, no el código.
 - **Embudo de comentarios: LO HACE ZERNIO, no nuestro código** (2026-08-29).
-  Quien comenta *info*, *información*, *precio* o *precios* en cualquier
-  publicación recibe un DM automático y una respuesta pública; el DM termina con
-  una PREGUNTA a propósito, porque cuando la persona contesta ese mensaje entra
-  por `message.received` y **el bot toma la conversación** con su guion normal.
+  **CUALQUIER comentario** en cualquier publicación —no solo palabras clave—
+  recibe un DM automático y una respuesta pública; lo pidió así el dueño, y
+  tiene sentido: quien comenta "🔥" también se detuvo en la publicación. El DM
+  termina con una PREGUNTA a propósito, porque cuando la persona contesta ese
+  mensaje entra por `message.received` y **el bot toma la conversación** con su
+  guion normal.
+  Con `keywords: []` hay que cuidar una cosa: un reclamo no debe recibir un DM
+  de venta. Por eso `excludeKeywords` trae *estafa, fraude, robo, denuncia,
+  demanda, pésimo, mentira, no sirve, cuidado* — esos los atiende él a mano.
   Son dos automatizaciones (`GET /api/v1/comment-automations`), una por cuenta:
   Instagram `6a92f975894af1fc0642775c` y Facebook `6a92f9769470b63456aa16c3`.
   **`alsoMatchInDms` va en `false` y NO se debe prender:** el bot ya atiende los
