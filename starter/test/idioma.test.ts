@@ -184,7 +184,7 @@ describe("el idioma y la moneda llegan a la prompt de verdad", () => {
  *
  * "Latinoamérica" incluye el Río de la Plata: con es-419 el modelo se va al
  * voseo en cuanto la conversación se pone coloquial. Probando el bot de un
- * asesor de Tijuana salió "vos elegís qué construir", que a su cliente le
+ * asesor mexicano salió "vos elegís qué construir", que a su cliente le
  * suena a call center de fuera. Prohibir 'vosotros' no lo evita: vosotros es
  * de España, el problema es 'vos'.
  */

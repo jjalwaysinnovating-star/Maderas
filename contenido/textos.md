@@ -23,15 +23,15 @@ mensaje**, que es donde el bot toma la conversación y califica al prospecto.
 > ingresos y desde 1% de enganche. Mucha gente que se dio por vencida con el
 > banco sí puede comprar su terreno.
 >
-> Terrenos premium en 8 estados de México. Te atiendo desde Tijuana, en línea,
-> para cualquiera de las plazas.
+> Terrenos premium en 8 estados de México. Te atiendo en línea, estés donde
+> estés — también desde el extranjero.
 >
 > Comenta **INFO** y te digo cuánto quedaría tu mensualidad. 👇
 >
 > Asesor autorizado de Ciudad Maderas.
 >
 > #Terrenos #TerrenosEnVenta #Inversion #CiudadMaderas #CreditoDirecto
-> #SinBuro #PatrimonioFamiliar #BienesRaices #Tijuana #InversionInmobiliaria
+> #SinBuro #PatrimonioFamiliar #BienesRaices #InversionInmobiliaria #MexicanosEnElExtranjero
 
 ## Post 2 — Cancún (`post-2-cancun.png`)
 
@@ -91,19 +91,14 @@ eso ayuda al alcance más que cualquier cosa que yo pueda meterle al archivo.
 
 ---
 
-## Cuidado con los hashtags de ciudad
+## Nada de hashtags de la ciudad del asesor
 
-El asesor está en **Tijuana**, pero **Ciudad Maderas no tiene desarrollos en
-Baja California**: las plazas son Querétaro, León, Mérida, Cancún, Monterrey,
-Aguascalientes, San Luis Potosí y Puebla.
+**El mercado es todo México y el extranjero**, y él atiende en línea. Dónde vive
+él no le importa a nadie y sí estorba: un hashtag de su ciudad atrae a quien
+busca terreno **ahí** —donde Ciudad Maderas no tiene nada— y deja fuera al resto.
 
-Por eso `#Tijuana` solo va donde el texto aclara que él **atiende desde** ahí,
-no que venda terrenos ahí. Quien busca un hashtag de ciudad en bienes raíces
-está buscando terreno **en** esa ciudad; sin la aclaración llegan personas a las
-que no se les puede vender nada, y eso es peor que no llegar a nadie.
-
-Los hashtags de las 8 plazas (`#Cancun`, `#Queretaro`…) sí van libres: ahí sí
-hay qué ofrecer.
+Los únicos hashtags de lugar que van son los de **las 8 plazas** (`#Cancun`,
+`#Queretaro`, `#Merida`…): ahí sí hay qué ofrecer.
 
 ## Por qué todos dicen "comenta INFO"
 

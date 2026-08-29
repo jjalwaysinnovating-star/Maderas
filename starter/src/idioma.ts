@@ -31,7 +31,7 @@ export const IDIOMAS = {
   },
   // "Latinoamérica" incluye el Río de la Plata, así que con es-419 el modelo se
   // va al voseo en cuanto la conversación se pone coloquial: probando el bot de
-  // un asesor de Tijuana salió "vos elegís qué construir". Prohibir 'vosotros'
+  // un asesor mexicano salió "vos elegís qué construir". Prohibir 'vosotros'
   // no lo evita — vosotros es de España; el problema es 'vos'. Un negocio
   // mexicano necesita decirlo aparte.
   "es-MX": {
