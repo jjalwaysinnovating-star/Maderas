@@ -67,7 +67,7 @@ describe("LeadsRepo", () => {
     await repo.create({
       name: "Cliente real",
       contact: "686",
-      intent: "casa en Mexicali",
+      intent: "terreno en Querétaro",
       conversationId: null,
       channelUserId: null,
     });

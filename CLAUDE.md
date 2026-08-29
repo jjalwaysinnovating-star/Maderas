@@ -5,6 +5,14 @@ un **asesor inmobiliario autorizado** (no es la desarrolladora). El bot vive en 
 cuenta de Cloudflare del dueño; el código está en `starter/`, bajado con
 `npx forjabot init` (plantilla Forja / Horizontes IA).
 
+**El asesor está en TIJUANA** (confirmado por él, 2026-08-28). Antes el proyecto
+decía "Mexicali" en la KB, en el prompt y en tres comentarios — nadie lo había
+dicho: se dedujo de la lada 686 y se quedó escrito como si fuera un dato suyo.
+Ojo con esto al hacer publicidad: **Ciudad Maderas NO tiene desarrollos en Baja
+California**, así que un hashtag de su ciudad solo va si el texto aclara que
+atiende *desde* Tijuana — si no, atrae a gente que busca terreno ahí y no hay
+qué venderle.
+
 **SOLO TERRENOS.** El asesor no vende casas. Nada de Casas Premium, modelos ni la
 mensualidad de casa — ni en la página, ni en la KB, ni en el prompt. Hay una prueba
 que lo vigila (`test/sitio-web.test.ts`, bloque "solo terrenos").
