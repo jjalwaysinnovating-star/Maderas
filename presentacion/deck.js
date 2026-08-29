@@ -127,19 +127,19 @@ function burbuja(sl, x, y, w, texto, mia, alto) {
   ];
   datos.forEach(([t, d], i) => {
     const x = M + i * 4.15;
-    tarjeta(sl, x, 2.05, 3.75, 2.75);
+    tarjeta(sl, x, 2.0, 3.75, 3.6);
     circulo(sl, x + 0.35, 2.4, String(i + 1));
     sl.addText(t, {
-      x: x + 0.35, y: 3.1, w: 3.05, h: 0.6, isTextBox: true, margin: 0,
-      fontFace: SERIF, fontSize: 18, bold: true, color: AZUL,
+      x: x + 0.35, y: 3.2, w: 3.05, h: 0.75, isTextBox: true, margin: 0,
+      fontFace: SERIF, fontSize: 19, bold: true, color: AZUL,
     });
     sl.addText(d, {
-      x: x + 0.35, y: 3.7, w: 3.05, h: 1.0, isTextBox: true, margin: 0,
-      fontFace: SANS, fontSize: 12.5, color: GRIS,
+      x: x + 0.35, y: 4.05, w: 3.05, h: 1.35, isTextBox: true, margin: 0,
+      fontFace: SANS, fontSize: 13.5, color: GRIS,
     });
   });
   sl.addText("El sistema no reemplaza al asesor: le entrega al prospecto ya calificado y con teléfono.", {
-    x: M, y: 5.25, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
+    x: M, y: 6.3, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 14, italic: true, color: AZUL,
   });
 }
@@ -158,25 +158,25 @@ function burbuja(sl, x, y, w, texto, mia, alto) {
   const w = 2.28, gap = 0.24;
   pasos.forEach(([t, d], i) => {
     const x = M + i * (w + gap);
-    tarjeta(sl, x, 2.15, w, 2.6, i === 4 ? "FBF7EA" : BLANCO);
-    circulo(sl, x + w / 2 - 0.26, 2.42, String(i + 1));
+    tarjeta(sl, x, 2.1, w, 3.5, i === 4 ? "FBF7EA" : BLANCO);
+    circulo(sl, x + w / 2 - 0.26, 2.5, String(i + 1));
     sl.addText(t, {
-      x, y: 3.1, w, h: 0.4, isTextBox: true, margin: 0,
-      fontFace: SERIF, fontSize: 17, bold: true, color: AZUL, align: "center",
+      x, y: 3.25, w, h: 0.45, isTextBox: true, margin: 0,
+      fontFace: SERIF, fontSize: 18, bold: true, color: AZUL, align: "center",
     });
     sl.addText(d, {
-      x: x + 0.15, y: 3.55, w: w - 0.3, h: 1.05, isTextBox: true, margin: 0,
-      fontFace: SANS, fontSize: 11.5, color: GRIS, align: "center",
+      x: x + 0.15, y: 3.85, w: w - 0.3, h: 1.5, isTextBox: true, margin: 0,
+      fontFace: SANS, fontSize: 12.5, color: GRIS, align: "center",
     });
     if (i < 4) {
       sl.addText("›", {
-        x: x + w, y: 3.15, w: gap, h: 0.4, isTextBox: true, margin: 0,
+        x: x + w, y: 3.28, w: gap, h: 0.4, isTextBox: true, margin: 0,
         fontFace: SANS, fontSize: 20, bold: true, color: ORO, align: "center",
       });
     }
   });
   sl.addText("Todo esto ocurre en segundos, a cualquier hora, sin que nadie esté al pendiente.", {
-    x: M, y: 5.2, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
+    x: M, y: 6.3, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 14, italic: true, color: AZUL,
   });
 }
@@ -193,8 +193,8 @@ function burbuja(sl, x, y, w, texto, mia, alto) {
   ];
   canales.forEach(([t, d, estado], i) => {
     const x = M + (i % 2) * 6.15;
-    const y = 2.05 + Math.floor(i / 2) * 1.72;
-    tarjeta(sl, x, y, 5.75, 1.5);
+    const y = 1.95 + Math.floor(i / 2) * 2.3;
+    tarjeta(sl, x, y, 5.75, 2.0);
     sl.addText(t, {
       x: x + 0.35, y: y + 0.2, w: 3.4, h: 0.4, isTextBox: true, margin: 0,
       fontFace: SERIF, fontSize: 18, bold: true, color: AZUL,
@@ -210,12 +210,12 @@ function burbuja(sl, x, y, w, texto, mia, alto) {
       align: "center", valign: "middle",
     });
     sl.addText(d, {
-      x: x + 0.35, y: y + 0.68, w: 5.05, h: 0.7, isTextBox: true, margin: 0,
-      fontFace: SANS, fontSize: 12.5, color: GRIS,
+      x: x + 0.35, y: y + 0.85, w: 5.05, h: 0.95, isTextBox: true, margin: 0,
+      fontFace: SANS, fontSize: 13.5, color: GRIS,
     });
   });
   sl.addText("Un prospecto que empieza en Instagram y sigue en WhatsApp queda como una sola ficha, no como dos.", {
-    x: M, y: 5.6, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
+    x: M, y: 6.5, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 14, italic: true, color: AZUL,
   });
 }
@@ -236,20 +236,20 @@ function burbuja(sl, x, y, w, texto, mia, alto) {
     ["El bot toma la plática", "El mensaje termina con una pregunta. Cuando la persona responde, arranca el guion completo."],
   ];
   pasos.forEach(([t, d], i) => {
-    const y = 2.15 + i * 1.35;
+    const y = 2.2 + i * 1.5;
     circulo(sl, M, y, String(i + 1), 0.46);
     sl.addText(t, {
       x: M + 0.68, y: y - 0.04, w: 6.0, h: 0.35, isTextBox: true, margin: 0,
       fontFace: SERIF, fontSize: 18, bold: true, color: AZUL,
     });
     sl.addText(d, {
-      x: M + 0.68, y: y + 0.32, w: 6.0, h: 0.8, isTextBox: true, margin: 0,
-      fontFace: SANS, fontSize: 12.5, color: GRIS,
+      x: M + 0.68, y: y + 0.36, w: 6.0, h: 1.0, isTextBox: true, margin: 0,
+      fontFace: SANS, fontSize: 13.5, color: GRIS,
     });
   });
   sl.addText("Los reclamos quedan fuera a propósito: esos los atiende el asesor en persona.", {
-    x: M, y: 6.35, w: 6.7, h: 0.5, isTextBox: true, margin: 0,
-    fontFace: SANS, fontSize: 12.5, italic: true, color: AZUL,
+    x: M, y: 6.65, w: 6.7, h: 0.5, isTextBox: true, margin: 0,
+    fontFace: SANS, fontSize: 13, italic: true, color: AZUL,
   });
 }
 
@@ -276,32 +276,32 @@ function burbuja(sl, x, y, w, texto, mia, alto) {
   const sl = s();
   tituloClaro(sl, "Regla de oro: contesta primero, pregunta después", "Un bot que interroga antes de dar información se siente ansioso, y la gente se va.");
   // Mal
-  tarjeta(sl, M, 2.0, 5.75, 3.1);
+  tarjeta(sl, M, 2.0, 5.75, 3.95);
   sl.addText("Así NO", {
     x: M + 0.35, y: 2.2, w: 2, h: 0.35, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 13, bold: true, color: CALIENTE, charSpacing: 2,
   });
-  burbuja(sl, M + 0.35, 2.68, 3.6, "¿Cuánto cuesta un terreno?", false);
-  burbuja(sl, M + 0.35, 3.42, 4.6, "¿Para qué estás buscando el terreno?", true);
+  burbuja(sl, M + 0.35, 2.75, 3.6, "¿Cuánto cuesta un terreno?", false);
+  burbuja(sl, M + 0.35, 3.65, 4.6, "¿Para qué estás buscando el terreno?", true);
   sl.addText("No contestó lo que le preguntaron.", {
-    x: M + 0.35, y: 4.3, w: 5.05, h: 0.5, isTextBox: true, margin: 0,
+    x: M + 0.35, y: 4.6, w: 5.05, h: 0.5, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 12, italic: true, color: GRIS,
   });
   // Bien
-  tarjeta(sl, M + 6.15, 2.0, 5.75, 3.1, "FBF7EA");
+  tarjeta(sl, M + 6.15, 2.0, 5.75, 3.95, "FBF7EA");
   sl.addText("Así SÍ", {
     x: M + 6.5, y: 2.2, w: 2, h: 0.35, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 13, bold: true, color: "3C6B4A", charSpacing: 2,
   });
-  burbuja(sl, M + 6.5, 2.68, 3.6, "¿Cuánto cuesta un terreno?", false);
-  burbuja(sl, M + 6.5, 3.42, 5.05,
+  burbuja(sl, M + 6.5, 2.75, 3.6, "¿Cuánto cuesta un terreno?", false);
+  burbuja(sl, M + 6.5, 3.65, 5.05,
     "Desde alrededor de $550,000, y la mensualidad desde $1,244 según la ciudad. Para darte tu número, ¿para qué buscas el terreno?", true, 1.05);
   sl.addText("Responde, y la pregunta va pegada al final.", {
-    x: M + 6.5, y: 4.6, w: 5.05, h: 0.4, isTextBox: true, margin: 0,
+    x: M + 6.5, y: 4.95, w: 5.05, h: 0.4, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 12, italic: true, color: GRIS,
   });
   sl.addText("Además: una sola pregunta por mensaje. Nunca dos, ni una con dos partes. Y nunca repetir algo ya contestado.", {
-    x: M, y: 5.4, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
+    x: M, y: 6.4, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 14, italic: true, color: AZUL,
   });
 }
@@ -334,38 +334,38 @@ preguntas.forEach((q) => {
   const sl = s();
   tituloClaro(sl, `Pregunta ${q.n} · ${q.titulo}`, null);
   // La pregunta, como la ve el cliente
-  tarjeta(sl, M, 1.75, 7.1, 2.5);
-  circulo(sl, M + 0.35, 2.0, String(q.n), 0.46);
+  tarjeta(sl, M, 1.9, 7.1, 3.35);
+  circulo(sl, M + 0.35, 2.18, String(q.n), 0.46);
   sl.addText("Lo que ve el cliente", {
-    x: M + 1.0, y: 2.05, w: 4, h: 0.35, isTextBox: true, margin: 0,
+    x: M + 1.0, y: 2.23, w: 4, h: 0.35, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 11.5, bold: true, color: GRIS, charSpacing: 2,
   });
-  burbuja(sl, M + 0.35, 2.62, 6.4, q.pregunta, true);
+  burbuja(sl, M + 0.35, 2.9, 6.4, q.pregunta, true, 0.72);
   const anchos = q.botones.map((b) => Math.max(1.5, 0.28 + b.length * 0.095));
   let bx = M + 0.35;
   q.botones.forEach((b, i) => {
-    chip(sl, bx, 3.45, anchos[i], b);
+    chip(sl, bx, 3.92, anchos[i], b);
     bx += anchos[i] + 0.16;
   });
   sl.addText("Los botones son tocables: un dedo y listo. Solo estas tres preguntas los llevan.", {
-    x: M + 0.35, y: 4.02, w: 6.4, h: 0.3, isTextBox: true, margin: 0,
-    fontFace: SANS, fontSize: 10.5, italic: true, color: GRIS,
+    x: M + 0.35, y: 4.62, w: 6.4, h: 0.4, isTextBox: true, margin: 0,
+    fontFace: SANS, fontSize: 11.5, italic: true, color: GRIS,
   });
   // Por qué
-  tarjeta(sl, M + 7.5, 1.75, 4.4, 2.5, AZUL);
+  tarjeta(sl, M + 7.5, 1.9, 4.4, 3.35, AZUL);
   sl.addText("POR QUÉ ESTA PREGUNTA", {
-    x: M + 7.85, y: 2.0, w: 3.7, h: 0.3, isTextBox: true, margin: 0,
+    x: M + 7.85, y: 2.25, w: 3.7, h: 0.3, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 10.5, bold: true, color: ORO, charSpacing: 2,
   });
   sl.addText(q.porque, {
-    x: M + 7.85, y: 2.45, w: 3.7, h: 1.6, isTextBox: true, margin: 0,
-    fontFace: SANS, fontSize: 13, color: BLANCO,
+    x: M + 7.85, y: 2.8, w: 3.7, h: 2.1, isTextBox: true, margin: 0,
+    fontFace: SANS, fontSize: 14, color: BLANCO,
   });
   // Dato
-  tarjeta(sl, M, 4.55, 11.9, 1.15, "FBF7EA");
+  tarjeta(sl, M, 5.5, 11.9, 1.3, "FBF7EA");
   sl.addText(q.dato, {
-    x: M + 0.4, y: 4.55, w: 11.1, h: 1.15, isTextBox: true, margin: 0,
-    fontFace: SANS, fontSize: 13.5, color: AZUL, valign: "middle",
+    x: M + 0.4, y: 5.5, w: 11.1, h: 1.3, isTextBox: true, margin: 0,
+    fontFace: SANS, fontSize: 14.5, color: AZUL, valign: "middle",
   });
   sl.addNotes(q.porque);
 });
@@ -380,18 +380,18 @@ preguntas.forEach((q) => {
   ];
   pasos.forEach(([t, texto], i) => {
     const x = M + i * 6.15;
-    tarjeta(sl, x, 2.05, 5.75, 2.1);
-    circulo(sl, x + 0.35, 2.3, String(i + 1), 0.46);
+    tarjeta(sl, x, 2.05, 5.75, 2.45);
+    circulo(sl, x + 0.35, 2.35, String(i + 1), 0.46);
     sl.addText(t, {
-      x: x + 1.0, y: 2.35, w: 4.4, h: 0.35, isTextBox: true, margin: 0,
+      x: x + 1.0, y: 2.4, w: 4.4, h: 0.35, isTextBox: true, margin: 0,
       fontFace: SERIF, fontSize: 18, bold: true, color: AZUL,
     });
-    burbuja(sl, x + 0.35, 2.95, 5.05, texto, true, 0.85);
+    burbuja(sl, x + 0.35, 3.15, 5.05, texto, true, i === 0 ? 0.72 : 1.0);
   });
-  tarjeta(sl, M, 4.5, 11.9, 1.35, "FBF7EA");
+  tarjeta(sl, M, 5.35, 11.9, 1.45, "FBF7EA");
   sl.addText(
     "Estas dos NO llevan botones: son preguntas abiertas. Pedir nombre y teléfono juntos es la forma más rápida de que alguien deje de contestar.",
-    { x: M + 0.4, y: 4.5, w: 11.1, h: 1.35, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 13.5, color: AZUL, valign: "middle" },
+    { x: M + 0.4, y: 5.35, w: 11.1, h: 1.45, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 14.5, color: AZUL, valign: "middle" },
   );
 }
 
@@ -409,28 +409,28 @@ preguntas.forEach((q) => {
   ];
   nivel.forEach(([color, t, d, accion], i) => {
     const x = M + i * 4.15;
-    tarjeta(sl, x, 2.0, 3.75, 3.35);
+    tarjeta(sl, x, 2.0, 3.75, 4.05);
     sl.addShape(p.ShapeType.ellipse, { x: x + 0.35, y: 2.28, w: 0.34, h: 0.34, fill: { color } });
     sl.addText(t, {
       x: x + 0.82, y: 2.24, w: 2.6, h: 0.42, isTextBox: true, margin: 0,
       fontFace: SERIF, fontSize: 22, bold: true, color,
     });
     sl.addText(d, {
-      x: x + 0.35, y: 2.85, w: 3.05, h: 1.5, isTextBox: true, margin: 0,
-      fontFace: SANS, fontSize: 13, color: GRIS,
+      x: x + 0.35, y: 2.95, w: 3.05, h: 2.15, isTextBox: true, margin: 0,
+      fontFace: SANS, fontSize: 14, color: GRIS,
     });
     sl.addShape(p.ShapeType.roundRect, {
-      x: x + 0.35, y: 4.5, w: 3.05, h: 0.58, rectRadius: 0.1,
+      x: x + 0.35, y: 5.25, w: 3.05, h: 0.62, rectRadius: 0.1,
       fill: { color: i === 0 ? "FBEDE9" : HUMO }, line: { color: i === 0 ? "E0B5AA" : "DDE3E8", width: 1 },
     });
     sl.addText(accion, {
-      x: x + 0.35, y: 4.5, w: 3.05, h: 0.58, isTextBox: true, margin: 0,
-      fontFace: SANS, fontSize: 11.5, bold: true, color: i === 0 ? CALIENTE : GRIS,
+      x: x + 0.35, y: 5.25, w: 3.05, h: 0.62, isTextBox: true, margin: 0,
+      fontFace: SANS, fontSize: 12, bold: true, color: i === 0 ? CALIENTE : GRIS,
       align: "center", valign: "middle",
     });
   });
   sl.addText("Solo el caliente interrumpe al asesor. Avisar de todos entrena a ignorar los avisos — y entonces el aviso que importa también se ignora.", {
-    x: M, y: 5.65, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
+    x: M, y: 6.5, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 14, italic: true, color: AZUL,
   });
 }
@@ -444,7 +444,7 @@ preguntas.forEach((q) => {
     ["Forma de pago", "De contado", "3", "Financiamiento o crédito", "2", "Aún no sé", "1"],
   ];
   const cols = [2.3, 2.35, 0.75, 3.0, 0.75, 2.0, 0.75];
-  let y = 2.05;
+  let y = 2.15;
   // encabezado
   let cx = M;
   ["Qué se pregunta", "Respuesta", "Pts", "Respuesta", "Pts", "Respuesta", "Pts"].forEach((h, i) => {
@@ -455,41 +455,41 @@ preguntas.forEach((q) => {
     });
     cx += cols[i];
   });
-  y += 0.45;
+  y += 0.5;
   filas.forEach((f) => {
-    sl.addShape(p.ShapeType.roundRect, { x: M, y, w: 11.9, h: 0.62, rectRadius: 0.07, fill: { color: BLANCO }, line: { color: "DDE3E8", width: 1 } });
+    sl.addShape(p.ShapeType.roundRect, { x: M, y, w: 11.9, h: 0.78, rectRadius: 0.07, fill: { color: BLANCO }, line: { color: "DDE3E8", width: 1 } });
     cx = M + 0.15;
     f.forEach((c, i) => {
       const esPts = i > 0 && i % 2 === 0;
       sl.addText(c, {
-        x: cx, y, w: cols[i] - (i === 0 ? 0.15 : 0), h: 0.62, isTextBox: true, margin: 0,
-        fontFace: SANS, fontSize: 12.5, bold: i === 0 || esPts,
+        x: cx, y, w: cols[i] - (i === 0 ? 0.15 : 0), h: 0.78, isTextBox: true, margin: 0,
+        fontFace: SANS, fontSize: 13.5, bold: i === 0 || esPts,
         color: esPts ? ORO : (i === 0 ? AZUL : GRIS),
         align: esPts ? "center" : "left", valign: "middle",
       });
       cx += cols[i];
     });
-    y += 0.72;
+    y += 0.92;
   });
   // Reglas
-  tarjeta(sl, M, 4.05, 5.75, 1.85, AZUL);
+  tarjeta(sl, M, 4.55, 5.75, 2.25, AZUL);
   sl.addText("CUÁNDO ES CALIENTE", {
-    x: M + 0.35, y: 4.28, w: 5.05, h: 0.3, isTextBox: true, margin: 0,
+    x: M + 0.35, y: 4.82, w: 5.05, h: 0.3, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 10.5, bold: true, color: ORO, charSpacing: 2,
   });
   sl.addText(
     [{ text: "Compra este mes y no dijo \"aún no sé\" cómo paga.", options: { bullet: true, breakLine: true } },
      { text: "O suma 6 o más puntos, contando +1 si es inversionista de contado.", options: { bullet: true } }],
-    { x: M + 0.35, y: 4.65, w: 5.05, h: 1.05, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 12.5, color: BLANCO, paraSpaceAfter: 6 },
+    { x: M + 0.35, y: 5.25, w: 5.05, h: 1.4, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 13.5, color: BLANCO, paraSpaceAfter: 7 },
   );
-  tarjeta(sl, M + 6.15, 4.05, 5.75, 1.85, "FBF7EA");
+  tarjeta(sl, M + 6.15, 4.55, 5.75, 2.25, "FBF7EA");
   sl.addText("LA REGLA QUE MANDA SOBRE TODAS", {
-    x: M + 6.5, y: 4.28, w: 5.05, h: 0.3, isTextBox: true, margin: 0,
+    x: M + 6.5, y: 4.82, w: 5.05, h: 0.3, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 10.5, bold: true, color: CALIENTE, charSpacing: 2,
   });
   sl.addText(
     "Quien dice \"solo cotizando\" queda frío siempre, aunque pague de contado. Sin esa regla, el asesor recibiría avisos de gente que apenas está viendo.",
-    { x: M + 6.5, y: 4.65, w: 5.05, h: 1.05, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 12.5, color: AZUL },
+    { x: M + 6.5, y: 5.25, w: 5.05, h: 1.4, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 13.5, color: AZUL },
   );
 }
 
@@ -511,30 +511,30 @@ preguntas.forEach((q) => {
     ["Con todo lo necesario", "Nombre, teléfono, plazo, forma de pago y para qué lo quiere."],
   ];
   puntos.forEach(([t, d], i) => {
-    const y = 2.35 + i * 1.25;
+    const y = 2.6 + i * 1.45;
     circulo(sl, M, y, String(i + 1), 0.44);
     sl.addText(t, {
       x: M + 0.64, y: y - 0.04, w: 5.6, h: 0.32, isTextBox: true, margin: 0,
       fontFace: SERIF, fontSize: 17, bold: true, color: ORO_CL,
     });
     sl.addText(d, {
-      x: M + 0.64, y: y + 0.3, w: 5.6, h: 0.7, isTextBox: true, margin: 0,
-      fontFace: SANS, fontSize: 12.5, color: "C3CEd8",
+      x: M + 0.64, y: y + 0.34, w: 5.6, h: 0.95, isTextBox: true, margin: 0,
+      fontFace: SANS, fontSize: 13.5, color: "C3CEd8",
     });
   });
   // Simulación del aviso
   sl.addShape(p.ShapeType.roundRect, {
-    x: 7.6, y: 1.55, w: 4.9, h: 4.35, rectRadius: 0.16,
+    x: 7.6, y: 1.75, w: 4.9, h: 4.6, rectRadius: 0.16,
     fill: { color: BLANCO }, shadow: { type: "outer", angle: 90, blur: 16, offset: 3, color: "000000", opacity: 0.3 },
   });
   sl.addText("🔥 Lead caliente — contáctalo hoy", {
-    x: 7.95, y: 1.85, w: 4.2, h: 0.42, isTextBox: true, margin: 0,
+    x: 7.95, y: 2.05, w: 4.2, h: 0.42, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 15, bold: true, color: CALIENTE,
   });
   const campos = [["Nombre", "Jorge Ramírez"], ["Contacto", "686 111 2233"], ["Ciudad", "Cancún"],
                   ["Plazo", "Este mes"], ["Pago", "Financiamiento"], ["Uso", "Inversión"]];
   campos.forEach(([k, v], i) => {
-    const y = 2.42 + i * 0.44;
+    const y = 2.75 + i * 0.5;
     sl.addText(k, {
       x: 7.95, y, w: 1.5, h: 0.36, isTextBox: true, margin: 0,
       fontFace: SANS, fontSize: 12, color: GRIS, valign: "middle",
@@ -545,11 +545,11 @@ preguntas.forEach((q) => {
     });
   });
   sl.addText("Ver en el panel  ›", {
-    x: 7.95, y: 5.2, w: 4.2, h: 0.4, isTextBox: true, margin: 0,
+    x: 7.95, y: 5.72, w: 4.2, h: 0.4, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 12.5, bold: true, color: ORO,
   });
   sl.addText("Ejemplo del aviso tal como llega", {
-    x: 7.6, y: 6.05, w: 4.9, h: 0.3, isTextBox: true, margin: 0,
+    x: 7.6, y: 6.55, w: 4.9, h: 0.3, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 11, italic: true, color: "8FA0AD", align: "center",
   });
 }
@@ -558,26 +558,26 @@ preguntas.forEach((q) => {
 {
   const sl = s();
   tituloClaro(sl, "La red de seguridad", "Qué pasa si el bot promete una llamada y se le olvida registrar al prospecto.");
-  tarjeta(sl, M, 2.0, 5.75, 2.9);
+  tarjeta(sl, M, 2.0, 5.75, 3.85);
   sl.addText("El riesgo", {
     x: M + 0.35, y: 2.25, w: 4, h: 0.4, isTextBox: true, margin: 0,
     fontFace: SERIF, fontSize: 20, bold: true, color: CALIENTE,
   });
   sl.addText(
     "Pasó de verdad: un cliente dio ciudad, pago, plazo, nombre y teléfono. El bot le dijo que un asesor lo contactaría — y no quedó registrado en ningún lado.\n\nEs el peor fallo posible, porque por fuera todo se ve bien y nadie tiene motivo para ir a revisar.",
-    { x: M + 0.35, y: 2.75, w: 5.05, h: 1.95, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 12.5, color: GRIS },
+    { x: M + 0.35, y: 2.8, w: 5.05, h: 2.85, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 13.5, color: GRIS },
   );
-  tarjeta(sl, M + 6.15, 2.0, 5.75, 2.9, "FBF7EA");
+  tarjeta(sl, M + 6.15, 2.0, 5.75, 3.85, "FBF7EA");
   sl.addText("La solución", {
     x: M + 6.5, y: 2.25, w: 4, h: 0.4, isTextBox: true, margin: 0,
     fontFace: SERIF, fontSize: 20, bold: true, color: "3C6B4A",
   });
   sl.addText(
     "Ahora el sistema vigila cada respuesta. Si el bot promete contacto y no registró a nadie, el prospecto se levanta solo — con la conversación completa guardada — y el asesor recibe aviso.\n\nY cuando el teléfono llega después, avisa otra vez: ese es el momento en que por fin se le puede llamar.",
-    { x: M + 6.5, y: 2.75, w: 5.05, h: 1.95, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 12.5, color: AZUL },
+    { x: M + 6.5, y: 2.8, w: 5.05, h: 2.85, isTextBox: true, margin: 0, fontFace: SANS, fontSize: 13.5, color: AZUL },
   );
   sl.addText("El sistema no confía en que todo salga bien: revisa que haya salido bien.", {
-    x: M, y: 5.2, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
+    x: M, y: 6.4, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 15, italic: true, color: AZUL,
   });
 }
@@ -593,7 +593,7 @@ preguntas.forEach((q) => {
     ["No pide datos bancarios", "Ni tarjetas, ni comprobantes, ni documentos por el chat. Tampoco aparta lotes ni recibe pagos."],
   ];
   reglas.forEach(([t, d], i) => {
-    const y = 1.95 + i * 1.05;
+    const y = 2.0 + i * 1.18;
     sl.addShape(p.ShapeType.ellipse, { x: M, y: y + 0.08, w: 0.4, h: 0.4, fill: { color: AZUL } });
     sl.addText("✕", {
       x: M, y: y + 0.08, w: 0.4, h: 0.4, isTextBox: true, margin: 0,
@@ -611,7 +611,7 @@ preguntas.forEach((q) => {
     });
   });
   sl.addText("Estas reglas están escritas en el sistema y se verifican solas — no dependen de que el bot tenga un buen día.", {
-    x: M, y: 6.35, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
+    x: M, y: 6.7, w: W - M * 2, h: 0.5, isTextBox: true, margin: 0,
     fontFace: SANS, fontSize: 14, italic: true, color: AZUL,
   });
 }
@@ -621,7 +621,7 @@ preguntas.forEach((q) => {
   const sl = s();
   fondoFoto(sl, "monterrey", 74);
   sl.addText("En resumen", {
-    x: M, y: 1.5, w: 8, h: 0.8, isTextBox: true, margin: 0,
+    x: M, y: 1.35, w: 8, h: 0.85, isTextBox: true, margin: 0,
     fontFace: SERIF, fontSize: 36, bold: true, color: BLANCO,
   });
   const puntos = [
@@ -631,7 +631,7 @@ preguntas.forEach((q) => {
     ["No promete de más", "precios desde, sin garantías, solo terrenos"],
   ];
   puntos.forEach(([t, d], i) => {
-    const y = 2.75 + i * 0.85;
+    const y = 2.75 + i * 0.98;
     sl.addShape(p.ShapeType.ellipse, { x: M, y: y + 0.06, w: 0.32, h: 0.32, fill: { color: ORO } });
     sl.addText(t, {
       x: M + 0.55, y, w: 4.3, h: 0.45, isTextBox: true, margin: 0,
