@@ -1,0 +1,513 @@
+<title>Guion del Asesor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+
+<style>
+:root{
+  --paper:#f4f6f7; --surface:#ffffff; --surface-2:#eef2f4;
+  --ink:#0e1f2a; --ink-2:#56676f; --ink-3:#8397a0;
+  --line:#d7dfe3; --line-2:#c2ced4;
+  --brass:#8f7134;
+  --hot:#a8422c; --warm:#9d6f22; --cold:#3f6b86;
+  --hot-bg:#f7e9e5; --warm-bg:#f7eedb; --cold-bg:#e6eef4;
+  --live:#2c6e49; --live-bg:#e4f0e8;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0b1418; --surface:#111f27; --surface-2:#16272f;
+    --ink:#e8eef1; --ink-2:#94a7b1; --ink-3:#6c828d;
+    --line:#22343f; --line-2:#2e4552;
+    --brass:#c8a761;
+    --hot:#e07a5f; --warm:#d9a44e; --cold:#7fb2d1;
+    --hot-bg:#2a1a16; --warm-bg:#2a2113; --cold-bg:#14252f;
+    --live:#6fbf8f; --live-bg:#15291e;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0b1418; --surface:#111f27; --surface-2:#16272f;
+  --ink:#e8eef1; --ink-2:#94a7b1; --ink-3:#6c828d;
+  --line:#22343f; --line-2:#2e4552;
+  --brass:#c8a761;
+  --hot:#e07a5f; --warm:#d9a44e; --cold:#7fb2d1;
+  --hot-bg:#2a1a16; --warm-bg:#2a2113; --cold-bg:#14252f;
+  --live:#6fbf8f; --live-bg:#15291e;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);
+  font-family:Archivo,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px}
+
+/* portada */
+.top{padding:56px 0 40px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;
+  color:var(--brass);margin-bottom:14px}
+h1{font-size:clamp(30px,5.4vw,46px);line-height:1.05;font-weight:700;letter-spacing:-.025em;
+  text-wrap:balance;margin-bottom:14px}
+.dek{font-family:Newsreader,Georgia,serif;font-size:clamp(16px,2.2vw,19.5px);
+  color:var(--ink-2);max-width:60ch}
+.meta{margin-top:22px;display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3)}
+.meta b{color:var(--ink-2);font-weight:600}
+
+/* partes */
+.part{padding:48px 0;border-bottom:1px solid var(--line)}
+.part-no{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+  color:var(--brass);margin-bottom:10px}
+h2{font-size:clamp(22px,3.6vw,31px);font-weight:700;letter-spacing:-.02em;line-height:1.15;
+  text-wrap:balance;margin-bottom:12px}
+.lede{font-family:Newsreader,Georgia,serif;font-size:17px;color:var(--ink-2);
+  max-width:62ch;margin-bottom:28px}
+h3{font-size:15px;font-weight:700;letter-spacing:.02em;margin:32px 0 12px;
+  padding-bottom:7px;border-bottom:1px solid var(--line)}
+
+p{max-width:64ch}
+.note{font-family:Newsreader,Georgia,serif;font-size:16px;color:var(--ink-2);
+  max-width:62ch;margin-top:14px}
+
+/* chat mockup */
+.phone{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:20px 18px;display:flex;flex-direction:column;gap:12px}
+.bub{max-width:88%;padding:11px 15px;border-radius:14px;font-size:14.5px;line-height:1.5}
+.bot{background:var(--surface-2);border:1px solid var(--line);border-top-left-radius:4px;align-self:flex-start}
+.cli{background:var(--ink);color:var(--paper);border-top-right-radius:4px;align-self:flex-end}
+.opts{display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start;max-width:92%}
+.opt{border:1.5px solid var(--brass);color:var(--brass);background:transparent;
+  border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:600}
+.opt.pick{background:var(--brass);color:var(--surface);border-color:var(--brass)}
+.flowgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px}
+@media(max-width:720px){.flowgrid{grid-template-columns:1fr}}
+.caption{font-size:12.5px;color:var(--ink-3);margin-top:8px}
+
+/* comparativa */
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:6px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+td:first-child{font-weight:600;width:40%}
+.tw{overflow-x:auto}
+
+/* scoring */
+.score{display:grid;gap:12px;margin-top:8px}
+.sc{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+  border:1px solid var(--line);border-left-width:4px;border-radius:6px;padding:16px 18px;
+  background:var(--surface)}
+.sc.h{border-left-color:var(--hot)}.sc.t{border-left-color:var(--warm)}.sc.f{border-left-color:var(--cold)}
+.tagx{font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  padding:5px 11px;border-radius:4px;white-space:nowrap}
+.sc.h .tagx{background:var(--hot-bg);color:var(--hot)}
+.sc.t .tagx{background:var(--warm-bg);color:var(--warm)}
+.sc.f .tagx{background:var(--cold-bg);color:var(--cold)}
+.sc b{display:block;font-size:14.5px;margin-bottom:3px}
+.sc span{font-size:14px;color:var(--ink-2)}
+
+/* Q&A */
+.qa{border-top:1px solid var(--line);padding:20px 0}
+.qa:first-of-type{border-top:0}
+.q{font-size:14px;font-weight:600;letter-spacing:.01em;margin-bottom:9px;
+  display:flex;gap:10px;align-items:baseline}
+.q i{font-style:normal;color:var(--brass);font-weight:700;font-size:12px;
+  font-variant-numeric:tabular-nums;flex-shrink:0}
+.a{font-family:Newsreader,Georgia,serif;font-size:16.5px;line-height:1.6;color:var(--ink-2);
+  border-left:2px solid var(--line-2);padding-left:16px;max-width:64ch}
+.a strong{color:var(--ink);font-weight:500}
+.flag{display:inline-block;margin-top:9px;font-family:Archivo,sans-serif;font-size:11.5px;
+  font-weight:600;color:var(--hot);letter-spacing:.03em}
+
+/* decisiones */
+.dec{background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:20px 22px;margin-top:14px}
+.dec b{display:block;font-size:15px;margin-bottom:6px}
+.dec p{font-family:Newsreader,Georgia,serif;color:var(--ink-2);font-size:16px}
+.dec ul{margin:10px 0 0 0;padding-left:20px;font-size:14.5px;color:var(--ink-2)}
+.dec li{margin-bottom:5px}
+
+footer{padding:40px 0 60px;color:var(--ink-3);font-size:13px}
+
+/* estado en vivo — añadido en la versión de operación */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.chip{font-size:12px;font-weight:600;letter-spacing:.02em;padding:6px 12px;border-radius:999px;
+  border:1px solid var(--line-2);color:var(--ink-2);background:var(--surface)}
+.chip.on{border-color:var(--live);color:var(--live);background:var(--live-bg)}
+.chip.wait{border-color:var(--warm);color:var(--warm);background:var(--warm-bg)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px}
+.card b{display:block;font-size:14.5px;margin-bottom:6px}
+.card p{font-family:Newsreader,Georgia,serif;font-size:15.5px;color:var(--ink-2)}
+.card .when{display:inline-block;margin-top:10px;font-size:11.5px;font-weight:600;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.done{color:var(--live);font-weight:700}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">Ciudad Maderas · Asesor autorizado</div>
+  <h1>Guion del asesor</h1>
+  <p class="dek">La versión en operación. Lo que el bot pregunta, cómo decide a quién hay que
+     llamar hoy, y las respuestas aprobadas a lo que de verdad preguntan los prospectos.</p>
+  <div class="meta">
+    <span><b>28</b> preguntas con respuesta</span>
+    <span><b>3</b> preguntas para calificar</span>
+    <span><b>En operación</b> desde agosto 2026</span>
+  </div>
+  <div class="chips">
+    <span class="chip on">Página web · activo</span>
+    <span class="chip on">Messenger · activo</span>
+    <span class="chip on">Instagram · activo</span>
+    <span class="chip on">Comentarios → mensaje · activo</span>
+    <span class="chip wait">WhatsApp · esperando verificación</span>
+  </div>
+</header>
+
+<!-- PARTE 1 -->
+<section class="part">
+  <div class="part-no">Parte 1 — El guion</div>
+  <h2>Contesta primero, pregunta después</h2>
+  <p class="lede">Esa fue la decisión de fondo, y ordena todo lo demás: si el cliente preguntó
+     algo, primero se le responde, y la pregunta que califica va pegada al final del mismo
+     mensaje. Un bot que interroga antes de dar información se siente ansioso y la gente se va.</p>
+
+  <div class="flowgrid">
+    <div>
+      <div class="phone">
+        <div class="bub cli">¿Cuánto cuesta un terreno?</div>
+        <div class="bub bot">Los terrenos arrancan desde alrededor de $550,000, y la mensualidad
+          desde $1,244 según la ciudad y el lote. Para darte el número que te tocaría a ti,
+          ¿para qué estás buscando el terreno?</div>
+        <div class="opts">
+          <span class="opt">Invertir</span>
+          <span class="opt pick">Construir mi casa</span>
+          <span class="opt">Solo información</span>
+        </div>
+        <div class="bub bot">Perfecto, para construir. ¿Para cuándo lo estás pensando?</div>
+        <div class="opts">
+          <span class="opt pick">Este mes</span>
+          <span class="opt">3 a 6 meses</span>
+          <span class="opt">Solo cotizando</span>
+        </div>
+      </div>
+      <p class="caption">Responde lo que le preguntaron, y recién entonces pregunta. Una sola
+         pregunta por mensaje — nunca dos, ni una con dos partes.</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="bub bot">¿Cómo lo estarías viendo?</div>
+        <div class="opts">
+          <span class="opt">De contado</span>
+          <span class="opt pick">Con financiamiento</span>
+          <span class="opt">Aún no sé</span>
+        </div>
+        <div class="bub bot">¿Cómo te llamas?</div>
+        <div class="bub cli">Jorge</div>
+        <div class="bub bot">Mucho gusto, Jorge. ¿A qué número te busca el asesor?</div>
+      </div>
+      <p class="caption">Con el plazo y la forma de pago ya queda registrado en el panel —
+         antes de pedirle el nombre. Estas dos últimas no llevan botones: son preguntas abiertas.</p>
+    </div>
+  </div>
+
+  <h3>Los botones van solo en las tres que califican</h3>
+  <p>En todo lo demás se conversa normal. Meter botones en cada mensaje convierte la
+     conversación en un menú de cajero automático, y se siente robótico.</p>
+  <div class="tw">
+    <table>
+      <tr><th>Con texto libre</th><th>Con botones</th></tr>
+      <tr><td>El cliente teclea en el celular</td><td>Un toque, sin teclado</td></tr>
+      <tr><td>Contesta "pues como en marzo" y hay que interpretar</td><td>Respuesta limpia y clasificable</td></tr>
+      <tr><td>Se pierde gente en cada pregunta</td><td>Responder cuesta menos que abandonar</td></tr>
+    </table>
+  </div>
+
+  <p class="note"><strong>Dónde se ven tocables:</strong> en Messenger, Instagram y WhatsApp
+     salen como botones de verdad. En el chat de la página salen como lista numerada —
+     funciona igual, solo se siente menos fluido.</p>
+
+  <h3>El orden no es casual</h3>
+  <p class="note"><strong>Uso → plazo → pago.</strong> El plazo va segundo a propósito: es la
+     pregunta que más separa al curioso del comprador. El uso abre la conversación sin sonar a
+     interrogatorio y sirve de desempate; el pago cierra el cuadro. Antes de escribir, el bot
+     revisa qué datos ya dio el cliente por su cuenta y pregunta solo el que falte.</p>
+</section>
+
+<!-- PARTE 2 -->
+<section class="part">
+  <div class="part-no">Parte 2 — La calificación</div>
+  <h2>Cómo se decide si te suena el teléfono</h2>
+  <p class="lede">Con el plazo y la forma de pago ya se puede clasificar; el uso solo desempata.
+     Solo un caso te interrumpe — los demás te esperan en el panel.</p>
+
+  <div class="score">
+    <div class="sc h">
+      <span class="tagx">Caliente</span>
+      <div><b>Compra este mes y ya sabe cómo pagar</b>
+        <span>Te llega aviso a Telegram al instante, venga del canal que venga. También entra
+        aquí el inversionista de contado a 3–6 meses: ese no espera, si no le hablas compra en
+        otro lado.</span></div>
+    </div>
+    <div class="sc t">
+      <span class="tagx">Tibio</span>
+      <div><b>De 3 a 6 meses, o compra pronto sin definir el pago</b>
+        <span>Queda en tu lista de Leads. Es tu llamada del día siguiente: está interesado,
+        solo no tiene prisa. El tibio de hoy es el caliente de dentro de dos meses.</span></div>
+    </div>
+    <div class="sc f">
+      <span class="tagx">Frío</span>
+      <div><b>Solo está cotizando</b>
+        <span>Se guarda igual, sin aviso. Quien dice "solo cotizando" nunca sube a caliente,
+        pague como pague — es la regla que evita las falsas alarmas.</span></div>
+    </div>
+  </div>
+
+  <p class="note">Solo el caliente toca el timbre a propósito. Si te avisara de todos, en tres
+     días estarías ignorando las notificaciones — y el día que llegue uno bueno lo pasarías por
+     alto junto con los demás.</p>
+</section>
+
+<!-- PARTE 3 -->
+<section class="part">
+  <div class="part-no">Parte 3 — Lo que se agregó después</div>
+  <h2>Cuatro cosas que no existían en la primera versión</h2>
+  <p class="lede">Salieron de conversaciones reales con clientes. Cada una arregla algo que
+     falló en vivo.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <b>La red de seguridad del lead</b>
+      <p>Un cliente dio ciudad, pago, plazo, nombre y teléfono; el bot le dijo que un asesor lo
+      contactaría, y no lo registró en ningún lado. Ahora el sistema vigila cada respuesta: si
+      promete contacto y no hay ficha, la levanta solo — con la conversación completa guardada —
+      y avisa.</p>
+      <span class="when done">✓ En operación</span>
+    </div>
+
+    <div class="card">
+      <b>Aviso cuando por fin da su teléfono</b>
+      <p>El rescate casi siempre se dispara antes de que el cliente suelte su número, así que el
+      aviso decía "todavía no lo da". Cuando el teléfono llegaba después, entraba al panel en
+      silencio — justo en el momento en que ya se le podía llamar. Ahora ese teléfono tardío
+      manda su propio aviso, una sola vez.</p>
+      <span class="when done">✓ En operación</span>
+    </div>
+
+    <div class="card">
+      <b>Del comentario a la conversación</b>
+      <p>Cualquier comentario en cualquier publicación —no solo los que piden precio— recibe un
+      mensaje privado y una respuesta pública. El mensaje termina con una pregunta a propósito:
+      cuando la persona contesta, el bot toma la plática con este mismo guion.</p>
+      <span class="when done">✓ En operación</span>
+    </div>
+
+    <div class="card">
+      <b>Una conversación = un prospecto</b>
+      <p>En Messenger el hilo con una persona no se cierra nunca, así que un lead viejo tapaba al
+      de hoy. Ahora la misma plática reemplaza su ficha pendiente en vez de acumular filas, pero
+      solo dentro de una ventana de horas: quien vuelve mañana es una consulta nueva.</p>
+      <span class="when done">✓ En operación</span>
+    </div>
+  </div>
+
+  <p class="note"><strong>Por qué importan:</strong> las cuatro atacan el mismo tipo de falla —
+     la que por fuera se ve bien. Un prospecto que se pierde en silencio no genera queja de
+     nadie, y por eso es la que más caro sale.</p>
+</section>
+
+<!-- PARTE 4 -->
+<section class="part">
+  <div class="part-no">Parte 4 — El cuestionario</div>
+  <h2>28 preguntas y qué contesta el bot</h2>
+  <p class="lede">Estas son las que de verdad llegan, con la respuesta aprobada. Las marcas ▲
+     son los límites que el bot no cruza.</p>
+
+  <h3>Precio y medidas</h3>
+  <h3>Precio y medidas</h3>
+
+  <div class="qa"><div class="q"><i>01</i>¿Cuánto cuesta un terreno?</div>
+    <div class="a">Los terrenos arrancan <strong>desde alrededor de $550,000 MXN</strong>. El
+    precio final depende de la ciudad, los metros y la ubicación dentro del desarrollo. Te
+    cotizo el lote específico sin costo.</div></div>
+
+  <div class="qa"><div class="q"><i>02</i>¿También venden casas?</div>
+    <div class="a">Yo manejo <strong>terrenos</strong>. Si lo que quieres es tu casa, el camino
+    es el terreno: lo compras con crédito directo y construyes cuando puedas y a tu gusto.
+    Dime la ciudad y te digo qué lotes hay.
+    <span class="flag">▲ Nunca ofrecer ni cotizar casas — no es lo que vendes</span></div></div>
+
+  <div class="qa"><div class="q"><i>03</i>¿Cuánto mide un lote?</div>
+    <div class="a">Las medidas varían por desarrollo. Te comparto los planos con medidas y
+    disponibilidad real de la ciudad que te interese.
+    <span class="flag">▲ Nunca inventar medidas — pasar con asesor</span></div></div>
+
+  <div class="qa"><div class="q"><i>04</i>¿Cuál es el precio exacto del lote que vi?</div>
+    <div class="a">Para darte el precio exacto necesito confirmarlo con el equipo de ventas: los
+    precios varían por medidas, ubicación dentro del desarrollo y condiciones vigentes. Lo que sí
+    te adelanto es que arrancan desde $550,000 MXN.</div></div>
+
+  <div class="qa"><div class="q"><i>05</i>¿Hay descuentos o promociones?</div>
+    <div class="a">Las condiciones y promociones vigentes las confirma un asesor según el
+    desarrollo. Lo que siempre aplica son las facilidades de crédito: desde 1% de enganche, sin
+    aval y sin buró.
+    <span class="flag">▲ Nunca prometer un descuento</span></div></div>
+
+  <div class="qa"><div class="q"><i>06</i>¿Puedo pagar de contado? ¿Hay precio especial?</div>
+    <div class="a">Sí se puede de contado. Si es tu caso, con más razón vale la pena que te
+    cotice un asesor: las condiciones de contado se manejan caso por caso.</div></div>
+
+  <h3>Financiamiento — el bloque que más convierte</h3>
+
+  <div class="qa"><div class="q"><i>07</i>¿Piden buró de crédito?</div>
+    <div class="a"><strong>No.</strong> No se revisa buró. Estar en buró no te impide comprar:
+    el crédito es directo con la desarrolladora, no con un banco.</div></div>
+
+  <div class="qa"><div class="q"><i>08</i>¿Necesito comprobar ingresos?</div>
+    <div class="a"><strong>No</strong> se pide comprobante de ingresos ni recibos de nómina.</div></div>
+
+  <div class="qa"><div class="q"><i>09</i>¿Necesito aval?</div>
+    <div class="a"><strong>No.</strong> El crédito es directo con la desarrolladora y no
+    requiere aval.</div></div>
+
+  <div class="qa"><div class="q"><i>10</i>¿De cuánto es el enganche?</div>
+    <div class="a"><strong>Desde el 1%.</strong> Es de las mayores facilidades del sector: no
+    necesitas una entrada fuerte para empezar a construir patrimonio.</div></div>
+
+  <div class="qa"><div class="q"><i>11</i>¿El crédito es con un banco?</div>
+    <div class="a">No: es <strong>crédito directo con la desarrolladora</strong>. Por eso se
+    pueden ofrecer condiciones que un banco no da.</div></div>
+
+  <div class="qa"><div class="q"><i>12</i>Estoy en buró, ¿de verdad puedo?</div>
+    <div class="a">De verdad. No se revisa buró en ningún momento del proceso. Mucha gente se
+    descarta sola por esto — es justo la diferencia de comprar directo con la desarrolladora.</div></div>
+
+  <div class="qa"><div class="q"><i>13</i>¿A cuántos años puedo pagarlo?</div>
+    <div class="a">El plazo se arma según el enganche que des y el lote que elijas.
+    Un asesor te hace el plan de pagos exacto, sin costo.</div></div>
+
+  <div class="qa"><div class="q"><i>14</i>¿Qué pasa si me atraso en un pago?</div>
+    <div class="a">Las condiciones de atraso están en el contrato y las explica un asesor con
+    detalle. Es mejor que lo veas con él que quedarte con una versión a medias.
+    <span class="flag">▲ Pasar a humano</span></div></div>
+
+  <h3>Ubicación y desarrollos</h3>
+
+  <div class="qa"><div class="q"><i>15</i>¿En qué ciudades tienen?</div>
+    <div class="a">En 20 ciudades de México —entre ellas Querétaro, León, Mérida, Aguascalientes,
+    Monterrey, San Luis Potosí, Cancún y Puebla— y 4 en Estados Unidos.</div></div>
+
+  <div class="qa"><div class="q"><i>16</i>¿Tienen en [ciudad que no está en la lista]?</div>
+    <div class="a">Tenemos presencia en 20 ciudades del país, así que es probable que haya algo
+    cerca. Déjame tus datos y te confirmo la disponibilidad en tu zona.
+    <span class="flag">▲ Ni afirmar ni descartar — capturar y verificar</span></div></div>
+
+  <div class="qa"><div class="q"><i>17</i>¿Cómo se llama el desarrollo de [ciudad]?</div>
+    <div class="a">Te comparto los desarrollos disponibles con nombre, ubicación y etapa —
+    esa información cambia seguido y prefiero dártela al día.
+    <span class="flag">▲ Nunca inventar nombres de desarrollos</span></div></div>
+
+  <div class="qa"><div class="q"><i>18</i>¿Puedo ir a conocerlo?</div>
+    <div class="a">Sí, y es la mejor forma de decidir. El recorrido y la asesoría son
+    <strong>gratuitos y sin compromiso</strong>. Solo necesito tu nombre, teléfono y la ciudad.</div></div>
+
+  <h3>El terreno</h3>
+
+  <div class="qa"><div class="q"><i>19</i>¿Por qué un terreno y no algo ya construido?</div>
+    <div class="a">La entrada y la mensualidad son bastante menores, construyes a tu gusto y a
+    tu ritmo, y mientras tanto ya tienes el patrimonio a tu nombre. Si necesitas mudarte el mes
+    que entra, un terreno no es lo tuyo — te lo digo de una vez.</div></div>
+
+  <div class="qa"><div class="q"><i>20</i>¿El terreno ya tiene servicios?</div>
+    <div class="a">Los desarrollos entregan urbanización completa —calles, banquetas, agua, luz
+    y drenaje— y acceso controlado. Lo que ya está listo <em>hoy</em> depende de la etapa; te
+    digo exactamente en qué va la del lote que te interese.
+    <span class="flag">▲ No afirmar que todo está terminado sin confirmarlo por etapa</span></div></div>
+
+  <div class="qa"><div class="q"><i>21</i>¿Qué amenidades tiene?</div>
+    <div class="a">Más de 30 por desarrollo: albercas semiolímpicas, albercas techadas, canchas
+    de pádel y tenis, chapoteaderos, gimnasio, casa club y áreas infantiles, entre otras. El
+    catálogo exacto varía por desarrollo y etapa.</div></div>
+
+  <div class="qa"><div class="q"><i>22</i>¿Puedo construir cuando yo quiera?</div>
+    <div class="a">Los tiempos y el reglamento de construcción dependen del desarrollo. Un asesor
+    te explica las condiciones del que te interese.</div></div>
+
+  <div class="qa"><div class="q"><i>23</i>¿Se puede rentar o revender?</div>
+    <div class="a">Sí, mucha gente compra justamente con esa intención. Las condiciones de
+    traspaso y los tiempos los explica un asesor según tu contrato.</div></div>
+
+  <h3>Proceso y trámites</h3>
+
+  <div class="qa"><div class="q"><i>24</i>¿Cómo aparto?</div>
+    <div class="a">El apartado lo hace un asesor contigo, ya con toda la información sobre la
+    mesa. Con gusto agendamos la llamada o la cita.
+    <span class="flag">▲ El bot nunca aparta ni cobra</span></div></div>
+
+  <div class="qa"><div class="q"><i>25</i>¿Cómo es lo de las escrituras?</div>
+    <div class="a">Sí se escritura. Los tiempos, costos y el proceso legal los explica un asesor
+    — es un tema que merece una conversación, no un chat.
+    <span class="flag">▲ Pasar a humano</span></div></div>
+
+  <div class="qa"><div class="q"><i>26</i>¿Qué papeles necesito?</div>
+    <div class="a">Para arrancar prácticamente nada: sin buró, sin aval y sin comprobante de
+    ingresos. Los documentos de firma los revisa el asesor contigo llegado el momento.</div></div>
+
+  <h3>Plusvalía — el terreno legalmente delicado</h3>
+
+  <div class="qa"><div class="q"><i>27</i>¿Cuánto va a subir de valor?</div>
+    <div class="a">Depende mucho de la ubicación, el avance del desarrollo y cómo crezca la zona,
+    así que no te daría un porcentaje que luego no se cumpla. Lo que sí te puedo decir es que son
+    comunidades planificadas con el respaldo de más de 40 años y +124,000 lotes.
+    <span class="flag">▲ Nunca dar porcentajes ni prometer rendimiento</span></div></div>
+
+  <div class="qa"><div class="q"><i>28</i>Vi que manejan "plusvalía garantizada", ¿es cierto?</div>
+    <div class="a">Lo que tenemos son desarrollos en zonas de alto crecimiento, con más de 40
+    años de trayectoria detrás. ¿Te late que te muestre cómo se ha comportado la zona que te
+    interesa?
+    <span class="flag">▲ No confirmar ni repetir la frase — reencuadrar sin corregir al cliente</span></div></div>
+</section>
+
+<!-- PARTE 5 -->
+<section class="part">
+  <div class="part-no">Parte 5 — Lo que sigue</div>
+  <h2>Las decisiones tomadas, y lo que falta</h2>
+  <p class="lede">La primera versión de este documento pedía autorización en cuatro puntos.
+     Aquí quedaron.</p>
+
+  <div class="dec"><b>1 · Botones solo en las tres que califican</b>
+    <p>Decidido así. En el resto de la conversación el bot habla normal.</p></div>
+
+  <div class="dec"><b>2 · El orden: uso → plazo → pago → nombre → teléfono</b>
+    <p>Una pregunta por mensaje, y el plazo en segundo lugar.</p></div>
+
+  <div class="dec"><b>3 · Contesta primero, pregunta después</b>
+    <p>Se eligió la opción más natural aunque califique un poco más lento. Fue la decisión
+    correcta: un bot que interroga de entrada pierde a la gente antes de calificarla.</p></div>
+
+  <div class="dec"><b>4 · Las 28 respuestas quedaron aprobadas</b>
+    <p>Con un ajuste posterior: la respuesta sobre plazos decía "el lote o modelo que elijas", y
+    "modelo" es palabra de casas. Corregido — el asesor solo vende terrenos.</p></div>
+
+  <h3>Pendientes reales</h3>
+  <div class="dec"><b>WhatsApp</b>
+    <p>Todo configurado del lado del bot. Falta que Meta verifique el negocio; llega por correo.
+    Se eligió el camino que conserva la app de WhatsApp Business en el teléfono, para que el
+    asesor pueda tomar un chat cuando quiera y el bot se haga a un lado solo.</p></div>
+
+  <div class="dec"><b>Saldo</b>
+    <p>Conviene dejar recarga automática antes de abrir WhatsApp. Si el saldo se acaba a media
+    plática, el bot deja de contestar sin error visible para el cliente — que es la peor forma
+    de fallar.</p></div>
+
+  <div class="dec"><b>Las respuestas se pueden seguir corrigiendo</b>
+    <p>Si alguna dice algo que no aplica, o falta la pregunta que más te hacen, se cambia y el
+    bot la usa desde el mismo día. No hay que tocar nada más.</p></div>
+</section>
+
+<footer class="wrap" style="padding-left:0;padding-right:0">
+  Documento de operación · Ciudad Maderas, asesor autorizado · Refleja lo que el bot hace hoy en
+  la página web, Messenger e Instagram.
+</footer>
+
+</div>
+
+</body></html>
