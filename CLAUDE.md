@@ -254,6 +254,16 @@ Cloudflare para desplegar código.
   con *Casas*, y el asesor solo vende terrenos. Todo lo demás dice lo contrario
   (sitio, KB, prompt, y una prueba que lo vigila). Conviene quitarle "y Casas
   Premium" desde Meta Business Suite.
+- **Bot en un solo idioma — decidido así (2026-08-28), no es un olvido.** Vende
+  también al extranjero, pero su mercado son sobre todo **mexicanos fuera de
+  México**, que escriben en español. El modo espejo (detectar el idioma del
+  cliente y responder en ese) existe en la plantilla —`LANG_MIRROR` en
+  `src/system-prompt.ts`— pero es **de Forja+**: `settings-loader.ts` exige
+  `isPro(env)` y este bot es `free`. Se puede forzar cambiando la descripción
+  del idioma en `src/idioma.ts`, y **no se hizo a propósito**: sería saltarse una
+  función de pago, y esa decisión es del dueño. Se revisa cuando haya datos
+  reales de cuántos escriben en inglés. Mientras, a quien escriba en otro idioma
+  el bot le contesta en español avisando del cambio — no se rompe.
 - **Saldo de Anthropic** — sin cuota diaria que deje mudo al bot, pero el saldo se
   acaba. Conviene recarga automática (console.anthropic.com/settings/billing →
   Auto-reload) antes de abrir WhatsApp: si se acaba a media plática el bot deja
