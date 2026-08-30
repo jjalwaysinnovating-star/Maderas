@@ -1,6 +1,6 @@
 # Contenido para Instagram y Facebook
 
-**29 posts (1080×1350) y 6 reels (1080×1920)**, todos con fotos reales del
+**29 posts (1080×1350) y 8 reels (1080×1920)**, todos con fotos reales del
 bucket de Ciudad Maderas. Los textos para copiar y pegar están en `textos.md`;
 los archivos, en `salida/`.
 
@@ -22,11 +22,14 @@ los archivos, en `salida/`.
 | `reel-porque.mp4` | D · por qué un terreno |
 | `reel-amenidades.mp4` | E · más de 30 amenidades |
 | `reel-cuanto.mp4` | F · cuánto cuesta |
+| `reel-trayectoria.mp4` | G · 40 años, +124,000 lotes |
+| `reel-servicios.mp4` | H · urbanización completa |
 
 ## Hasta aquí llega la base de conocimiento
 
-Los 29 ángulos son **todos** los que `member/kb/` sostiene sin repetirse. A 2
-posts al día se acaban en 14 días. Para seguir hay dos caminos honestos:
+Los 29 posts y 8 reels son **todos** los ángulos que `member/kb/` sostiene sin
+repetirse. A 1 post al día y 2 reels por semana, el calendario llega al 26 de
+septiembre y ahí se acaba. Para seguir hay dos caminos honestos:
 repetir los mejores cuando ya tengan más de dos semanas, o que el asesor aporte
 datos nuevos que pueda sostener. Inventar un dato para llenar un hueco del
 calendario es exactamente lo que no se hace: un post queda escrito y cualquiera

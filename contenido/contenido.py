@@ -737,4 +737,54 @@ placa("reelf-4", """
   ciudad, los metros y la ubicación.</div>
 <div class="cta">Comenta INFO</div>""")
 
-print("listo: 29 posts y 24 placas de reel")
+# ── Reel G · la desarrolladora ──────────────────────────────────────────────
+# Los números de kb/01, sin redondear: 124,000 lotes ENTREGADOS es comprobable
+# y pesa más que cualquier adjetivo. Cierra aclarando el rol del asesor, que es
+# la confusión que hay que evitar.
+placa("reelg-1", """
+<div class="eyebrow">Con quién estás firmando</div>
+<div class="cifra" style="font-size:210px">40</div>
+<div class="grande" style="font-size:74px;margin-top:10px">años en el sector</div>""")
+
+placa("reelg-2", """
+<div class="eyebrow">Lotes entregados</div>
+<div class="cifra" style="font-size:150px">+124,000</div>
+<div class="pie">Habitacionales y comerciales.</div>""")
+
+placa("reelg-3", """
+<div class="eyebrow">Dónde están</div>
+<div class="chips"><span>28 desarrollos</span><span>20 ciudades en México</span>
+  <span>4 en Estados Unidos</span><span>40 oficinas</span></div>""")
+
+placa("reelg-4", """
+<div class="grande" style="font-size:82px">Y<i>O SOY SU</i><br>A<i>SESOR</i><br>A<i>UTORIZADO</i></div>
+<div class="pie">No soy la desarrolladora: soy con quien tratas desde la primera
+  pregunta hasta la firma.</div>
+<div class="cta">Comenta INFO</div>""")
+
+
+# ── Reel H · urbanización ───────────────────────────────────────────────────
+# La placa 4 lleva a fuerza el matiz de la etapa. Sin él, "urbanización
+# completa" se lee como que todo está terminado hoy, y la KB dice justo lo
+# contrario: depende de la etapa y hay que confirmarlo lote por lote.
+placa("reelh-1", """
+<div class="eyebrow">La pregunta que todos hacen</div>
+<div class="grande" style="font-size:96px">¿E<i>L TERRENO</i><br><i class="gap">YA</i>T<i>IENE</i><br>S<i>ERVICIOS</i>?</div>""")
+
+placa("reelh-2", """
+<div class="eyebrow">Los desarrollos entregan</div>
+<div class="grande" style="font-size:104px">U<i>RBANIZACIÓN</i><br>C<i>OMPLETA</i></div>
+<div class="chips"><span>Calles</span><span>Banquetas</span><span>Agua</span>
+  <span>Luz</span><span>Drenaje</span></div>""")
+
+placa("reelh-3", """
+<div class="eyebrow">Y además</div>
+<div class="grande" style="font-size:112px">A<i>CCESO</i><br>C<i>ONTROLADO</i></div>""")
+
+placa("reelh-4", """
+<div class="grande" style="font-size:96px">¿E<i>N QUÉ VA</i><br><i class="gap">LA</i>T<i>UYA</i>?</div>
+<div class="pie">Lo que ya está listo hoy depende de la etapa. Dime qué lote te
+  interesa y te digo exactamente en qué va.</div>
+<div class="cta">Comenta INFO</div>""")
+
+print("listo: 29 posts y 32 placas de reel")

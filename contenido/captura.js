@@ -39,7 +39,7 @@ const POSTS = [
 ];
 // Cuatro reels de cuatro placas cada uno: A sin buró, B en qué ciudad,
 // C los cuatro pasos, D por qué un terreno.
-const PLACAS = ["", "b", "c", "d", "e", "f"].flatMap((r) =>
+const PLACAS = ["", "b", "c", "d", "e", "f", "g", "h"].flatMap((r) =>
   [1, 2, 3, 4].map((n) => `reel${r}-${n}`),
 );
 

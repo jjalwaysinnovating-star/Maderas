@@ -71,6 +71,20 @@ REELS = {
         ("gto", "reelf-3", "in"),
         ("caribe", "reelf-4", "out"),
     ],
+    # G · la desarrolladora
+    "reel-trayectoria": [
+        ("clubes", "reelg-1", "in"),
+        ("mapa", "reelg-2", "out"),
+        ("caribe", "reelg-3", "in"),
+        ("queretaro", "reelg-4", "out"),
+    ],
+    # H · urbanización
+    "reel-servicios": [
+        ("mapa", "reelh-1", "in"),
+        ("ags", "reelh-2", "out"),
+        ("gto", "reelh-3", "in"),
+        ("slp", "reelh-4", "out"),
+    ],
     # D · por qué un terreno
     "reel-porque": [
         ("merida", "reeld-1", "in"),

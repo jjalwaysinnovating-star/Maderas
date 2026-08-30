@@ -611,6 +611,42 @@ eso ayuda al alcance más que cualquier cosa que yo pueda meterle al archivo.
 >
 > #Terrenos #CuantoCuesta #CiudadMaderas #Inversion #BienesRaices #TerrenosEnVenta
 
+## Reel G — La trayectoria (`reel-trayectoria.mp4`)
+
+12 segundos, vertical, **sin audio a propósito**.
+
+> 40 años en el sector. Más de 124,000 lotes entregados, habitacionales y
+> comerciales.
+>
+> 28 desarrollos, 20 ciudades en México y 4 en Estados Unidos, 40 oficinas.
+>
+> Y yo soy su asesor autorizado: no soy la desarrolladora, soy con quien tratas
+> desde la primera pregunta hasta la firma.
+>
+> Comenta **INFO** 👇
+>
+> Asesor autorizado de Ciudad Maderas.
+>
+> #CiudadMaderas #Terrenos #Inversion #BienesRaices #Patrimonio #TerrenosEnVenta
+
+## Reel H — Los servicios (`reel-servicios.mp4`)
+
+12 segundos, vertical, **sin audio a propósito**.
+
+> ¿El terreno ya tiene servicios?
+>
+> Los desarrollos entregan urbanización completa: calles, banquetas, agua, luz y
+> drenaje, con acceso controlado.
+>
+> Lo que ya está listo hoy depende de la etapa. Dime qué lote te interesa y te
+> digo exactamente en qué va.
+>
+> Comenta **INFO** 👇
+>
+> Asesor autorizado de Ciudad Maderas.
+>
+> #Terrenos #Urbanizacion #CiudadMaderas #Inversion #BienesRaices #TerrenosEnVenta
+
 ---
 
 ## Nada de hashtags de la ciudad del asesor
