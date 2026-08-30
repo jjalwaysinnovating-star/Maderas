@@ -46,12 +46,25 @@ la reemplaza (no se puede recuperar la anterior).
   fail-closed: sin `ZERNIO_WEBHOOK_SECRET` correcto el bot rechaza todo con 403).
   Instagram no necesitó código ni secrets nuevos: el adapter guarda el `platform`
   que venga y solo trata distinto a `whatsapp` (la ventana de 24h), así que
-  conectar la cuenta en el panel de Zernio bastó — son las 2 cuentas gratis de su
-  plan. La cuenta es `ciudadmaderaswoodcity`, profesional y ligada a la página.
+  conectar la cuenta en el panel de Zernio bastó. La cuenta es
+  `ciudadmaderaswoodcity`, profesional y ligada a la página.
   **Conéctala por "Connect with Facebook", no por "Connect with Instagram":** los
   permisos de mensajes cuelgan de la página, y por la otra puerta no siempre
   vienen. El demo público (`DEMO_MODE`) está APAGADO a propósito: era acceso sin
   autenticar a la llave de IA.
+  **El plan de Zernio es "Usage-Based"** (`GET /api/v1/usage`), no uno de cupo
+  fijo: `limits.profiles` y `limits.uploads` vienen en `-1` y lleva $0 gastados
+  en el periodo. Antes aquí decía "las 2 cuentas gratis de su plan" — eso no lo
+  dice la API y no está confirmado; si algún día se conectan más cuentas, hay
+  que ver el precio en su panel antes.
+  **El webhook de Zernio NO se puede filtrar por cuenta.** `GET
+  /api/v1/webhooks/settings` devuelve un webhook por *cuenta de Zernio* y
+  `message.received` dispara para TODO lo que cuelgue de ella. Importa para el
+  bot de un segundo asesor: si sus redes se conectan a esta misma cuenta de
+  Zernio, sus mensajes entrarían a ESTE Worker. La salida limpia es que el otro
+  asesor tenga su propia cuenta de Zernio; la otra es filtrar por `accountId` en
+  `src/channels/zernio.ts` —el dato sí llega— pero eso es un parche más que
+  `forjabot update` borra, en dos bots.
 - **El "Talk to human" era ManyChat** (resuelto 2026-08-28). Durante días, antes
   de que contestara el Worker, a quien escribía le llegaba un mensaje en inglés
   —"J&J Always Innovating typically replies in 1 day… press the 'Talk to human'
