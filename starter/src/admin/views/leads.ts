@@ -4,6 +4,9 @@ import { Db } from "../../db/client";
 import { LeadsRepo, leadMetadata, type Lead } from "../../db/leads";
 import { getNiche } from "../../niches";
 import { layout } from "./layout";
+// Reparto entre asesores. Vive en member/ para que `forjabot update` no lo
+// borre; aquí solo se consume.
+import { filtroDeLeads, type FiltroLeads } from "../../../member/asesores.local";
 
 // Escapa texto del LLM/cliente antes de meterlo en HTML (el intent y las notas
 // pueden traer <, &, links pegados por el cliente, etc.).
@@ -17,11 +20,19 @@ interface Col {
   cell: (l: Lead, meta: Record<string, string>) => string;
 }
 
+/** Traduce el filtro de asesor al argumento que entiende `LeadsRepo.list`. */
+function argDeFiltro(f: FiltroLeads) {
+  return f.modo === "asesor" ? { slug: f.slug, esPorDefecto: f.esPorDefecto } : undefined;
+}
+
 export async function renderLeads(env: Env): Promise<string> {
   const tr = traductor(env);
   const niche = getNiche(env);
   const leads = new LeadsRepo(new Db(env.DB));
-  const list = await leads.list(100);
+  const filtro = filtroDeLeads(env as unknown as { PANEL_ROLE?: string; PANEL_EMAIL?: string });
+  // "ninguno" es un correo que no está asignado a ningún asesor: no se consulta
+  // la base siquiera, para que no haya forma de que se escape una fila.
+  const list = filtro.modo === "ninguno" ? [] : await leads.list(100, undefined, argDeFiltro(filtro));
 
   // Las etiquetas del nicho son CLAVES del diccionario: se resuelven aquí, al
   // pintar, con el idioma del panel (ver src/niches/types.ts).
@@ -107,7 +118,14 @@ export async function renderLeads(env: Env): Promise<string> {
   // Empty-state de primer uso: explica que se llena solo cuando el bot detecta
   // un registro en una conversación. "cada" evita tener que resolver el género
   // de niche.recordSingular (Cita/Lead/Pedido/Reserva…).
-  const empty = `<div style="padding:48px 18px;text-align:center">
+  const empty =
+    filtro.modo === "ninguno"
+      ? `<div style="padding:48px 18px;text-align:center">
+    <i data-lucide="user-x" width="24" height="24" style="color:var(--dim);margin:0 auto 12px;display:block"></i>
+    <div class="text-[13px]" style="color:var(--muted);font-weight:600">No hay nada que mostrarte</div>
+    <div class="text-dim text-[11.5px]" style="margin:5px auto 0;line-height:1.5;max-width:420px">${esc(filtro.motivo)}</div>
+  </div>`
+      : `<div style="padding:48px 18px;text-align:center">
     <i data-lucide="${esc(niche.navIcon)}" width="24" height="24" style="color:var(--dim);margin:0 auto 12px;display:block"></i>
     <div class="text-[13px]" style="color:var(--muted);font-weight:600">Aún no hay ${esc(recordPlural.toLowerCase())}</div>
     <div class="text-dim text-[11.5px]" style="margin:5px auto 0;line-height:1.5;max-width:380px">${esc(tr("leads.vacioDetalle")).replace("{tipo}", esc(recordSingular.toLowerCase()))}</div>
@@ -118,7 +136,14 @@ export async function renderLeads(env: Env): Promise<string> {
 
   const body = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h2 class="font-display font-semibold text-[15px] text-cream">${esc(recordPlural)}</h2>
+      <h2 class="font-display font-semibold text-[15px] text-cream">${esc(recordPlural)}${
+        // Con dos asesores compartiendo el bot, hay que dejar clarísimo de quién
+        // es la lista que se está viendo: si no, el que ve pocos leads cree que
+        // el bot no está jalando.
+        filtro.modo === "asesor"
+          ? ` <span class="text-dim" style="font-weight:400;font-size:12.5px">· ${esc(filtro.nombre)}</span>`
+          : ""
+      }</h2>
       <a href="/admin/leads/export.csv" class="ghostbtn" style="display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:9px 14px;font-size:12.5px;transition:all .12s ease">
         <i data-lucide="download" width="14" height="14"></i> Exportar CSV
       </a>
@@ -137,7 +162,11 @@ export async function renderLeads(env: Env): Promise<string> {
 export async function exportLeadsCsv(env: Env): Promise<string> {
   const tr = traductor(env);
   const leads = new LeadsRepo(new Db(env.DB));
-  const list = await leads.list(10_000);
+  // El CSV respeta el MISMO filtro que la pantalla. Sin esto, el botón
+  // "Exportar" sería la puerta de atrás para bajarse los prospectos del otro
+  // asesor completos, con teléfono y todo.
+  const filtro = filtroDeLeads(env as unknown as { PANEL_ROLE?: string; PANEL_EMAIL?: string });
+  const list = filtro.modo === "ninguno" ? [] : await leads.list(10_000, undefined, argDeFiltro(filtro));
   const header = "fecha,nombre,contacto,intent,status,notas,metadata\n";
   const rows = list.map((l) => {
     const date = new Date(l.created_at).toISOString();

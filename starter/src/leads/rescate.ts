@@ -3,6 +3,8 @@ import { Db } from "../db/client";
 import { LeadsRepo } from "../db/leads";
 import { MessagesRepo } from "../db/messages";
 import { messageOwner } from "../tools/handoffHuman";
+// Reparto entre asesores (vive en member/, sobrevive `forjabot update`).
+import { asesorDeConversacion } from "../../member/asesores.local";
 import { selfOrigin } from "../lib/self-origin";
 
 /**
@@ -102,6 +104,12 @@ export async function rescataLeadPrometido(
     .join("\n");
   const telefono = telefonoDe(delCliente);
 
+  // De quién es este prospecto. El rescate hereda el mismo reparto que
+  // calificarLead: se deduce de la cuenta de Zernio por la que entró. Sin esto,
+  // el aviso de un lead perdido le llegaría al asesor equivocado — que es peor
+  // que no avisar, porque el dueño real nunca se entera.
+  const asesor = await asesorDeConversacion(env, conversationId);
+
   // Ya lo habíamos rescatado: la promesa se repite en cada turno, pero el
   // cliente sigue soltando datos. Se COMPLETA la ficha en vez de duplicarla —
   // el rescate suele dispararse antes de que dé su teléfono, y sin esto el
@@ -129,6 +137,7 @@ export async function rescataLeadPrometido(
             `Teléfono: ${telefono}\n\n` +
             `Últimas frases del cliente:\n${delCliente.slice(-3).join("\n")}`,
           url: `${await selfOrigin(env)}/admin/leads`,
+          chatId: asesor?.telegramChatId,
         });
       } catch (e) {
         console.error("[rescate] aviso de teléfono tardío falló:", e);
@@ -145,7 +154,7 @@ export async function rescataLeadPrometido(
     notes: `El bot le dijo que un asesor lo contactaría, pero no lo registró. Aquí va la conversación completa:\n\n${transcripcion}`.slice(0, 4000),
     // Sin calificación a propósito: no la hay. Que el asesor lo vea distinto de
     // un lead normal es parte del punto.
-    metadata: { origen: "rescate", prioridad: "sin_calificar" },
+    metadata: { origen: "rescate", prioridad: "sin_calificar", asesor: asesor?.slug ?? null },
   });
 
   // Siempre avisa: a esta persona ya le prometieron una llamada.
@@ -157,6 +166,7 @@ export async function rescataLeadPrometido(
         `Contacto detectado: ${telefono ?? "todavía no lo da"}\n\n` +
         `Últimas frases del cliente:\n${delCliente.slice(-3).join("\n")}`,
       url: `${await selfOrigin(env)}/admin/leads`,
+      chatId: asesor?.telegramChatId,
     });
   } catch (e) {
     console.error("[rescate] aviso al asesor falló:", e);

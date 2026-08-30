@@ -10,6 +10,7 @@ import { LeadsRepo } from "../src/db/leads";
 import { messageOwner } from "../src/tools/handoffHuman";
 import { selfOrigin } from "../src/lib/self-origin";
 import type { MemberToolCtx } from "../src/tools/member";
+import { asesorDeConversacion } from "./asesores.local";
 
 /** Las tres respuestas que deciden qué tan bueno es el lead. */
 const PLAZO = { inmediato: 3, medio_plazo: 2, cotizando: 1 } as const;
@@ -101,6 +102,11 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
           if (previo) await leads.delete(previo.id);
         }
 
+        // De quién es este prospecto. Se deduce de la cuenta de Zernio por la
+        // que entró el mensaje (ver member/asesores.local.ts). Con un solo
+        // asesor configurado siempre sale el mismo y no cambia nada.
+        const asesor = await asesorDeConversacion(ctx.env, convId);
+
         const leadId = await leads.create({
           conversationId: convId,
           name: nombre,
@@ -109,8 +115,16 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
           intent,
           notes: notas,
           // El panel de Leads y /exportar leen metadata: aquí viaja la
-          // calificación completa, sin necesitar una tabla aparte.
-          metadata: { prioridad, plazo, forma_pago: formaPago, uso: uso ?? null, ciudad: ciudad ?? null },
+          // calificación completa, sin necesitar una tabla aparte. `asesor` es
+          // lo que hace que cada quien vea SU lista.
+          metadata: {
+            prioridad,
+            plazo,
+            forma_pago: formaPago,
+            uso: uso ?? null,
+            ciudad: ciudad ?? null,
+            asesor: asesor?.slug ?? null,
+          },
         });
 
         // Solo los calientes interrumpen al asesor. Avisar de TODOS entrena a
@@ -133,6 +147,9 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
               heading: "🔥 Lead caliente — contáctalo hoy",
               body: detalle,
               url: `${await selfOrigin(ctx.env)}/admin/leads`,
+              // Cada asesor recibe los avisos de SUS prospectos. Sin chat
+              // propio configurado cae en el del dueño, como siempre.
+              chatId: asesor?.telegramChatId,
             });
           } catch (e) {
             // Que falle el aviso NUNCA debe tumbar la conversación con el

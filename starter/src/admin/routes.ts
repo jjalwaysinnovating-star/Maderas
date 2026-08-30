@@ -54,7 +54,7 @@ import { renderReviews } from "./views/reviews";
 import { renderBoveda } from "./views/boveda";
 import { sendCampaign, createHandoffTemplate, contentApprovalStatus } from "../campaigns";
 import { Db } from "../db/client";
-import { LeadsRepo, type Lead } from "../db/leads";
+import { LeadsRepo, leadMetadata, type Lead } from "../db/leads";
 import { TicketsRepo } from "../db/tickets";
 import { ConversationsRepo } from "../db/conversations";
 import { MessagesRepo } from "../db/messages";
@@ -1183,22 +1183,42 @@ adminApp.get("/leads/export.csv", async (c) => {
 
 const LEAD_STATUSES: ReadonlyArray<Lead["status"]> = ["new", "contacted", "sold", "lost"];
 
+/**
+ * ¿La sesión abierta puede tocar ESTE lead? Con dos asesores compartiendo el
+ * bot, esconder una fila en la pantalla no basta: las rutas de cambiar estado y
+ * borrar reciben el id por POST, y quien lo tenga podría marcar como perdido —
+ * o borrar— un prospecto del otro. La comprobación va aquí, en el servidor.
+ */
+async function puedeTocarEsteLead(env: Env, id: string): Promise<boolean> {
+  const { filtroDeLeads, puedeTocarLead } = await import("../../member/asesores.local");
+  const filtro = filtroDeLeads(env as unknown as { PANEL_ROLE?: string; PANEL_EMAIL?: string });
+  if (filtro.modo === "todo") return true;
+  const lead = await new LeadsRepo(new Db(env.DB)).get(id);
+  if (!lead) return false;
+  const meta = leadMetadata(lead);
+  return puedeTocarLead(filtro, meta.asesor ?? null);
+}
+
 // Mark a lead's status (nuevo / contactado / vendido / perdido).
 adminApp.post("/leads/:id/status", async (c) => {
+  const id = c.req.param("id");
+  if (!(await puedeTocarEsteLead(c.env, id))) return c.redirect("/admin/leads");
   const form = await c.req.formData();
   const raw = String(form.get("status") ?? "new");
   const status: Lead["status"] = (LEAD_STATUSES as readonly string[]).includes(raw)
     ? (raw as Lead["status"])
     : "new";
   const leads = new LeadsRepo(new Db(c.env.DB));
-  await leads.setStatus(c.req.param("id"), status);
+  await leads.setStatus(id, status);
   return c.redirect("/admin/leads");
 });
 
 // Borrar un lead (pruebas, duplicados, spam). Definitivo — el botón del panel
 // vive dentro del detalle desplegado y pide confirmación antes de enviar.
 adminApp.post("/leads/:id/delete", async (c) => {
-  await new LeadsRepo(new Db(c.env.DB)).delete(c.req.param("id"));
+  const id = c.req.param("id");
+  if (!(await puedeTocarEsteLead(c.env, id))) return c.redirect("/admin/leads");
+  await new LeadsRepo(new Db(c.env.DB)).delete(id);
   return c.redirect("/admin/leads");
 });
 

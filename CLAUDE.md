@@ -161,6 +161,35 @@ la reemplaza (no se puede recuperar la anterior).
   problema entrena a ignorar los avisos. Ambas cosas salieron de la prueba de
   Instagram con "Jahir". Pruebas en `test/leads/rescate.test.ts`.
   **Vive en `src/`: `forjabot update` lo borra.**
+- **Dos asesores, un solo bot: cada quien su lista de leads.**
+  `member/asesores.local.ts` es el reparto — y vive en `member/` a propósito,
+  así que **`forjabot update` NO se lo lleva**. Ahí van, por asesor: sus
+  `cuentasZernio` (los `_id` de `GET /api/v1/accounts`), su `telegramChatId` y
+  los `emails` con los que entra al panel.
+  De quién es un lead se deduce del `accountId` que Zernio manda en cada
+  mensaje y que el adapter ya guardaba en `zernio_ctx`; el slug del asesor
+  viaja dentro de `metadata`, **sin migrar la tabla**. El panel filtra con
+  `json_extract(metadata,'$.asesor')`.
+  Cuatro reglas que no son cosméticas: (1) con **un solo** asesor en la lista
+  no se filtra nada y el panel se comporta igual que siempre — hoy es el caso;
+  (2) la **contraseña maestra** ve todo, siempre; (3) un correo que **no** esté
+  en la lista **no ve NADA** y se le dice por qué — enseñarle todo convertiría
+  un dedazo al capturar el correo en una fuga silenciosa; (4) los leads **sin
+  asesor** (los viejos, y los del sitio web y WhatsApp, que no traen cuenta de
+  Zernio) son del `ASESOR_POR_DEFECTO`.
+  El **CSV respeta el mismo filtro** que la pantalla, y las rutas de cambiar
+  estado y borrar comprueban en el servidor de quién es el lead: esconder la
+  fila no basta cuando el id viaja por POST.
+  **Vive en `src/` (y `forjabot update` lo borra):** el filtro en
+  `src/db/leads.ts` (`list` + `get`), el enganche en
+  `src/admin/views/leads.ts`, la comprobación de las rutas en
+  `src/admin/routes.ts`, el `chatId` opcional de `messageOwner` en
+  `src/tools/handoffHuman.ts` y las dos llamadas de `src/leads/rescate.ts`.
+  Pruebas en `test/leads/asesores.test.ts` y `test/admin/leads-por-asesor.test.ts`.
+  Para dar de alta al segundo asesor hacen falta tres datos suyos: sus `_id` de
+  Zernio, su chat de Telegram (que le escriba `/start` al bot de avisos) y el
+  correo del panel. El sitio web sigue siendo del dueño: si el segundo quiere
+  leads de web propios, necesita su propio sitio.
 - **Una conversación = un lead, pero solo dentro de 6 horas**
   (`LeadsRepo.VENTANA_MISMA_PLATICA_MS`). `calificarLead` reemplaza el lead
   pendiente de esa plática en vez de agregar otro (un prospecto se registraba al

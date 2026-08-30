@@ -147,12 +147,19 @@ export async function notifyBudgetHardStop(
  * de WhatsApp: un mensaje de negocio fuera de la ventana 24h necesita HSM y el
  * reporte no cabe ahí; Telegram/email son free-form y suficientes.
  * Best-effort: cada canal es independiente y nunca lanza.
+ *
+ * `chatId` redirige SOLO el Telegram a otro destinatario — el mismo bot, otra
+ * persona. Existe para el reparto entre asesores: cada uno recibe los avisos de
+ * SUS prospectos y no los del otro (ver member/asesores.local.ts). Si se omite,
+ * o si viene vacío, cae en `OWNER_TELEGRAM_CHAT_ID` como siempre. El correo NO
+ * se redirige: `OWNER_EMAIL` es del dueño de la instalación.
  */
 export async function messageOwner(
   env: Env,
-  msg: { heading: string; body: string; url?: string },
+  msg: { heading: string; body: string; url?: string; chatId?: string },
 ): Promise<void> {
-  const line = env.TELEGRAM_BOT_TOKEN && env.OWNER_TELEGRAM_CHAT_ID;
+  const destino = (msg.chatId ?? "").trim() || env.OWNER_TELEGRAM_CHAT_ID;
+  const line = env.TELEGRAM_BOT_TOKEN && destino;
   const mail = env.RESEND_API_KEY && env.OWNER_EMAIL;
   if (!line && !mail) {
     console.error(
@@ -167,7 +174,7 @@ export async function messageOwner(
       const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: env.OWNER_TELEGRAM_CHAT_ID, text }),
+        body: JSON.stringify({ chat_id: destino, text }),
       });
       // Telegram rechaza con 200-no-ok y con 4xx (chat_id equivocado, bot
       // bloqueado, token rotado). Sin mirar la respuesta, un aviso perdido se

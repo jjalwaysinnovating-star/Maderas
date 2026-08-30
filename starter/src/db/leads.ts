@@ -73,17 +73,42 @@ export class LeadsRepo {
     return id;
   }
 
-  async list(limit: number, status?: string): Promise<Lead[]> {
+  /**
+   * `asesor` filtra por el dueño del lead cuando hay más de uno compartiendo el
+   * bot (ver member/asesores.local.ts). El slug viaja dentro de `metadata`, así
+   * que se lee con json_extract y NO hizo falta migrar la tabla.
+   *
+   * Los leads sin `asesor` —los de antes del reparto, y los del sitio web, que
+   * no traen cuenta de Zernio— caen con el asesor POR DEFECTO. Por eso el
+   * filtro por defecto también acepta NULL: si no, esos prospectos quedarían
+   * invisibles para todos, que es peor que verlos de más.
+   */
+  async list(limit: number, status?: string, asesor?: { slug: string; esPorDefecto: boolean }): Promise<Lead[]> {
+    const where: string[] = [];
+    const args: unknown[] = [];
     if (status) {
-      return this.db.all<Lead>(
-        "SELECT * FROM leads WHERE status = ? ORDER BY created_at DESC LIMIT ?",
-        [status, limit],
-      );
+      where.push("status = ?");
+      args.push(status);
     }
+    if (asesor) {
+      where.push(
+        asesor.esPorDefecto
+          ? "(json_extract(metadata, '$.asesor') = ? OR json_extract(metadata, '$.asesor') IS NULL)"
+          : "json_extract(metadata, '$.asesor') = ?",
+      );
+      args.push(asesor.slug);
+    }
+    const filtro = where.length ? `WHERE ${where.join(" AND ")} ` : "";
     return this.db.all<Lead>(
-      "SELECT * FROM leads ORDER BY created_at DESC LIMIT ?",
-      [limit],
+      `SELECT * FROM leads ${filtro}ORDER BY created_at DESC LIMIT ?`,
+      [...args, limit],
     );
+  }
+
+  /** Un lead por id. Se usa para comprobar de quién es antes de dejar que
+   *  alguien le cambie el estado o lo borre desde el panel. */
+  async get(id: string): Promise<Lead | null> {
+    return this.db.first<Lead>("SELECT * FROM leads WHERE id = ?", [id]);
   }
 
   async setStatus(id: string, status: Lead["status"]): Promise<void> {
