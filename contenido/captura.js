@@ -6,7 +6,16 @@
 const { chromium } = require("playwright-core");
 const D = __dirname;
 
-const POSTS = ["post-1-financiamiento", "post-2-cancun", "post-3-ciudades"];
+const POSTS = [
+  "post-1-financiamiento",
+  "post-2-cancun",
+  "post-3-ciudades",
+  "post-4-monterrey",
+  "post-5-amenidades",
+  "post-6-leon",
+  "post-7-proceso",
+  "post-8-por-que-terreno",
+];
 const PLACAS = ["reel-1", "reel-2", "reel-3", "reel-4"];
 
 (async () => {

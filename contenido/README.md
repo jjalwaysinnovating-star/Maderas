@@ -8,7 +8,28 @@ que la portada. Los textos para copiar y pegar están en `textos.md`.
 | `salida/post-1-financiamiento.png` | Sin aval, sin buró | 1080×1350 |
 | `salida/post-2-cancun.png` | Cancún desde $1,388 al mes | 1080×1350 |
 | `salida/post-3-ciudades.png` | Las 8 ciudades | 1080×1350 |
+| `salida/post-4-monterrey.png` | Monterrey desde $1,474 al mes | 1080×1350 |
+| `salida/post-5-amenidades.png` | Más de 30 amenidades, 4 clubes | 1080×1350 |
+| `salida/post-6-leon.png` | León desde $1,288 al mes | 1080×1350 |
+| `salida/post-7-proceso.png` | Los cuatro pasos para comprar | 1080×1350 |
+| `salida/post-8-por-que-terreno.png` | Por qué un terreno | 1080×1350 |
 | `salida/reel-terrenos.mp4` | Reel de 12 s, **sin audio** | 1080×1920 |
+
+## Los números van en Montserrat, no en la serif
+
+Sorts Mill Goudy trae números de estilo antiguo: el "30" salía como "3o" —con
+una o chiquita— y el "1" de la lista de pasos era idéntico a una I mayúscula.
+Se leían como errores de dedo. Por eso existe la clase `.num` y por eso
+`.pasos b` usa Montserrat. Los números que ya salen bien en la serif (el "8" de
+"8 estados") se quedan como están.
+
+## El velo baja más que antes
+
+El renglón dorado de arriba del precio se perdía sobre piedra clara: en el post
+de León, "LEÓN, GUANAJUATO · MENSUALIDAD DESDE" era ilegible en la mitad
+derecha, encima del Arco. Se bajó el velo en la franja donde vive el texto y el
+`.eyebrow` pasó al oro claro con sombra propia. La foto se ve un poco menos,
+pero un post cuyo trabajo es enseñar un precio primero tiene que leerse.
 
 ## Por qué 4:5 y no cuadrado
 
@@ -63,6 +84,7 @@ la ciudad y el detalle lo da un asesor.
 ## Rehacerlas o hacer más
 
 ```bash
+sh insumos.sh          # baja las fotos del bucket de Ciudad Maderas
 python3 contenido.py   # arma los HTML (posts y placas del reel)
 node captura.js        # los convierte en PNG con el Chromium del contenedor
 python3 reel.py        # arma el mp4 con ffmpeg
@@ -70,7 +92,9 @@ python3 reel.py        # arma el mp4 con ffmpeg
 
 `captura.js` necesita `playwright-core` (`npm i playwright-core`) y `reel.py`
 usa el ffmpeg de `imageio-ffmpeg` (`pip install imageio-ffmpeg`). Las fotos y
-las fuentes quedan en `insumos/`, que no se versiona — se vuelven a bajar solas.
+las fuentes viven en `insumos/`, que **no se versiona** (pesa de más y las fotos
+no son nuestras): `insumos.sh` la rearma bajando cada foto del bucket público,
+y se salta las que ya estén.
 
 Para un post nuevo se agrega una llamada a `post(...)` en `contenido.py` y su
 nombre a la lista de `captura.js`. Los precios por ciudad viven en
