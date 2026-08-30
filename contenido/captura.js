@@ -7,6 +7,7 @@ const { chromium } = require("playwright-core");
 const D = __dirname;
 
 const POSTS = [
+  "post-9-cuanto-cuesta",
   "post-1-financiamiento",
   "post-2-cancun",
   "post-3-ciudades",
@@ -15,8 +16,32 @@ const POSTS = [
   "post-6-leon",
   "post-7-proceso",
   "post-8-por-que-terreno",
+  "post-10-queretaro",
+  "post-11-merida",
+  "post-12-aguascalientes",
+  "post-13-slp",
+  "post-14-puebla",
+  "post-15-trayectoria",
+  "post-16-presencia",
+  "post-17-kanyu",
+  "post-18-fundacion",
+  "post-19-albercas",
+  "post-20-canchas",
+  "post-21-familia",
+  "post-22-enganche",
+  "post-23-buro",
+  "post-24-formas-de-pago",
+  "post-25-urbanizacion",
+  "post-26-revender",
+  "post-27-papeles",
+  "post-28-horario",
+  "post-29-plusvalia",
 ];
-const PLACAS = ["reel-1", "reel-2", "reel-3", "reel-4"];
+// Cuatro reels de cuatro placas cada uno: A sin buró, B en qué ciudad,
+// C los cuatro pasos, D por qué un terreno.
+const PLACAS = ["", "b", "c", "d", "e", "f"].flatMap((r) =>
+  [1, 2, 3, 4].map((n) => `reel${r}-${n}`),
+);
 
 (async () => {
   const navegador = await chromium.launch({

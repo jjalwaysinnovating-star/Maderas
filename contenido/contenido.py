@@ -72,6 +72,17 @@ body{{overflow:hidden}}
 .regla{{position:absolute;left:0;right:0;bottom:0;background:{ORO}}}
 .cta{{font-family:Mont,sans-serif;font-weight:700;color:{AZUL};
       background:{ORO_CLARO};text-transform:uppercase;display:inline-block}}
+/* Separación de verdad entre dos palabras de un titular. En la itálica de
+   Goudy las letras vuelan sobre la siguiente y un espacio normal —o un
+   &nbsp;— se lo come el voladizo: "UN TERRENO" salía "UNTERRENO" y
+   "YA ES TUYO" salía "ES TUYO" pegado. Se pone en la palabra de la IZQUIERDA
+   del choque. */
+.gap{{margin-right:.42em}}
+/* Goudy trae números de estilo antiguo: el "30" salía como "3o" —con una o
+   chiquita— y se leía como error de dedo. Los números dentro de un titular
+   serif van en Montserrat. */
+.num{{font-family:Mont,sans-serif;font-weight:800;font-size:.82em;
+      letter-spacing:-.01em}}
 """
 
 # ── Posts de feed: 1080x1350 (4:5) ─────────────────────────────────────────
@@ -109,11 +120,6 @@ body{{width:{W}px;height:{H}px}}
 .pasos b{{font-family:Mont,sans-serif;font-weight:700;font-size:32px;
   color:{ORO_CLARO};min-width:44px;line-height:1}}
 .pasos i{{font-style:normal;color:#c9d1d8;font-size:24px}}
-/* Goudy trae números de estilo antiguo: el "30" salía como "3o" —con una o
-   chiquita— y se leía como error de dedo. Los números dentro de un titular
-   serif van en Montserrat. */
-.num{{font-family:Mont,sans-serif;font-weight:800;font-size:.82em;
-      letter-spacing:-.01em}}
 """
 
 
@@ -267,7 +273,7 @@ post(
 <!-- El margen no es adorno: la N inclinada de Goudy se monta sobre la T y se
      leía "UNTERRENO". Un espacio normal no basta —el voladizo de la itálica se
      lo come—, por eso va separación de verdad. -->
-<div class="grande" style="font-size:70px">¿P<i>OR QUÉ</i><br><i style="margin-right:.5em">UN</i>T<i>ERRENO</i>?</div>
+<div class="grande" style="font-size:70px">¿P<i>OR QUÉ</i><br><i class="gap">UN</i>T<i>ERRENO</i>?</div>
 <div class="pie">La entrada y la mensualidad son bastante menores que algo ya
   construido, construyes a tu gusto y a tu ritmo, y mientras tanto ya tienes el
   patrimonio a tu nombre.<br><br>
@@ -275,6 +281,269 @@ post(
   de una vez.</div>
 <div class="cta">Comenta INFO</div>""",
 )
+
+# 9 · Cuánto cuesta el terreno completo. Los otros posts hablan de la
+#     mensualidad; esta es la otra pregunta que todo el mundo hace y que
+#     ninguno contestaba. El "desde" pegado a la cifra, como manda la KB: el
+#     precio final depende de ciudad, metros y ubicación, y lo confirma un
+#     asesor.
+post(
+    "post-9-cuanto-cuesta",
+    "mapa",
+    """
+<div class="eyebrow">El terreno completo · Desde</div>
+<div class="cifra" style="font-size:118px">$550,000</div>
+<div class="grande" style="font-size:46px;margin-top:14px">o <span class="num">$1,244</span> al mes</div>
+<div class="pie">El precio final depende de la ciudad, los metros y la ubicación
+  dentro del desarrollo. Te cotizo el lote que te guste, sin costo.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+# ── Tercera tanda: el calendario de 2 posts al día ─────────────────────────
+# Todo sale de member/kb/. Los ángulos son distintos entre sí a propósito: si
+# se repiten, el feed se lee como si el asesor no tuviera nada más que decir.
+#
+# La tabla de mensualidades es POR PLAZA y la KB dice expresamente "no usar la
+# de una ciudad para otra" — por eso hay un post por ciudad y no uno genérico.
+
+
+def ciudad(nombre, imagen, titulo, cifra, pie):
+    """Un post de precio de ciudad. Todos comparten molde para que el feed se
+    lea como una serie, y solo cambian la ciudad, la foto y la cifra."""
+    post(
+        nombre,
+        imagen,
+        f"""
+<div class="eyebrow">{titulo} · Mensualidad desde</div>
+<div class="cifra">{cifra}</div>
+<div class="grande" style="font-size:52px;margin-top:12px">al mes</div>
+<div class="pie">{pie}</div>
+<div class="cta">Comenta INFO</div>""",
+    )
+
+
+ciudad("post-10-queretaro", "queretaro", "Querétaro", "$1,348",
+       "Terrenos premium en la plaza de Querétaro. La mensualidad exacta "
+       "depende del lote y del plazo que elijas — te la calculo.")
+
+ciudad("post-11-merida", "merida", "Mérida", "$1,683",
+       "Terrenos premium en la plaza Península, en Mérida. Sin aval, sin buró "
+       "y desde 1% de enganche.")
+
+ciudad("post-12-aguascalientes", "ags", "Aguascalientes", "$1,244",
+       "Es la mensualidad de arranque más baja del catálogo, junto con Puebla. "
+       "Te digo qué lotes hay disponibles hoy.")
+
+ciudad("post-13-slp", "slp", "San Luis Potosí", "$1,288",
+       "Terrenos premium en la plaza de San Luis Potosí, con crédito directo: "
+       "sin aval y sin revisión de buró.")
+
+ciudad("post-14-puebla", "puebla", "Puebla", "$1,244",
+       "Terrenos premium en la plaza de Puebla. Dime cuánto puedes dar de "
+       "enganche y te calculo la mensualidad.")
+
+
+# La trayectoria de la desarrolladora. Son los números de la KB (01) y no se
+# redondean hacia arriba: 124,000 lotes ENTREGADOS es un dato comprobable y
+# vale más que cualquier adjetivo.
+post(
+    "post-15-trayectoria",
+    "clubes",
+    """
+<div class="eyebrow">La desarrolladora detrás</div>
+<div class="cifra" style="font-size:120px">40 <span class="grande" style="font-size:56px">años</span></div>
+<div class="chips"><span>+124,000 lotes entregados</span>
+  <span>28 desarrollos</span></div>
+<div class="pie">Comunidades planificadas con más de cuatro décadas de
+  trayectoria en el sector. Yo soy su asesor autorizado.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-16-presencia",
+    "caribe",
+    """
+<div class="eyebrow">Dónde está Ciudad Maderas</div>
+<div class="grande" style="font-size:72px"><span class="num">20</span> <i>CIUDADES</i><br><i class="gap">EN</i>M<i>ÉXICO</i></div>
+<div class="chips"><span>4 en Estados Unidos</span><span>40 oficinas</span>
+  <span>28 desarrollos</span></div>
+<div class="pie">Yo comercializo terrenos en 8 estados, y te atiendo en línea
+  estés donde estés — también desde el extranjero.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+# Kan Yu y biofísica aplicada. Es el dato más raro del catálogo y por eso
+# funciona: nadie más lo dice. Va con las palabras exactas de la KB (05).
+post(
+    "post-17-kanyu",
+    "biofisica",
+    """
+<div class="eyebrow">Cómo se planean</div>
+<div class="grande" style="font-size:72px">K<i class="gap">AN</i>Y<i>U</i> <i>Y</i><br>B<i>IOFÍSICA</i><br>A<i>PLICADA</i></div>
+<div class="pie">Calles, avenidas, jardines, montañas y lagos se conectan en una
+  gran red, buscando un flujo constante enfocado en la calidad de vida de quien
+  vive ahí. Es la única desarrolladora en Latinoamérica que lo aplica.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-18-fundacion",
+    "mascotas",
+    """
+<div class="eyebrow">Fundación Ciudad Maderas</div>
+<div class="grande" style="font-size:78px">N<i>O SOLO</i><br>V<i>ENDEN</i><br>T<i>ERRENOS</i></div>
+<div class="chips"><span>Educación</span><span>Salud</span><span>Arte</span>
+  <span>Deporte</span><span>Protección animal</span></div>
+<div class="pie">La desarrolladora tiene su propia fundación. Vale la pena
+  saber con quién estás firmando.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+
+# Las amenidades, una por una. La KB (05) las lista pero NO dice cuál pertenece
+# a cuál club, así que ningún post se lo inventa: se nombran las amenidades y
+# se repite la advertencia de que el catálogo varía por desarrollo y etapa.
+post(
+    "post-19-albercas",
+    "alberca-techada",
+    """
+<div class="eyebrow">Entre más de 30 amenidades</div>
+<div class="grande" style="font-size:72px">A<i>LBERCAS</i><br>S<i>EMIOLÍMPICAS</i><br><i>Y</i>&nbsp; T<i>ECHADAS</i></div>
+<div class="pie">Para nadar todo el año, no solo en temporada. El catálogo
+  exacto varía por desarrollo y etapa — te digo qué hay en el que te guste.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-20-canchas",
+    "tenis",
+    """
+<div class="eyebrow">Entre más de 30 amenidades</div>
+<div class="grande" style="font-size:84px">C<i>ANCHAS DE</i><br>P<i>ÁDEL</i> <i>Y</i>&nbsp; T<i>ENIS</i></div>
+<div class="chips"><span>Gimnasio</span><span>Casa club</span></div>
+<div class="pie">Dentro del desarrollo, con acceso controlado. El catálogo
+  varía por desarrollo y etapa.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-21-familia",
+    "chapoteadero",
+    """
+<div class="eyebrow">Entre más de 30 amenidades</div>
+<div class="grande" style="font-size:82px">C<i>HAPOTEADEROS</i><br><i>Y</i>&nbsp; Á<i>REAS</i><br>I<i>NFANTILES</i></div>
+<div class="pie">Si el terreno es para la familia, esto pesa más que los metros.
+  El catálogo varía por desarrollo y etapa.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+
+# Financiamiento, desmenuzado. Es el bloque que más convence según la KB (03),
+# así que cada facilidad tiene su propio post en vez de ir todas apretadas.
+post(
+    "post-22-enganche",
+    "alberca",
+    """
+<div class="eyebrow">Enganche desde</div>
+<div class="cifra" style="font-size:230px">1<span class="grande" style="font-size:110px">%</span></div>
+<div class="pie">No necesitas una entrada fuerte para empezar a construir
+  patrimonio. Es de las mayores facilidades del sector.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-23-buro",
+    "monterrey",
+    """
+<div class="eyebrow">Si te descartaste solo, léelo</div>
+<div class="grande" style="font-size:80px">E<i>STAR EN</i><br>B<i>URÓ NO TE</i><br>L<i>O IMPIDE</i></div>
+<div class="pie">No se revisa buró en ningún momento del proceso. El crédito es
+  directo con la desarrolladora, no con un banco — por eso puede haber
+  condiciones que un banco no da.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-24-formas-de-pago",
+    "gto",
+    """
+<div class="eyebrow">Formas de pago</div>
+<div class="grande" style="font-size:82px">T<i>RES</i><br>C<i>AMINOS</i></div>
+<div class="chips"><span>Crédito directo</span><span>Transferencia</span>
+  <span>Contado</span></div>
+<div class="pie">Si es de contado, con más razón vale que te cotice un asesor:
+  esas condiciones se manejan caso por caso.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+
+# El terreno y los trámites. Son las preguntas que frenan a quien nunca ha
+# comprado, y cada una lleva su matiz de la KB — la etapa, el contrato, el
+# asesor — porque sin el matiz se convierten en promesas.
+post(
+    "post-25-urbanizacion",
+    "mapa",
+    """
+<div class="eyebrow">¿El terreno tiene servicios?</div>
+<div class="grande" style="font-size:76px">U<i>RBANIZACIÓN</i><br>C<i>OMPLETA</i></div>
+<div class="chips"><span>Calles</span><span>Banquetas</span><span>Agua</span>
+  <span>Luz</span><span>Drenaje</span><span>Acceso controlado</span></div>
+<div class="pie">Lo que ya está listo hoy depende de la etapa. Te digo
+  exactamente en qué va la del lote que te interese.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-26-revender",
+    "merida",
+    """
+<div class="eyebrow">¿Se puede rentar o revender?</div>
+<div class="grande" style="font-size:74px">S<i>Í, Y MUCHA</i><br>G<i>ENTE</i><br>C<i>OMPRA</i><br><i>POR ESO</i></div>
+<div class="pie">Las condiciones de traspaso y los tiempos los explica un asesor
+  según tu contrato.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-27-papeles",
+    "ags",
+    """
+<div class="eyebrow">¿Qué papeles necesito?</div>
+<div class="grande" style="font-size:84px">P<i>ARA</i><br>A<i>RRANCAR,</i><br>C<i>ASI NADA</i></div>
+<div class="chips"><span>Sin buró</span><span>Sin aval</span>
+  <span>Sin comprobante de ingresos</span></div>
+<div class="pie">Los documentos de firma los revisa el asesor contigo llegado el
+  momento. Nunca por chat.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+post(
+    "post-28-horario",
+    "queretaro",
+    """
+<div class="eyebrow">Horario de atención</div>
+<div class="grande" style="font-size:62px">L<i>UNES</i> <i>A</i>&nbsp; D<i>OMINGO</i><br><span class="num">8</span> <i>A</i>&nbsp;<span class="num">6</span></div>
+<div class="pie">Y si escribes fuera de ese horario, igual te contesto y tomo
+  tus datos: te respondo en cuanto abro.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
+# Plusvalía. El terreno legalmente delicado: van EXACTAMENTE las formulaciones
+# aprobadas de la KB (07) y ninguna otra. Nada de "garantizar", ningún
+# porcentaje, ninguna afirmación sobre cómo se comportó el mercado antes.
+post(
+    "post-29-plusvalia",
+    "slp",
+    """
+<div class="eyebrow">Hablemos de plusvalía</div>
+<div class="grande" style="font-size:78px">Z<i>ONAS DE</i><br>A<i>LTO</i><br>C<i>RECIMIENTO</i></div>
+<div class="pie">Fuerte potencial de plusvalía, en comunidades planificadas con
+  más de 40 años de trayectoria. No te voy a aventar un porcentaje que no te
+  pueda sostener — lo que sí, te enseño cómo se ha movido la zona que te
+  interesa.</div>
+<div class="cta">Comenta INFO</div>""",
+)
+
 
 # ── Placas del reel: 1080x1920 (9:16), transparentes ───────────────────────
 # Solo el TEXTO. El movimiento de la foto lo hace ffmpeg (reel.py) y estas
@@ -341,4 +610,131 @@ placa("reel-4", """
 <div class="pie">Te digo cuánto quedaría tu mensualidad,<br>sin compromiso.</div>
 <div class="cta">Comenta INFO</div>""")
 
-print("listo: 8 posts y 4 placas de reel")
+
+# ── Reel B · ¿en qué ciudad? ────────────────────────────────────────────────
+# El mismo molde de cuatro tiempos, con otra idea: aquí el gancho es la
+# pregunta que se hace todo el mundo antes que el precio.
+placa("reelb-1", """
+<div class="eyebrow">Terrenos premium</div>
+<div class="grande" style="font-size:100px">¿E<i>N QUÉ</i><br>C<i>IUDAD</i><br><i class="gap">LO</i>Q<i>UIERES</i>?</div>""")
+
+placa("reelb-2", """
+<div class="eyebrow">Dónde puedes invertir</div>
+<div class="grande" style="font-size:104px">8 <i>ESTADOS</i><br>D<i>E</i>&nbsp; M<i>ÉXICO</i></div>
+<div class="chips"><span>Querétaro</span><span>León</span><span>Mérida</span>
+  <span>Cancún</span></div>""")
+
+placa("reelb-3", """
+<div class="eyebrow">Mensualidades desde</div>
+<div class="cifra">$1,244</div>
+<div class="chips"><span>Monterrey</span><span>Aguascalientes</span>
+  <span>San Luis Potosí</span><span>Puebla</span></div>""")
+
+placa("reelb-4", """
+<div class="grande" style="font-size:96px">D<i>IME TU</i><br>C<i>IUDAD</i></div>
+<div class="pie">Y te paso los desarrollos disponibles<br>con su mensualidad.</div>
+<div class="cta">Comenta INFO</div>""")
+
+
+# ── Reel C · los cuatro pasos ───────────────────────────────────────────────
+# Va dirigido a quien nunca ha comprado un terreno: esa duda —"¿y luego qué
+# sigue?"— frena más que el precio. Los pasos son los de la KB (06), sin
+# prometer tiempos de escrituración.
+placa("reelc-1", """
+<div class="eyebrow">Así se compra</div>
+<div class="grande" style="font-size:94px">¿N<i>UNCA HAS</i><br>C<i>OMPRADO</i><br><i class="gap">UN</i>T<i>ERRENO</i>?</div>
+<div class="pie">Son cuatro pasos.</div>""")
+
+placa("reelc-2", """
+<div class="eyebrow">Pasos 1 y 2</div>
+<div class="grande" style="font-size:88px">P<i>LATICAMOS</i><br><i>Y</i>&nbsp; C<i>OTIZAMOS</i></div>
+<div class="pie">Qué ciudad, qué superficie y para qué lo quieres.
+  Luego, los lotes disponibles hoy con su enganche y su mensualidad.</div>""")
+
+placa("reelc-3", """
+<div class="eyebrow">Pasos 3 y 4</div>
+<div class="grande" style="font-size:88px">A<i>PARTAS</i><br><i>Y</i>&nbsp; P<i>AGAS</i></div>
+<div class="pie">El lote queda a tu nombre y se firma el contrato. Las
+  mensualidades van directo con la desarrolladora hasta liquidar y escriturar.</div>""")
+
+placa("reelc-4", """
+<div class="grande" style="font-size:96px">S<i>IN BURÓ.</i><br>S<i>IN AVAL.</i></div>
+<div class="pie">Y sin comprobante de ingresos.<br>Empezamos por el paso 1.</div>
+<div class="cta">Comenta INFO</div>""")
+
+
+# ── Reel D · por qué un terreno ─────────────────────────────────────────────
+# La placa 3 lleva a propósito la frase honesta de la KB. Va en medio y no al
+# final: decir a quién NO le sirve es lo que hace creíble lo demás, pero el
+# reel tiene que cerrar invitando, no cerrando la puerta.
+placa("reeld-1", """
+<div class="eyebrow">Patrimonio</div>
+<div class="grande" style="font-size:100px">¿P<i>OR QUÉ</i><br><i class="gap">UN</i>T<i>ERRENO</i>?</div>""")
+
+placa("reeld-2", """
+<div class="eyebrow">Contra algo ya construido</div>
+<div class="grande" style="font-size:86px">M<i>ENOS ENTRADA.</i><br>M<i>ENOS</i><br>M<i>ENSUALIDAD.</i></div>
+<div class="pie">Y construyes a tu gusto y a tu ritmo.</div>""")
+
+placa("reeld-3", """
+<div class="eyebrow">Te lo digo de una vez</div>
+<div class="grande" style="font-size:82px">S<i>I TE URGE</i><br>M<i>UDARTE,</i><br><i>NO ES LO TUYO.</i></div>
+<div class="pie">Prefiero decírtelo ahora que hacerte perder el tiempo.</div>""")
+
+placa("reeld-4", """
+<div class="eyebrow">Desde $1,244 al mes</div>
+<div class="grande" style="font-size:92px">E<i>L PATRIMONIO</i><br><i class="gap">YA ES</i>T<i>UYO</i></div>
+<div class="pie">Terrenos premium en 8 estados de México.</div>
+<div class="cta">Comenta INFO</div>""")
+
+
+# ── Reel E · las amenidades ─────────────────────────────────────────────────
+# La KB lista las amenidades y los cuatro clubes, pero NO dice cuál amenidad
+# pertenece a cuál club: aquí se nombran por separado, sin repartirlas, y se
+# cierra con la advertencia de que varían por desarrollo y etapa.
+placa("reele-1", """
+<div class="eyebrow">Terrenos premium</div>
+<div class="grande" style="font-size:104px">M<i>ÁS DE</i> <span class="num">30</span><br>A<i>MENIDADES</i></div>""")
+
+placa("reele-2", """
+<div class="eyebrow">Se organizan en</div>
+<div class="grande" style="font-size:112px">C<i>UATRO</i><br>C<i>LUBES</i></div>
+<div class="chips"><span>Casa Club</span><span>Family Club</span>
+  <span>Club Deportivo</span><span>Club Acuático</span></div>""")
+
+placa("reele-3", """
+<div class="eyebrow">Entre otras</div>
+<div class="chips"><span>Albercas semiolímpicas</span><span>Albercas techadas</span>
+  <span>Pádel</span><span>Tenis</span><span>Gimnasio</span>
+  <span>Chapoteaderos</span><span>Áreas infantiles</span></div>""")
+
+placa("reele-4", """
+<div class="grande" style="font-size:88px">¿C<i>UÁLES</i><br><i class="gap">TIENE</i>E<i>L</i><br><i class="gap">QUE TE</i>G<i>USTA</i>?</div>
+<div class="pie">El catálogo varía por desarrollo y etapa.<br>Te digo cuáles ya
+  están y cuáles vienen.</div>
+<div class="cta">Comenta INFO</div>""")
+
+
+# ── Reel F · cuánto cuesta ──────────────────────────────────────────────────
+# Contesta de frente la primera pregunta de todos, con las dos cifras juntas:
+# el terreno completo y la mensualidad. Ambas "desde", como manda la KB.
+placa("reelf-1", """
+<div class="eyebrow">Sin rodeos</div>
+<div class="grande" style="font-size:100px">¿C<i>UÁNTO</i><br>C<i>UESTA</i><br><i class="gap">UN</i>T<i>ERRENO</i>?</div>""")
+
+placa("reelf-2", """
+<div class="eyebrow">El terreno completo · Desde</div>
+<div class="cifra" style="font-size:138px">$550,000</div>""")
+
+placa("reelf-3", """
+<div class="eyebrow">O al mes · Desde</div>
+<div class="cifra">$1,244</div>
+<div class="pie">Con enganche desde 1%, sin aval y sin buró.</div>""")
+
+placa("reelf-4", """
+<div class="grande" style="font-size:96px">T<i>E COTIZO</i><br><i class="gap">EL</i>T<i>UYO</i></div>
+<div class="pie">Sin costo y sin compromiso. El precio final depende de la
+  ciudad, los metros y la ubicación.</div>
+<div class="cta">Comenta INFO</div>""")
+
+print("listo: 29 posts y 24 placas de reel")

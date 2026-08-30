@@ -34,5 +34,9 @@ baja "$B/desarrollos/guanajuato/gto_invertir.webp"      gto.webp
 baja "$B/desarrollos/merida/merida_invertir.webp"       merida.webp
 baja "$B/desarrollos/sanLuisPotosi/slp_estilodevida.webp" slp.webp
 
+# Vista aérea de un desarrollo urbanizado: es la única foto donde se ven los
+# LOTES, y por eso es la del post de "¿cuánto cuesta un terreno?".
+baja "$B/mapa/desarrollo.webp"                          mapa.webp
+
 echo
 echo "listo. Ahora: python3 contenido.py && node captura.js"

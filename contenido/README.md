@@ -1,19 +1,41 @@
 # Contenido para Instagram y Facebook
 
-Tres posts y un reel, con las fotos reales de los desarrollos y la misma marca
-que la portada. Los textos para copiar y pegar están en `textos.md`.
+**29 posts (1080×1350) y 6 reels (1080×1920)**, todos con fotos reales del
+bucket de Ciudad Maderas. Los textos para copiar y pegar están en `textos.md`;
+los archivos, en `salida/`.
 
-| Archivo | Qué es | Medida |
+| Familia | Posts | De dónde sale |
 |---|---|---|
-| `salida/post-1-financiamiento.png` | Sin aval, sin buró | 1080×1350 |
-| `salida/post-2-cancun.png` | Cancún desde $1,388 al mes | 1080×1350 |
-| `salida/post-3-ciudades.png` | Las 8 ciudades | 1080×1350 |
-| `salida/post-4-monterrey.png` | Monterrey desde $1,474 al mes | 1080×1350 |
-| `salida/post-5-amenidades.png` | Más de 30 amenidades, 4 clubes | 1080×1350 |
-| `salida/post-6-leon.png` | León desde $1,288 al mes | 1080×1350 |
-| `salida/post-7-proceso.png` | Los cuatro pasos para comprar | 1080×1350 |
-| `salida/post-8-por-que-terreno.png` | Por qué un terreno | 1080×1350 |
-| `salida/reel-terrenos.mp4` | Reel de 12 s, **sin audio** | 1080×1920 |
+| Ciudades y precio | 2, 4, 6, 10–14 | tabla de mensualidades por plaza, `kb/02` |
+| Cuánto cuesta | 3, 9 | `kb/02` |
+| Financiamiento | 1, 22, 23, 24 | `kb/03` |
+| Amenidades | 5, 19, 20, 21 | `kb/05` |
+| El terreno y trámites | 7, 25, 26, 27 | `kb/05`, `kb/06` |
+| La desarrolladora | 15, 16, 17, 18 | `kb/01`, `kb/05` |
+| Por qué / plusvalía / trato | 8, 28, 29 | `kb/05`, `kb/07`, `kb/01` |
+
+| Reel | Idea |
+|---|---|
+| `reel-terrenos.mp4` | A · sin buró |
+| `reel-ciudades.mp4` | B · en qué ciudad |
+| `reel-pasos.mp4` | C · los cuatro pasos |
+| `reel-porque.mp4` | D · por qué un terreno |
+| `reel-amenidades.mp4` | E · más de 30 amenidades |
+| `reel-cuanto.mp4` | F · cuánto cuesta |
+
+## Hasta aquí llega la base de conocimiento
+
+Los 29 ángulos son **todos** los que `member/kb/` sostiene sin repetirse. A 2
+posts al día se acaban en 14 días. Para seguir hay dos caminos honestos:
+repetir los mejores cuando ya tengan más de dos semanas, o que el asesor aporte
+datos nuevos que pueda sostener. Inventar un dato para llenar un hueco del
+calendario es exactamente lo que no se hace: un post queda escrito y cualquiera
+lo captura.
+
+Dos fotos del bucket se descartaron a propósito: la de niños en un salón
+(`fundacion/Educación.webp`) porque son caras de menores identificables y eso no
+va en publicidad de venta, y las versiones `_mobile` de cada plaza porque son de
+375×580 y no dan la resolución.
 
 ## Los números van en Montserrat, no en la serif
 
@@ -80,6 +102,26 @@ En Querétaro, León, Mérida y San Luis Potosí la marca **sí** publica los no
 de cada desarrollo, y esos se pueden usar tal cual (están en `landing.local.ts`).
 En **Cancún, Monterrey, Aguascalientes y Puebla no los publica** — ahí se nombra
 la ciudad y el detalle lo da un asesor.
+
+## Los posts se programan; los reels NO
+
+Los posts de foto salen solos por la API de Zernio. Los reels **no se pueden
+programar**: Instagram no deja ponerle música de su biblioteca a un reel
+publicado por API — eso es de Meta, no de Zernio, y ninguna herramienta lo
+resuelve. Como el audio que esté sonando es lo que más ayuda al alcance,
+conviene más subirlos a mano.
+
+Por eso cada reel tiene un **recordatorio** programado en vez de una
+publicación: el día que toca llega el aviso con el archivo y el texto, y solo
+hay que subirlo desde el celular.
+
+## Los titulares serif necesitan separación de verdad
+
+En la itálica de Sorts Mill Goudy las letras vuelan sobre la siguiente, y un
+espacio normal —o un `&nbsp;`— se lo come el voladizo: "UN TERRENO" salía
+"UNTERRENO" y "YA ES TUYO" salía pegado. Para eso está la clase `.gap`, que se
+pone en la palabra de la **izquierda** del choque. Vale la pena revisar cada
+titular nuevo antes de publicarlo; no se nota hasta que se ve renderizado.
 
 ## Rehacerlas o hacer más
 
