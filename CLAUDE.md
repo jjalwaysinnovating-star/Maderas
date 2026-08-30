@@ -63,6 +63,21 @@ la reemplaza (no se puede recuperar la anterior).
   texto se escribió cuando la página se llamaba así. Si algún día vuelve a
   aparecer un mensaje que nadie escribió: **revisa qué otras apps están
   conectadas a la página**, no el código.
+- **Publicaciones programadas: TAMBIÉN LO HACE ZERNIO** (2026-08-29). No hay que
+  programar nada — es la otra mitad del producto. `POST /api/v1/posts` publica en
+  Facebook e Instagram a la vez (`publishNow: true`, o `scheduledFor` con
+  `timezone`), sirve para post, carrusel, reel e historia, y trae `recycling`
+  (se republica solo cada X semanas/meses, tope 10 activos por cuenta) y una cola
+  de horarios (`queuedFromProfile`). Las imágenes deben vivir en una URL pública:
+  `POST /api/v1/media/upload-direct` (multipart, hasta 25 MB) las sube y devuelve
+  la `url`. Conviene pasar el texto por `POST /api/v1/tools/validate/post` antes.
+  **IDs de las cuentas** (`GET /api/v1/accounts`, el campo es `_id`, no `id`):
+  Facebook `6a8e644777555aae018b7c37` · Instagram `6a91166377555aae013db017`.
+  El primer post real salió el 2026-08-29 (el de "Sin aval. Sin buró.", de
+  `contenido/salida/post-1-financiamiento.png`): `/p/DcpMWmaiq6b/` en Instagram.
+  Instagram tarda ~20 s en pasar de `processing` a `published` — no es un error.
+  Cada publicación alimenta sola al bot: post → comentario → DM automático →
+  el bot toma la plática. Ahí es donde se cierra el círculo con el embudo.
 - **Embudo de comentarios: LO HACE ZERNIO, no nuestro código** (2026-08-29).
   **CUALQUIER comentario** en cualquier publicación —no solo palabras clave—
   recibe un DM automático y una respuesta pública; lo pidió así el dueño, y
