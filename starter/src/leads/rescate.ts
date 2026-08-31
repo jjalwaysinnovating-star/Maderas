@@ -5,6 +5,7 @@ import { MessagesRepo } from "../db/messages";
 import { messageOwner } from "../tools/handoffHuman";
 // Reparto entre asesores (vive en member/, sobrevive `forjabot update`).
 import { asesorDeConversacion } from "../../member/asesores.local";
+import { origenDeConversacion, metadataDeOrigen } from "../../member/origen.local";
 import { selfOrigin } from "../lib/self-origin";
 
 /**
@@ -109,6 +110,7 @@ export async function rescataLeadPrometido(
   // el aviso de un lead perdido le llegaría al asesor equivocado — que es peor
   // que no avisar, porque el dueño real nunca se entera.
   const asesor = await asesorDeConversacion(env, conversationId);
+  const origen = await origenDeConversacion(env, conversationId);
 
   // Ya lo habíamos rescatado: la promesa se repite en cada turno, pero el
   // cliente sigue soltando datos. Se COMPLETA la ficha en vez de duplicarla —
@@ -154,7 +156,12 @@ export async function rescataLeadPrometido(
     notes: `El bot le dijo que un asesor lo contactaría, pero no lo registró. Aquí va la conversación completa:\n\n${transcripcion}`.slice(0, 4000),
     // Sin calificación a propósito: no la hay. Que el asesor lo vea distinto de
     // un lead normal es parte del punto.
-    metadata: { origen: "rescate", prioridad: "sin_calificar", asesor: asesor?.slug ?? null },
+    metadata: {
+      origen: "rescate",
+      prioridad: "sin_calificar",
+      asesor: asesor?.slug ?? null,
+      ...metadataDeOrigen(origen),
+    },
   });
 
   // Siempre avisa: a esta persona ya le prometieron una llamada.

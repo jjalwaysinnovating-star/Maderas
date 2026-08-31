@@ -13,6 +13,8 @@ import { parseMetaEvents, verifyMetaSignature } from "./channels/meta";
 import { parseWhatsAppEvents, serveWhatsAppMedia } from "./channels/whatsapp";
 import { parseKapsoEvents, verifyKapsoSignature, kapsoOwnerTakeover, normalizeKapsoEvents } from "./channels/kapso";
 import { parseZernioEvents, verifyZernioSignature, normalizeZernioEvents, rememberZernioCtx } from "./channels/zernio";
+// Atribución de origen (vive en member/, sobrevive `forjabot update`).
+import { extraeAnuncio, guardaOrigen, limpiaRef } from "../member/origen.local";
 import { parseYCloudEvents, verifyYCloudSignature, ycloudOwnerTakeover, normalizeYCloudEvents, serveYCloudMedia } from "./channels/ycloud";
 import {
   parseMetaComments,
@@ -311,6 +313,11 @@ app.post("/contacto", async (c) => {
   const ciudad = campo("desarrollo");
   const uso = campo("tipo");
 
+  // La campaña con la que llegó a la página. El sitio la lee del `?ref=` de la
+  // URL y la manda en un campo oculto — así un enlace en la bio de Instagram o
+  // un QR de un volante quedan identificados en el panel.
+  const campana = limpiaRef(campo("ref"));
+
   const resumen = [
     `${nombre} pidió informes desde la página`,
     ciudad ? `Ciudad: ${ciudad}` : null,
@@ -327,7 +334,13 @@ app.post("/contacto", async (c) => {
     contact: [telefono, email].filter(Boolean).join(" · "),
     intent: resumen,
     notes: "Origen: formulario de la página web",
-    metadata: { origen: "formulario_web", ciudad: ciudad || null, uso: uso || null },
+    metadata: {
+      origen: "formulario_web",
+      canal: "formulario_web",
+      ciudad: ciudad || null,
+      uso: uso || null,
+      ...(campana ? { campana } : {}),
+    },
   });
 
   c.executionCtx.waitUntil(
@@ -548,6 +561,24 @@ app.post("/webhooks/zernio", async (c) => {
     return c.text("bad json", 400);
   }
   for (const ev of normalizeZernioEvents(body)) {
+    // Atribución de anuncios. Meta manda un "referral" cuando alguien llega por
+    // un anuncio Click-to-Message, y ahí viene de cuál. Se guarda ANTES de
+    // filtrar por message.received porque puede llegar como evento aparte.
+    // La forma exacta del payload no está documentada: se extrae por varias
+    // rutas conocidas y se conserva el crudo (ver member/origen.local.ts).
+    const evx = ev as unknown as Record<string, any>;
+    if (evx?.referral || evx?.message?.referral || evx?.event === "referral.received") {
+      const quien = evx?.message?.sender?.id || evx?.sender?.id || evx?.userId;
+      if (quien) {
+        const a = extraeAnuncio(evx);
+        await guardaOrigen(c.env, String(quien), {
+          ref: a.ref,
+          adId: a.adId,
+          adTitulo: a.adTitulo,
+          crudo: a.crudo,
+        }).catch((e) => console.error("[origen] referral:", e));
+      }
+    }
     if (ev?.event !== "message.received") continue; // message.sent/otros → 200 sin procesar
     const convId = ev.message?.conversationId;
     const acctId = ev.account?.accountId || ev.account?.id;

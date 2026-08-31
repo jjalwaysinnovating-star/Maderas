@@ -568,9 +568,26 @@ ${cuerpo}
 // El formulario del sitio oficial no recarga: manda los datos y enseña el
 // acuse en el mismo lugar. Aquí igual — y si el navegador no corre esto, el
 // POST normal sigue funcionando y cae en /gracias.
+// La campaña con la que llegó: ?ref=lo-que-sea, o los utm_ de una herramienta
+// de anuncios. Se recuerda en sessionStorage porque casi nadie llena el
+// formulario en la MISMA página en la que aterrizó — entra por un anuncio,
+// pasea por dos regiones y hasta entonces escribe. Sin esto, la campaña se
+// perdía en el primer clic.
+(function () {
+  try {
+    var q = new URLSearchParams(location.search);
+    var r = q.get("ref") || q.get("utm_source") || q.get("utm_campaign") || "";
+    if (r) sessionStorage.setItem("cm_ref", r.slice(0, 60));
+  } catch (_) {}
+})();
+
 document.addEventListener("submit", function (e) {
   var f = e.target;
   if (!f.classList.contains("form")) return;
+  try {
+    var campo = f.querySelector('input[name="ref"]');
+    if (campo) campo.value = sessionStorage.getItem("cm_ref") || "";
+  } catch (_) {}
   e.preventDefault();
   fetch("/contacto", { method: "POST", body: new FormData(f) })
     .then(function () { f.classList.add("enviado"); f.scrollIntoView({ block: "center" }); })
@@ -595,6 +612,10 @@ const formulario = `
 <form class="form" method="POST" action="/contacto">
   <h3>Contáctanos</h3>
   <div class="ok"><b>¡Gracias!</b><span>Ya me llegaron tus datos. Te busco dentro del horario de atención.</span></div>
+  <!-- De qué campaña llegó. Lo llena el script leyendo el ?ref= de la URL, y
+       sobrevive aunque navegue entre páginas del sitio (queda en sessionStorage).
+       Vacío si llegó directo: eso también es un dato. -->
+  <input type="hidden" name="ref" value="">
   <div class="campo trampa" aria-hidden="true">
     <label for="apellido2">No llenar</label>
     <input type="text" id="apellido2" name="apellido2" tabindex="-1" autocomplete="off">

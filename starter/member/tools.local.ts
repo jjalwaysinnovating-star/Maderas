@@ -11,6 +11,7 @@ import { messageOwner } from "../src/tools/handoffHuman";
 import { selfOrigin } from "../src/lib/self-origin";
 import type { MemberToolCtx } from "../src/tools/member";
 import { asesorDeConversacion } from "./asesores.local";
+import { origenDeConversacion, metadataDeOrigen } from "./origen.local";
 
 /** Las tres respuestas que deciden qué tan bueno es el lead. */
 const PLAZO = { inmediato: 3, medio_plazo: 2, cotizando: 1 } as const;
@@ -107,6 +108,10 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
         // asesor configurado siempre sale el mismo y no cambia nada.
         const asesor = await asesorDeConversacion(ctx.env, convId);
 
+        // De dónde salió. Sin esto, gastar en anuncios es adivinar: no hay
+        // forma de saber qué campaña trae CALIENTES y cuál solo curiosos.
+        const origen = await origenDeConversacion(ctx.env, convId);
+
         const leadId = await leads.create({
           conversationId: convId,
           name: nombre,
@@ -124,6 +129,7 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
             uso: uso ?? null,
             ciudad: ciudad ?? null,
             asesor: asesor?.slug ?? null,
+            ...metadataDeOrigen(origen),
           },
         });
 
@@ -136,6 +142,7 @@ export function memberTools(ctx: MemberToolCtx): Record<string, unknown> {
             ciudad ? `Ciudad: ${ciudad}` : null,
             `Plazo: ${plazo === "inmediato" ? "este mes" : plazo}`,
             `Pago: ${formaPago}`,
+            `Vino de: ${origen.canal}${origen.ref ? ` · ${origen.ref}` : ""}`,
             uso ? `Uso: ${uso === "inversion" ? "inversión" : "vivienda"}` : null,
             notas ? `Notas: ${notas}` : null,
           ]

@@ -89,18 +89,32 @@ describe("lead caliente", () => {
   });
 
   it("el aviso sale igual desde la página que desde Messenger", async () => {
-    // La tool solo recibe env y el id de conversación: no sabe por qué canal
-    // entró el cliente, así que no puede comportarse distinto. Esta prueba
-    // fija ese hecho para que nadie meta una rama por canal sin darse cuenta.
+    // Lo que esta prueba protege es que el aviso NO dependa del canal: el bug
+    // original fue que un lead caliente de Messenger no despertaba a nadie.
+    //
+    // Antes se exigía que los dos textos fueran idénticos, y esa exigencia
+    // caducó a propósito: ahora el aviso dice de dónde vino el prospecto
+    // ("Vino de: instagram"), porque sin eso no hay forma de saber qué campaña
+    // trae calientes. Así que se compara lo que sí tiene que ser igual —el
+    // aviso existe y trae todos los datos del prospecto— y se comprueba que la
+    // ÚNICA diferencia sea esa línea.
     await califica(CALIENTE, "conv-web-1", "web");
-    const desdeLaPagina = telegram()[0].body.text;
+    expect(telegram()).toHaveLength(1);
+    const desdeLaPagina = telegram()[0].body.text as string;
 
     llamadas = [];
     await califica(CALIENTE, "conv-messenger-1", "zernio");
-    const desdeMessenger = telegram()[0].body.text;
-
     expect(telegram()).toHaveLength(1);
-    expect(desdeMessenger).toBe(desdeLaPagina);
+    const desdeMessenger = telegram()[0].body.text as string;
+
+    const sinOrigen = (t: string) =>
+      t.split("\n").filter((l) => !l.startsWith("Vino de:")).join("\n");
+    expect(sinOrigen(desdeMessenger)).toBe(sinOrigen(desdeLaPagina));
+
+    // Y la línea de origen sí está, en los dos, diciendo cosas distintas.
+    expect(desdeLaPagina).toContain("Vino de: web");
+    expect(desdeMessenger).toMatch(/^Vino de: \S+$/m);
+    expect(desdeMessenger).not.toContain("Vino de: web");
   });
 });
 

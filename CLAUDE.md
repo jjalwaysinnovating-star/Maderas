@@ -161,6 +161,33 @@ la reemplaza (no se puede recuperar la anterior).
   problema entrena a ignorar los avisos. Ambas cosas salieron de la prueba de
   Instagram con "Jahir". Pruebas en `test/leads/rescate.test.ts`.
   **Vive en `src/`: `forjabot update` lo borra.**
+- **De dónde vino cada lead** (`member/origen.local.ts`, sobrevive el update).
+  Sin esto, gastar en anuncios es adivinar. Cada lead guarda en su `metadata`:
+  `canal` (siempre: instagram / facebook / whatsapp / telegram / web /
+  formulario_web), `campana` y `anuncio` cuando se saben. El aviso de Telegram
+  lo dice en una línea — es lo primero que él ve.
+  El **canal** se resuelve con `zernio_ctx.platform`, porque `conversations.
+  channel` dice "zernio" y eso no sirve para decidir dónde gastar.
+  La **campaña** de la web sale del `?ref=` (o los `utm_*`) de la URL: el sitio
+  la guarda en `sessionStorage` y la manda en un campo oculto, porque casi
+  nadie llena el formulario en la misma página donde aterrizó.
+  El **anuncio** viene del referral de Meta en un Click-to-Message. **La forma
+  exacta de ese payload NO está documentada** en docs.zernio.com — el evento
+  `referral.received` sí existe (está en el enum de webhooks del OpenAPI), sus
+  campos no. Por eso `extraeAnuncio` prueba varias rutas conocidas Y guarda el
+  objeto completo en `lead_origen.crudo`: **el primer anuncio real dirá la
+  forma verdadera**. Si `anuncio` sale vacío y `crudo` trae datos, ahí está la
+  respuesta y se ajusta la extracción.
+  Ojo con un patrón: la tabla `lead_origen` se asegura en CADA escritura, sin
+  caché de módulo. `zernio_ctx` sí cachea con un `let`, y esa bandera vive en
+  el módulo, no en la base — si la base cambia por debajo, todas las
+  escrituras fallan **en silencio**. Lo destapó una prueba.
+  **Vive en `src/` (el update lo borra):** el enganche del referral y el campo
+  `ref` del formulario en `src/index.ts`, y la llamada en `src/leads/rescate.ts`.
+  Pruebas en `test/leads/origen.test.ts`.
+  El chat de la página **no** arrastra la campaña todavía (serían dos parches
+  más en `src/web/`), y el sitio casi no recibe tráfico — se deja para cuando
+  lo tenga.
 - **Dos asesores, un solo bot: cada quien su lista de leads.**
   `member/asesores.local.ts` es el reparto — y vive en `member/` a propósito,
   así que **`forjabot update` NO se lo lleva**. Ahí van, por asesor: sus
