@@ -1,0 +1,455 @@
+<title>Publicaciones para grupos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Sorts+Mill+Goudy:ital@0;1&display=swap">
+<style>
+  /* Misma paleta que la página de Marketplace: es la marca del proyecto
+     (azul #11253a y oro de contenido.py). El oro va a #8a7433 para que se lea
+     sobre papel — el original solo funciona encima de foto. */
+  :root {
+    --tinta:#11253a; --oro:#8a7433; --oro-fill:#f0e9d4;
+    --papel:#f4f5f7; --tarjeta:#ffffff; --linea:#dde1e7;
+    --texto:#172230; --suave:#5c6878; --tenue:#8b95a3;
+    --alerta:#8a4820; --alerta-fill:#fbeee5;
+    --ok:#2f6b46; --codigo-bg:#f8f9fb;
+    --sombra:0 1px 2px rgba(17,37,58,.06), 0 4px 14px rgba(17,37,58,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --tinta:#e6ecf3; --oro:#d3bd7f; --oro-fill:#2a2415;
+      --papel:#0d1621; --tarjeta:#14202d; --linea:#253546;
+      --texto:#e6ecf3; --suave:#9aa8b8; --tenue:#6c7c8e;
+      --alerta:#e5a878; --alerta-fill:#2b1d12;
+      --ok:#6bbb8c; --codigo-bg:#0b131c;
+      --sombra:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --tinta:#e6ecf3; --oro:#d3bd7f; --oro-fill:#2a2415;
+    --papel:#0d1621; --tarjeta:#14202d; --linea:#253546;
+    --texto:#e6ecf3; --suave:#9aa8b8; --tenue:#6c7c8e;
+    --alerta:#e5a878; --alerta-fill:#2b1d12;
+    --ok:#6bbb8c; --codigo-bg:#0b131c;
+    --sombra:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    background:var(--papel); color:var(--texto);
+    font-family:Montserrat, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .envoltura { max-width:720px; margin:0 auto; padding:0 18px 72px; }
+
+  header { padding:32px 0 4px; }
+  .rol { font-size:10.5px; font-weight:700; letter-spacing:.2em;
+         text-transform:uppercase; color:var(--oro); margin:0 0 10px; }
+  h1 { font-family:"Sorts Mill Goudy", Georgia, serif;
+       font-size:clamp(32px,8vw,44px); font-weight:400; line-height:1.05;
+       margin:0 0 14px; color:var(--tinta); text-wrap:balance; }
+  .entrada { color:var(--suave); max-width:60ch; margin:0; }
+
+  .aviso { margin:26px 0 0; padding:17px 18px;
+    background:var(--alerta-fill);
+    border:1px solid color-mix(in srgb, var(--alerta) 30%, transparent);
+    border-radius:6px; }
+  .aviso h2 { margin:0 0 8px; font-size:14px; font-weight:700;
+              color:var(--alerta); letter-spacing:-.01em; }
+  .aviso p { margin:0 0 9px; font-size:13.5px; }
+  .aviso p:last-child { margin:0; }
+
+  h2.seccion { font-family:"Sorts Mill Goudy", Georgia, serif;
+    font-size:25px; font-weight:400; color:var(--tinta);
+    margin:46px 0 6px; letter-spacing:-.01em; }
+  .sub { color:var(--suave); font-size:13.5px; margin:0 0 18px; max-width:62ch; }
+
+  /* ── Reglas de convivencia ─────────────────────────────────────────── */
+  .reglas { display:flex; flex-direction:column; gap:12px; }
+  .regla { background:var(--tarjeta); border:1px solid var(--linea);
+    border-left:3px solid var(--oro); border-radius:5px; padding:14px 16px; }
+  .regla h3 { margin:0 0 5px; font-size:13.5px; font-weight:700; }
+  .regla p { margin:0; font-size:13.5px; color:var(--suave); }
+
+  /* ── Qué grupos buscar ─────────────────────────────────────────────── */
+  .busquedas { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .busquedas span {
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-size:12px; background:var(--codigo-bg); border:1px solid var(--linea);
+    color:var(--texto); padding:5px 10px; border-radius:4px;
+  }
+
+  /* ── Publicación ───────────────────────────────────────────────────── */
+  .lista { display:flex; flex-direction:column; gap:16px; margin-top:22px; }
+  .post { background:var(--tarjeta); border:1px solid var(--linea);
+    border-radius:8px; box-shadow:var(--sombra); overflow:hidden; }
+  .cabeza { padding:16px 18px 13px; }
+  .tipo { font-size:10px; font-weight:700; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--oro); margin:0 0 6px; }
+  .titulo { font-family:"Sorts Mill Goudy", Georgia, serif;
+    font-size:24px; line-height:1.15; color:var(--tinta); margin:0 0 8px; }
+  .donde { font-size:12.5px; color:var(--suave); margin:0; }
+  .donde b { color:var(--texto); font-weight:600; }
+
+  .campo { border-top:1px solid var(--linea); padding:13px 18px 15px; }
+  .etiqueta { font-size:10px; font-weight:700; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--tenue);
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; margin-bottom:8px; }
+  pre { margin:0; padding:13px 14px; background:var(--codigo-bg);
+    border:1px solid var(--linea); border-radius:5px;
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-size:12.5px; line-height:1.65; color:var(--texto);
+    white-space:pre-wrap; word-break:break-word; }
+  .marcador { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:0 18px 15px; }
+  .sello { font-size:11.5px; color:var(--tenue); font-variant-numeric:tabular-nums; }
+  .sello.fresco { color:var(--ok); font-weight:600; }
+
+  button {
+    font-family:inherit; font-size:11px; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:var(--tinta); background:transparent;
+    border:1px solid var(--linea); border-radius:4px;
+    padding:6px 12px; cursor:pointer; white-space:nowrap;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  button:hover { border-color:var(--oro); color:var(--oro); }
+  button:focus-visible { outline:2px solid var(--oro); outline-offset:2px; }
+  button.ok { color:var(--ok); border-color:var(--ok); }
+
+  table { width:100%; border-collapse:collapse; margin-top:4px; font-size:13.5px; }
+  th, td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--linea); }
+  th { font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+       color:var(--tenue); font-weight:700; }
+  td.n { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+  .tabla-caja { background:var(--tarjeta); border:1px solid var(--linea);
+    border-radius:6px; overflow-x:auto; }
+
+  footer { margin-top:48px; padding-top:20px; border-top:1px solid var(--linea);
+    font-size:12px; color:var(--tenue); }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<div class="envoltura">
+  <header>
+    <p class="rol">Asesor autorizado · Ciudad Maderas</p>
+    <h1>Publicaciones para grupos de Facebook</h1>
+    <p class="entrada">
+      Ocho textos que no se leen como anuncio. En un grupo hay
+      administradores: lo que parece publicidad copiada lo borran, y a la
+      segunda te sacan. Estos están escritos para que te dejen quedarte.
+    </p>
+  </header>
+
+  <div class="aviso">
+    <h2>En grupos el bot NO contesta solo</h2>
+    <p>
+      Tu embudo de comentarios funciona en <b>tus</b> publicaciones de la
+      página y de Instagram. Un grupo es de otra persona: ahí los comentarios
+      los contestas <b>tú, a mano</b>.
+    </p>
+    <p>
+      El trabajo es ese: contestas la duda en el comentario y le dices
+      «mándame mensaje y te paso el detalle». Cuando te escriba por Messenger,
+      <b>ahí sí</b> entra el bot y lo califica solo.
+    </p>
+  </div>
+
+  <h2 class="seccion">Antes de publicar</h2>
+  <div class="reglas">
+    <div class="regla">
+      <h3>Lee las reglas del grupo. Siempre.</h3>
+      <p>Muchos prohíben la venta o solo la permiten ciertos días. Publicar contra la regla te saca del grupo para siempre, y no hay vuelta.</p>
+    </div>
+    <div class="regla">
+      <h3>Publica con tu perfil, no con la página</h3>
+      <p>Muchos grupos bloquean las publicaciones de páginas de negocio, y en los que no, la gente confía más en una persona que en una marca.</p>
+    </div>
+    <div class="regla">
+      <h3>Un grupo por día, texto distinto cada vez</h3>
+      <p>El mismo texto en cinco grupos el mismo día lo detecta Facebook como spam y te limita la cuenta. Por eso hay ocho y por eso la página te dice cuándo usaste cada uno.</p>
+    </div>
+    <div class="regla">
+      <h3>Preséntate antes de vender</h3>
+      <p>En un grupo nuevo, la publicación 8 va primero. Después de esa ya puedes usar las demás sin que te vean como el que llegó a vender.</p>
+    </div>
+    <div class="regla">
+      <h3>Contesta TODOS los comentarios</h3>
+      <p>Aunque sean críticas. Un comentario contestado con calma vende más que la publicación, porque lo lee todo el grupo.</p>
+    </div>
+  </div>
+
+  <h2 class="seccion">Qué grupos buscar</h2>
+  <p class="sub">Pégalo en el buscador de Facebook, cambiando la ciudad. Únete a 15 o 20 y espera a que te acepten antes de publicar.</p>
+  <div class="busquedas">
+    <span>terrenos en venta Querétaro</span>
+    <span>bienes raíces Guanajuato</span>
+    <span>compra venta Mérida</span>
+    <span>inversión inmobiliaria México</span>
+    <span>terrenos Cancún</span>
+    <span>mexicanos en Houston</span>
+    <span>mexicanos en Chicago</span>
+    <span>paisanos en Los Ángeles</span>
+    <span>inmuebles Monterrey</span>
+    <span>invertir en México</span>
+  </div>
+
+  <h2 class="seccion">Los ocho textos</h2>
+  <p class="sub">
+    Cada uno dice para qué tipo de grupo sirve. Al copiarlo se marca la fecha,
+    para que no repitas el mismo dos veces seguidas.
+  </p>
+  <div class="lista" id="lista"></div>
+
+  <h2 class="seccion">Las mensualidades, para la número 5</h2>
+  <p class="sub">La publicación de oferta directa lleva la ciudad y su precio. Aquí están los ocho, para que no los mezcles.</p>
+  <div class="tabla-caja">
+    <table>
+      <thead><tr><th>Plaza</th><th style="text-align:right">Mensualidad desde</th></tr></thead>
+      <tbody>
+        <tr><td>Aguascalientes</td><td class="n">$1,244</td></tr>
+        <tr><td>Puebla</td><td class="n">$1,244</td></tr>
+        <tr><td>León</td><td class="n">$1,288</td></tr>
+        <tr><td>San Luis Potosí</td><td class="n">$1,288</td></tr>
+        <tr><td>Querétaro</td><td class="n">$1,348</td></tr>
+        <tr><td>Cancún</td><td class="n">$1,388</td></tr>
+        <tr><td>Monterrey</td><td class="n">$1,474</td></tr>
+        <tr><td>Mérida</td><td class="n">$1,683</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    Ninguno dice «garantizado», ninguno promete una etapa abierta, ninguno
+    menciona casas y todos los precios van como «desde». La número 3 y la
+    número 6 son las que mejor funcionan: las dos regalan algo antes de pedir.
+  </footer>
+</div>
+
+<script>
+const POSTS = [
+  {
+    id:"presentacion",
+    tipo:"Empieza por esta",
+    titulo:"La presentación",
+    donde:"En <b>cada grupo nuevo</b>, antes que cualquier otra. Te compra permiso.",
+    texto:`Buen día al grupo. Me presento antes de andar comentando.
+
+Soy asesor inmobiliario autorizado de Ciudad Maderas. Manejo terrenos —solo terrenos, no casas— en ocho plazas del país: Querétaro, León, Mérida, Cancún, Monterrey, Aguascalientes, San Luis Potosí y Puebla.
+
+Lo que más me preguntan es lo del crédito: es directo con la desarrolladora, sin aval, sin revisión de buró y desde 1% de enganche. A mucha gente eso le cambia el panorama.
+
+Si a alguien le sirve una orientación, aquí ando. Y si el grupo no permite que ande ofreciendo, díganmelo y me limito a contestar preguntas.`
+  },
+  {
+    id:"buro",
+    tipo:"La más fuerte",
+    titulo:"¿Estás en buró?",
+    donde:"Grupos <b>generales</b> de compraventa y de la ciudad. Es tu gancho que nadie más tiene.",
+    texto:`¿Estás en buró y crees que por eso no puedes comprar un terreno?
+
+No en todos lados es así. En un crédito directo con la desarrolladora no se revisa buró en ningún momento del proceso, porque no hay banco de por medio. Tampoco piden aval ni comprobante de ingresos.
+
+Lo digo porque me toca seguido encontrarme gente que se descartó sola y ni siquiera preguntó.
+
+Si es tu caso, pregunta antes de darte por vencido. Aunque no me compres a mí.
+
+Asesor autorizado de Ciudad Maderas.`
+  },
+  {
+    id:"honestidad",
+    tipo:"La que más comentarios trae",
+    titulo:"A quién NO le sirve un terreno",
+    donde:"Grupos de <b>bienes raíces</b> y de inversión. Funciona porque no parece venta.",
+    texto:`Algo que le digo a la gente antes de que me pregunten el precio:
+
+Si necesitas mudarte el mes que entra, un terreno no es lo tuyo. Te lo digo de una vez; prefiero eso que hacerte perder el tiempo.
+
+Un terreno sirve para otra cosa. La entrada y la mensualidad son bastante menores que algo ya construido, construyes a tu gusto y a tu ritmo, y mientras tanto ya tienes el patrimonio a tu nombre.
+
+Si eso es lo que andas buscando, con gusto te oriento. Si lo que necesitas es techo ya, mejor busca casa y no pierdas el tiempo conmigo.
+
+Asesor autorizado de Ciudad Maderas.`
+  },
+  {
+    id:"cuatro-preguntas",
+    tipo:"Regala antes de pedir",
+    titulo:"Las cuatro preguntas",
+    donde:"Grupos de <b>bienes raíces</b>. Es la que la gente guarda y comparte.",
+    texto:`Cuatro cosas que conviene preguntar ANTES de apartar cualquier terreno, te lo venda quien te lo venda:
+
+1. ¿Qué servicios están puestos HOY y cuáles vienen? No es lo mismo la urbanización del plano que la de la etapa que te están vendiendo.
+
+2. ¿Qué pasa si me atraso en un pago? Que te lo enseñen en el contrato, no de palabra.
+
+3. ¿Cuánto mide exactamente el lote y dónde queda dentro del desarrollo? El precio cambia bastante por ubicación.
+
+4. ¿Cómo y cuándo se escritura, y con qué costos?
+
+Si el vendedor le saca la vuelta a alguna de las cuatro, ahí tienes tu respuesta.
+
+Soy asesor autorizado de Ciudad Maderas y contesto las cuatro sin problema. Si andas viendo terreno, pregunta con confianza — aquí o por mensaje.`
+  },
+  {
+    id:"oferta",
+    tipo:"Solo donde se permite vender",
+    titulo:"La oferta directa",
+    donde:"Grupos que <b>sí permiten venta</b>. Cambia [CIUDAD] y el precio con la tabla de abajo.",
+    texto:`TERRENOS EN [CIUDAD] · Desde $[MENSUALIDAD] al mes
+
+Sin aval. Sin revisión de buró. Sin comprobante de ingresos. Desde 1% de enganche, con crédito directo con la desarrolladora.
+
+Comunidades planificadas con más de 30 amenidades —albercas, canchas de pádel y tenis, gimnasio, casa club, áreas infantiles— y urbanización completa con acceso controlado. El catálogo varía por desarrollo y etapa.
+
+Precios y mensualidades son montos "desde": el final depende de las medidas y la ubicación dentro del desarrollo, y lo confirma un asesor.
+
+¿Quieres que te diga cuánto quedaría tu mensualidad? Mándame mensaje y lo vemos, sin compromiso.
+
+Asesor autorizado de Ciudad Maderas.
+Desarrolladora con 40 años y más de 124,000 lotes entregados.`
+  },
+  {
+    id:"paisanos",
+    tipo:"Tu mercado menos trabajado",
+    titulo:"Para los paisanos",
+    donde:"Grupos de <b>mexicanos en Estados Unidos</b>. Casi nadie los trabaja.",
+    texto:`Para los paisanos del grupo:
+
+Sí se puede comprar terreno en México desde acá, sin ir.
+
+Lo que más frena a la gente no es el dinero, es creer que necesitan estar allá para todo. El proceso se lleva en línea y el crédito es directo con la desarrolladora: sin banco mexicano de por medio, sin aval, sin revisión de buró y sin comprobante de ingresos.
+
+Hay terrenos en Querétaro, León, Mérida, Cancún, Monterrey, Aguascalientes, San Luis Potosí y Puebla. Mensualidades desde $1,244.
+
+Si andas juntando para comprar en tu tierra, mándame mensaje y platicamos sin compromiso. Te digo qué hay en tu estado y cuánto quedaría.
+
+Asesor autorizado de Ciudad Maderas.`
+  },
+  {
+    id:"inversion",
+    tipo:"Con números, sin promesas",
+    titulo:"Para los que andan invirtiendo",
+    donde:"Grupos de <b>inversión</b> y de finanzas personales.",
+    texto:`Para los que andan viendo dónde meter un ahorro:
+
+No les voy a aventar un porcentaje de plusvalía, porque nadie lo puede sostener y el que te lo promete te está viendo la cara.
+
+Lo que sí les puedo decir con números:
+
+· Terrenos desde $550,000, o desde $1,244 al mes
+· Enganche desde 1% — no necesitas una entrada fuerte para empezar
+· Zonas de alto crecimiento: Querétaro, el Bajío, Monterrey, la Península
+· Desarrolladora con 40 años y más de 124,000 lotes entregados
+· Sin aval, sin buró: el crédito es directo, no bancario
+
+Si les interesa una zona en concreto, con gusto les enseño cómo se ha movido. Pregunten aquí o por mensaje.
+
+Asesor autorizado de Ciudad Maderas.`
+  },
+  {
+    id:"pregunta",
+    tipo:"Para abrir conversación",
+    titulo:"La pregunta al grupo",
+    donde:"Cualquier grupo. No vende nada, y por eso funciona.",
+    texto:`Pregunta honesta para el grupo:
+
+¿Alguien aquí ha comprado terreno con crédito directo de la desarrolladora, sin pasar por banco? ¿Cómo les fue?
+
+Lo pregunto porque me toca encontrarme mucha gente que se descarta sola —"es que estoy en buró", "no tengo cómo comprobar ingresos"— sin saber que hay esquemas donde eso no se revisa.
+
+Me interesa de verdad saber su experiencia: qué les gustó y qué no.
+
+(Aclaro que soy asesor autorizado de Ciudad Maderas, así que sí tengo interés en el tema. Pero la pregunta va en serio.)`
+  },
+];
+
+const LLAVE = "cm_grupos_v1";
+function lee() {
+  try { return JSON.parse(localStorage.getItem(LLAVE) || "{}") || {}; }
+  catch (_) { return {}; }
+}
+function guarda(e) {
+  try { localStorage.setItem(LLAVE, JSON.stringify(e)); } catch (_) {}
+}
+const usos = lee();
+
+function cuando(ts) {
+  if (!ts) return "Sin usar todavía";
+  const dias = Math.floor((Date.now() - ts) / 86400000);
+  if (dias === 0) return "Usada hoy";
+  if (dias === 1) return "Usada ayer";
+  return "Usada hace " + dias + " días";
+}
+
+const lista = document.getElementById("lista");
+
+POSTS.forEach(function (p) {
+  const art = document.createElement("article");
+  art.className = "post";
+
+  const cabeza = document.createElement("div");
+  cabeza.className = "cabeza";
+  const tipo = document.createElement("p");
+  tipo.className = "tipo";
+  tipo.textContent = p.tipo;
+  const tit = document.createElement("h3");
+  tit.className = "titulo";
+  tit.textContent = p.titulo;
+  const donde = document.createElement("p");
+  donde.className = "donde";
+  donde.innerHTML = p.donde;
+  cabeza.append(tipo, tit, donde);
+
+  const campo = document.createElement("div");
+  campo.className = "campo";
+  const fila = document.createElement("div");
+  fila.className = "etiqueta";
+  const et = document.createElement("span");
+  et.textContent = "Texto de la publicación";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = "Copiar";
+  fila.append(et, btn);
+  const pre = document.createElement("pre");
+  pre.textContent = p.texto;
+  campo.append(fila, pre);
+
+  const marcador = document.createElement("div");
+  marcador.className = "marcador";
+  const sello = document.createElement("span");
+  const pinta = function () {
+    const ts = usos[p.id];
+    sello.textContent = cuando(ts);
+    sello.className = "sello" + (ts && Date.now() - ts < 3 * 86400000 ? " fresco" : "");
+  };
+  pinta();
+  const limpiar = document.createElement("button");
+  limpiar.type = "button";
+  limpiar.textContent = "Borrar fecha";
+  limpiar.addEventListener("click", function () {
+    delete usos[p.id]; guarda(usos); pinta();
+  });
+  marcador.append(sello, limpiar);
+
+  btn.addEventListener("click", function () {
+    const listo = function () {
+      btn.textContent = "Copiado";
+      btn.classList.add("ok");
+      usos[p.id] = Date.now();
+      guarda(usos);
+      pinta();
+      setTimeout(function () { btn.textContent = "Copiar"; btn.classList.remove("ok"); }, 1600);
+    };
+    const falla = function () {
+      btn.textContent = "Selecciona y copia";
+      setTimeout(function () { btn.textContent = "Copiar"; }, 2200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(pre.textContent).then(listo).catch(falla);
+    } else { falla(); }
+  });
+
+  art.append(cabeza, campo, marcador);
+  lista.append(art);
+});
+</script>
