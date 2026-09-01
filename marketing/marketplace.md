@@ -2,8 +2,23 @@
 
 Uno por plaza. Copia y pega tal cual.
 
-**Ruta:** Facebook → Marketplace → **Crear publicación** → *Vivienda en venta o
-renta* → **Terreno · En venta**.
+**Ruta:** desde tu **perfil personal** → Marketplace → **Crear publicación** →
+*Vivienda en venta o renta* → **Terreno · En venta**.
+
+## ⚠️ En Marketplace contestas TÚ, no el bot
+
+Marketplace **no acepta publicaciones desde una página de Facebook** — solo
+desde el perfil personal. Y el bot está conectado a la página, no al perfil.
+Los mensajes de estos ocho anuncios llegan a tu Messenger personal y **los
+respondes a mano**.
+
+Dos formas de pasar la plática al bot:
+
+1. En tu respuesta, ofrécele seguir en la página: *"Con gusto. Si me escribes a
+   mi página de Facebook te paso el detalle de cada desarrollo."*
+2. **Comparte cada anuncio desde tu página.** Los comentarios en esa
+   publicación sí disparan el embudo automático — ahí el bot manda el mensaje
+   privado solo.
 
 ---
 
@@ -391,9 +406,9 @@ Desarrolladora con 40 años y más de 124,000 lotes entregados.
 idénticas en una hora se leen como spam y Facebook limita la cuenta. Dos hoy,
 dos mañana.
 
-**Cuando alguien escriba, no contestes tú de inmediato.** Deja que el bot haga
-las tres preguntas que califican. Tú entras cuando llegue el aviso de caliente
-a Telegram, y llegas ya sabiendo qué quiere y cómo paga.
+**Contesta rápido, tú mismo.** Estos mensajes no pasan por el bot. Al principio
+son pocos, y escuchar qué pregunta la gente de verdad vale más que leer
+transcripciones — de ahí sale lo que hay que afinar en el guion.
 
 ## Qué NO cambiar
 
