@@ -1,0 +1,515 @@
+<title>Anuncios de Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Sorts+Mill+Goudy:ital@0;1&display=swap">
+<style>
+  /* Paleta de la marca del proyecto: el azul y el oro que ya usan los posts
+     (contenido.py). El oro se oscurece a #8a7433 para que se lea sobre papel;
+     el #b4a269 original solo funciona sobre foto oscura. */
+  :root {
+    --tinta:    #11253a;
+    --oro:      #8a7433;
+    --oro-fill: #f0e9d4;
+    --papel:    #f4f5f7;
+    --tarjeta:  #ffffff;
+    --linea:    #dde1e7;
+    --texto:    #172230;
+    --suave:    #5c6878;
+    --tenue:    #8b95a3;
+    --alerta:   #8a4820;
+    --alerta-fill: #fbeee5;
+    --ok:       #2f6b46;
+    --codigo-bg: #f8f9fb;
+    --sombra:   0 1px 2px rgba(17,37,58,.06), 0 4px 14px rgba(17,37,58,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --tinta:    #e6ecf3;
+      --oro:      #d3bd7f;
+      --oro-fill: #2a2415;
+      --papel:    #0d1621;
+      --tarjeta:  #14202d;
+      --linea:    #253546;
+      --texto:    #e6ecf3;
+      --suave:    #9aa8b8;
+      --tenue:    #6c7c8e;
+      --alerta:   #e5a878;
+      --alerta-fill: #2b1d12;
+      --ok:       #6bbb8c;
+      --codigo-bg: #0b131c;
+      --sombra:   0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --tinta:    #e6ecf3;
+    --oro:      #d3bd7f;
+    --oro-fill: #2a2415;
+    --papel:    #0d1621;
+    --tarjeta:  #14202d;
+    --linea:    #253546;
+    --texto:    #e6ecf3;
+    --suave:    #9aa8b8;
+    --tenue:    #6c7c8e;
+    --alerta:   #e5a878;
+    --alerta-fill: #2b1d12;
+    --ok:       #6bbb8c;
+    --codigo-bg: #0b131c;
+    --sombra:   0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--papel);
+    color: var(--texto);
+    font-family: Montserrat, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .envoltura { max-width: 720px; margin: 0 auto; padding: 0 18px 72px; }
+
+  /* ── Barra de avance ───────────────────────────────────────────────── */
+  .barra {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--papel);
+    border-bottom: 1px solid var(--linea);
+    margin: 0 -18px 26px; padding: 11px 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .barra .cuenta {
+    font-size: 12px; font-weight: 700; letter-spacing: .04em;
+    color: var(--suave); white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .riel { flex: 1; height: 4px; background: var(--linea); border-radius: 2px; overflow: hidden; }
+  .lleno { height: 100%; width: 0%; background: var(--oro); transition: width .25s ease; }
+
+  /* ── Encabezado ────────────────────────────────────────────────────── */
+  header { padding: 30px 0 4px; }
+  .rol {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--oro); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: "Sorts Mill Goudy", Georgia, serif;
+    font-size: clamp(32px, 8vw, 44px); font-weight: 400;
+    line-height: 1.05; margin: 0 0 12px; color: var(--tinta);
+    text-wrap: balance;
+  }
+  .entrada { color: var(--suave); max-width: 60ch; margin: 0; }
+  .ruta {
+    margin: 20px 0 0; padding: 13px 15px;
+    background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 6px;
+    font-size: 13.5px; color: var(--suave);
+  }
+  .ruta b { color: var(--texto); font-weight: 600; }
+
+  /* ── Aviso del precio ──────────────────────────────────────────────── */
+  .aviso {
+    margin: 26px 0 0; padding: 17px 18px;
+    background: var(--alerta-fill);
+    border: 1px solid color-mix(in srgb, var(--alerta) 30%, transparent);
+    border-radius: 6px;
+  }
+  .aviso h2 {
+    margin: 0 0 8px; font-family: Montserrat, sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--alerta);
+    letter-spacing: -.01em;
+  }
+  .aviso p { margin: 0 0 9px; font-size: 13.5px; color: var(--texto); }
+  .aviso p:last-child { margin-bottom: 0; }
+
+  /* ── Secciones ─────────────────────────────────────────────────────── */
+  h2.seccion {
+    font-family: "Sorts Mill Goudy", Georgia, serif;
+    font-size: 25px; font-weight: 400; color: var(--tinta);
+    margin: 44px 0 6px; letter-spacing: -.01em;
+  }
+  .sub { color: var(--suave); font-size: 13.5px; margin: 0 0 18px; max-width: 60ch; }
+
+  ol.fotos { margin: 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 5px; }
+  ol.fotos li { font-size: 13.5px; color: var(--suave); }
+  ol.fotos code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px; color: var(--texto);
+    background: var(--codigo-bg); border: 1px solid var(--linea);
+    padding: 1px 5px; border-radius: 3px;
+  }
+
+  /* ── Tarjeta de ciudad ─────────────────────────────────────────────── */
+  .lista { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+  .plaza {
+    background: var(--tarjeta); border: 1px solid var(--linea);
+    border-radius: 8px; box-shadow: var(--sombra); overflow: hidden;
+    transition: opacity .2s ease;
+  }
+  .plaza.listo { opacity: .55; }
+  .cabeza {
+    padding: 16px 18px 14px;
+    display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap;
+  }
+  .ciudad {
+    font-family: "Sorts Mill Goudy", Georgia, serif;
+    font-size: 27px; line-height: 1.1; color: var(--tinta); margin: 0;
+    flex: 1; min-width: 150px;
+  }
+  .mensual {
+    font-size: 11px; font-weight: 700; letter-spacing: .05em;
+    color: var(--oro); background: var(--oro-fill);
+    border: 1px solid color-mix(in srgb, var(--oro) 28%, transparent);
+    padding: 5px 10px; border-radius: 4px; white-space: nowrap;
+    font-variant-numeric: tabular-nums; margin-top: 4px;
+  }
+  .marca {
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    font-size: 12.5px; font-weight: 600; color: var(--suave);
+    padding: 0 18px 14px; user-select: none;
+  }
+  .marca input { width: 16px; height: 16px; accent-color: var(--oro); cursor: pointer; margin: 0; }
+  .marca.hecho { color: var(--ok); }
+
+  .campo { border-top: 1px solid var(--linea); padding: 14px 18px; }
+  .etiqueta {
+    font-size: 10px; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--tenue);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-bottom: 8px;
+  }
+  pre {
+    margin: 0; padding: 12px 13px;
+    background: var(--codigo-bg); border: 1px solid var(--linea); border-radius: 5px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px; line-height: 1.62; color: var(--texto);
+    white-space: pre-wrap; word-break: break-word;
+    max-height: 190px; overflow-y: auto;
+  }
+  pre.titulo { max-height: none; font-size: 13px; }
+
+  button.copiar {
+    font-family: inherit; font-size: 11px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--tinta); background: transparent;
+    border: 1px solid var(--linea); border-radius: 4px;
+    padding: 5px 11px; cursor: pointer; white-space: nowrap;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  button.copiar:hover { border-color: var(--oro); color: var(--oro); }
+  button.copiar:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+  button.copiar.ok { color: var(--ok); border-color: var(--ok); }
+
+  .abrir {
+    width: 100%; text-align: left; background: transparent; border: 0;
+    border-top: 1px solid var(--linea); padding: 11px 18px;
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    letter-spacing: .04em; color: var(--suave); cursor: pointer;
+  }
+  .abrir:hover { color: var(--oro); }
+  .abrir:focus-visible { outline: 2px solid var(--oro); outline-offset: -2px; }
+
+  /* ── Notas finales ─────────────────────────────────────────────────── */
+  .notas { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+  .nota {
+    background: var(--tarjeta); border: 1px solid var(--linea);
+    border-left: 3px solid var(--oro);
+    border-radius: 5px; padding: 14px 16px;
+  }
+  .nota h3 { margin: 0 0 6px; font-size: 13.5px; font-weight: 700; color: var(--texto); }
+  .nota p { margin: 0; font-size: 13.5px; color: var(--suave); }
+  footer {
+    margin-top: 46px; padding-top: 20px; border-top: 1px solid var(--linea);
+    font-size: 12px; color: var(--tenue);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="envoltura">
+  <div class="barra">
+    <span class="cuenta" id="cuenta">0 de 8 publicados</span>
+    <div class="riel"><div class="lleno" id="lleno"></div></div>
+  </div>
+
+  <header>
+    <p class="rol">Asesor autorizado · Ciudad Maderas</p>
+    <h1>Ocho anuncios para Marketplace</h1>
+    <p class="entrada">
+      Uno por plaza. Copia el título y la descripción, pégalos en Facebook y
+      marca la casilla. Quien pregunte llega por Messenger, donde el bot
+      contesta y califica solo.
+    </p>
+    <p class="ruta">
+      <b>Dónde:</b> Facebook → Marketplace → Crear publicación →
+      <em>Vivienda en venta o renta</em> → <b>Terreno · En venta</b>.
+      Precio <b>550000</b>, ubicación la ciudad del anuncio, estado Nuevo.
+    </p>
+  </header>
+
+  <div class="aviso">
+    <h2>Confirma el precio antes de publicar</h2>
+    <p>
+      Marketplace obliga a un número y la gente lo lee como literal. Tu base de
+      conocimiento solo da un piso general —<b>desde $550,000</b>— no un precio
+      por ciudad.
+    </p>
+    <p>
+      Pregúntale a tu equipo de ventas el precio de arranque de cada plaza. Si
+      en Mérida arranca más caro y publicaste $550,000, cada persona llega con
+      una expectativa que tendrás que corregir en el primer mensaje — y eso
+      quema el prospecto.
+    </p>
+  </div>
+
+  <h2 class="seccion">Las fotos</h2>
+  <p class="sub">Las mismas cinco en los ocho, salvo la primera. Salen de <code>contenido/salida/</code>.</p>
+  <ol class="fotos">
+    <li>La de su ciudad — <code>post-10-queretaro.png</code>, <code>post-2-cancun.png</code>…</li>
+    <li><code>post-9-cuanto-cuesta.png</code> — la aérea con los lotes urbanizados</li>
+    <li><code>post-5-amenidades.png</code> — la casa club</li>
+    <li><code>post-25-urbanizacion.png</code> — calles y servicios</li>
+    <li><code>post-1-financiamiento.png</code> — sin aval, sin buró</li>
+  </ol>
+
+  <h2 class="seccion">Los ocho</h2>
+  <p class="sub">
+    Publica <b>dos por día</b>, no los ocho de un jalón: ocho publicaciones
+    casi idénticas en una hora se leen como spam y Facebook limita la cuenta.
+  </p>
+  <div class="lista" id="lista"></div>
+
+  <h2 class="seccion">Después de publicar</h2>
+  <div class="notas">
+    <div class="nota">
+      <h3>Renuévalos cada 7 días</h3>
+      <p>Marketplace baja lo viejo. En cada anuncio: «…» → Renovar publicación. Veinte minutos a la semana para los ocho.</p>
+    </div>
+    <div class="nota">
+      <h3>No contestes tú de inmediato</h3>
+      <p>Deja que el bot haga las tres preguntas que califican. Tú entras cuando llegue el aviso de lead caliente a Telegram, y llegas sabiendo qué quiere y cómo paga.</p>
+    </div>
+    <div class="nota">
+      <h3>No metas enlaces en la descripción</h3>
+      <p>Facebook empuja hacia abajo lo que saca gente de la plataforma. Y el chiste es que te escriban por Messenger, que es donde vive el bot.</p>
+    </div>
+    <div class="nota">
+      <h3>Los nombres de desarrollo no se inventan</h3>
+      <p>Solo Querétaro, León, Mérida y San Luis Potosí los publican. En Cancún, Monterrey, Aguascalientes y Puebla se nombra la ciudad y el detalle lo das tú al día.</p>
+    </div>
+  </div>
+
+  <footer>
+    Ninguno de los ocho dice «garantizado», ninguno promete una etapa abierta y
+    ninguno menciona casas. Todos los precios van como «desde».
+  </footer>
+</div>
+
+<script>
+const PLAZAS = [
+  { id:"queretaro", ciudad:"Querétaro", mes:"$1,348",
+    titulo:"Terreno en Querétaro · Sin buró · Desde $1,348 al mes",
+    porque:"Cercanía con la Ciudad de México y una de las concentraciones industriales más importantes del centro del país.",
+    encabezado:"TERRENOS PREMIUM EN QUERÉTARO\nMensualidad desde $1,348. Precio del terreno desde $550,000.",
+    desarrollos:"DESARROLLOS EN LA PLAZA:\nCiudad Maderas Bosques · Ciudad Maderas Corregidora · Ciudad Maderas Hacienda · Ciudad Maderas Norte · Privada Maderas Corregidora" },
+
+  { id:"leon", ciudad:"León", mes:"$1,288",
+    titulo:"Terreno en León · Sin buró · Desde $1,288 al mes",
+    porque:"El Bajío, con una de las zonas industriales más activas del país.",
+    encabezado:"TERRENOS PREMIUM EN LEÓN, GUANAJUATO\nMensualidad desde $1,288. Precio del terreno desde $550,000.",
+    desarrollos:"DESARROLLOS EN LA PLAZA:\nCiudad Maderas León · Ciudad Maderas Cañada · Ciudad Maderas Montaña León · Ciudad Maderas Norte León · Ciudad Maderas San Miguel de Allende · Privada Maderas León" },
+
+  { id:"merida", ciudad:"Mérida", mes:"$1,683",
+    titulo:"Terreno en Mérida · Sin buró · Desde $1,683 al mes",
+    porque:"La Ciudad Blanca: entorno cálido y seguro, cerca de playas y cenotes.",
+    encabezado:"TERRENOS PREMIUM EN MÉRIDA, YUCATÁN\nMensualidad desde $1,683. Precio del terreno desde $550,000.",
+    desarrollos:"DESARROLLOS EN LA PLAZA PENÍNSULA:\nCiudad Maderas Península · Ciudad Maderas Hacienda Península · Ciudad Maderas Privada Península" },
+
+  { id:"slp", ciudad:"San Luis Potosí", mes:"$1,288",
+    titulo:"Terreno en San Luis Potosí · Sin buró · Desde $1,288 al mes",
+    porque:"Cruce logístico del país y sede de plantas armadoras.",
+    encabezado:"TERRENOS PREMIUM EN SAN LUIS POTOSÍ\nMensualidad desde $1,288. Precio del terreno desde $550,000.",
+    desarrollos:"DESARROLLOS EN LA PLAZA:\nCiudad Maderas San Luis Potosí · Ciudad Maderas Montaña San Luis Potosí · Ciudad Maderas Sierra San Luis Potosí" },
+
+  { id:"cancun", ciudad:"Cancún", mes:"$1,388",
+    titulo:"Terreno en Cancún · Sin buró · Desde $1,388 al mes",
+    porque:"Clima caribeño y Club Acuático, con fuerte potencial de plusvalía internacional. Ciudad Maderas Caribe es la plaza de Quintana Roo; los nombres de los desarrollos y las etapas abiertas te los paso al día.",
+    encabezado:"TERRENOS PREMIUM EN CANCÚN, QUINTANA ROO\nMensualidad desde $1,388. Precio del terreno desde $550,000.",
+    desarrollos:"" },
+
+  { id:"monterrey", ciudad:"Monterrey", mes:"$1,474",
+    titulo:"Terreno en Monterrey · Sin buró · Desde $1,474 al mes",
+    porque:"El polo industrial más fuerte del norte del país. Los nombres de los desarrollos y las etapas abiertas te los paso al día.",
+    encabezado:"TERRENOS PREMIUM EN MONTERREY, NUEVO LEÓN\nMensualidad desde $1,474. Precio del terreno desde $550,000.",
+    desarrollos:"" },
+
+  { id:"aguascalientes", ciudad:"Aguascalientes", mes:"$1,244",
+    titulo:"Terreno en Aguascalientes · Sin buró · Desde $1,244 al mes",
+    porque:"Ciudad ordenada, con industria automotriz consolidada. Los nombres de los desarrollos y las etapas abiertas te los paso al día.",
+    encabezado:"TERRENOS PREMIUM EN AGUASCALIENTES\nMensualidad desde $1,244 — la más baja del catálogo, junto con Puebla.\nPrecio del terreno desde $550,000.",
+    desarrollos:"" },
+
+  { id:"puebla", ciudad:"Puebla", mes:"$1,244",
+    titulo:"Terreno en Puebla · Sin buró · Desde $1,244 al mes",
+    porque:"De las áreas metropolitanas más grandes del país, a hora y media de la Ciudad de México. Los nombres de los desarrollos y las etapas abiertas te los paso al día.",
+    encabezado:"TERRENOS PREMIUM EN PUEBLA\nMensualidad desde $1,244 — la más baja del catálogo, junto con Aguascalientes.\nPrecio del terreno desde $550,000.",
+    desarrollos:"" },
+];
+
+const FACILIDADES = [
+  "FACILIDADES:",
+  "• Crédito directo con la desarrolladora, sin banco de por medio",
+  "• Sin aval",
+  "• Sin revisión de buró de crédito",
+  "• Sin comprobante de ingresos",
+  "• Desde 1% de enganche",
+].join("\n");
+
+const INCLUYE = [
+  "QUÉ INCLUYE:",
+  "Comunidades planificadas con más de 30 amenidades: albercas semiolímpicas y techadas, canchas de pádel y tenis, gimnasio, casa club y áreas infantiles. Urbanización completa —calles, banquetas, agua, luz y drenaje— con acceso controlado. El catálogo y la etapa varían por desarrollo.",
+].join("\n");
+
+const CIERRE = [
+  "Precios y mensualidades son montos “desde”: el precio final depende de las medidas y la ubicación dentro del desarrollo, y lo confirma un asesor. Aplican restricciones.",
+  "",
+  "Mándame un mensaje y te digo qué lotes hay disponibles y cuánto quedaría tu mensualidad. Sin costo y sin compromiso.",
+  "",
+  "Asesor autorizado de Ciudad Maderas.",
+  "Desarrolladora con 40 años y más de 124,000 lotes entregados.",
+].join("\n");
+
+function descripcion(p) {
+  const partes = [
+    p.encabezado,
+    "¿Te dijeron que no calificas para un crédito? Aquí no revisamos buró.",
+    FACILIDADES,
+  ];
+  if (p.desarrollos) partes.push(p.desarrollos);
+  partes.push("POR QUÉ " + p.ciudad.toUpperCase() + ":\n" + p.porque);
+  partes.push(INCLUYE, CIERRE);
+  return partes.join("\n\n");
+}
+
+// El estado de "ya lo publiqué" es una comodidad de este navegador, no un dato
+// del negocio: si el almacenamiento no está disponible, la página funciona
+// igual y solo se pierden las palomitas.
+const LLAVE = "cm_marketplace_v1";
+function leeEstado() {
+  try { return JSON.parse(localStorage.getItem(LLAVE) || "{}") || {}; }
+  catch (_) { return {}; }
+}
+function guardaEstado(e) {
+  try { localStorage.setItem(LLAVE, JSON.stringify(e)); } catch (_) {}
+}
+
+const estado = leeEstado();
+const lista = document.getElementById("lista");
+
+PLAZAS.forEach(function (p) {
+  const texto = descripcion(p);
+  const marcado = !!estado[p.id];
+
+  const art = document.createElement("article");
+  art.className = "plaza" + (marcado ? " listo" : "");
+
+  const cabeza = document.createElement("div");
+  cabeza.className = "cabeza";
+  const h = document.createElement("h3");
+  h.className = "ciudad";
+  h.textContent = p.ciudad;
+  const chip = document.createElement("span");
+  chip.className = "mensual";
+  chip.textContent = "desde " + p.mes + " al mes";
+  cabeza.append(h, chip);
+
+  const marca = document.createElement("label");
+  marca.className = "marca" + (marcado ? " hecho" : "");
+  const caja = document.createElement("input");
+  caja.type = "checkbox";
+  caja.checked = marcado;
+  const rotulo = document.createElement("span");
+  rotulo.textContent = marcado ? "Publicado" : "Marcar como publicado";
+  marca.append(caja, rotulo);
+
+  const campoTitulo = bloque("Título del anuncio", p.titulo, true);
+  const cuerpo = document.createElement("div");
+  cuerpo.hidden = true;
+  cuerpo.append(bloque("Descripción", texto, false));
+
+  const abrir = document.createElement("button");
+  abrir.className = "abrir";
+  abrir.type = "button";
+  abrir.textContent = "Ver la descripción completa";
+  abrir.setAttribute("aria-expanded", "false");
+  abrir.addEventListener("click", function () {
+    const oculto = cuerpo.hidden;
+    cuerpo.hidden = !oculto;
+    abrir.setAttribute("aria-expanded", String(oculto));
+    abrir.textContent = oculto ? "Ocultar la descripción" : "Ver la descripción completa";
+  });
+
+  caja.addEventListener("change", function () {
+    estado[p.id] = caja.checked;
+    guardaEstado(estado);
+    art.classList.toggle("listo", caja.checked);
+    marca.classList.toggle("hecho", caja.checked);
+    rotulo.textContent = caja.checked ? "Publicado" : "Marcar como publicado";
+    avance();
+  });
+
+  art.append(cabeza, marca, campoTitulo, abrir, cuerpo);
+  lista.append(art);
+});
+
+function bloque(etiqueta, texto, esTitulo) {
+  const cont = document.createElement("div");
+  cont.className = "campo";
+
+  const fila = document.createElement("div");
+  fila.className = "etiqueta";
+  const nombre = document.createElement("span");
+  nombre.textContent = etiqueta;
+  const btn = document.createElement("button");
+  btn.className = "copiar";
+  btn.type = "button";
+  btn.textContent = "Copiar";
+  fila.append(nombre, btn);
+
+  const pre = document.createElement("pre");
+  if (esTitulo) pre.className = "titulo";
+  pre.textContent = texto;
+
+  btn.addEventListener("click", function () {
+    copia(pre.textContent, btn);
+  });
+
+  cont.append(fila, pre);
+  return cont;
+}
+
+function copia(texto, btn) {
+  const listo = function () {
+    btn.textContent = "Copiado";
+    btn.classList.add("ok");
+    setTimeout(function () {
+      btn.textContent = "Copiar";
+      btn.classList.remove("ok");
+    }, 1600);
+  };
+  const falla = function () {
+    btn.textContent = "Selecciona y copia";
+    setTimeout(function () { btn.textContent = "Copiar"; }, 2200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(listo).catch(falla);
+  } else {
+    falla();
+  }
+}
+
+function avance() {
+  const n = PLAZAS.filter(function (p) { return estado[p.id]; }).length;
+  document.getElementById("cuenta").textContent = n + " de 8 publicados";
+  document.getElementById("lleno").style.width = (n / 8 * 100) + "%";
+}
+avance();
+</script>
