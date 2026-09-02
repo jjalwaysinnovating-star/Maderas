@@ -21,8 +21,32 @@ editar**. Es de Facebook, así que no arriesga la cuenta.
 Ruta: Marketplace → Tus publicaciones → el anuncio → «…» o Configuración →
 *Respuestas automáticas*. Meta acomoda ese menú distinto por país y versión; si
 no está ahí, mira en Marketplace → tu foto → *Configuración de vendedor*. Si no
-aparece, usa las **respuestas guardadas**, que sí existen siempre (icono ⚡ bajo
-el cuadro de texto de cualquier conversación).
+aparece, no pasa nada: los **atajos de texto del teléfono** (abajo) hacen el
+mismo trabajo.
+
+### Las respuestas guardadas viven DENTRO de una conversación
+
+No están en ninguna pantalla de configuración: el icono ⚡ sale abajo del cuadro
+de texto **cuando ya estás platicando con alguien**. Con cero conversaciones no
+hay dónde crearlas todavía — por eso no las encuentras.
+
+Mientras llega el primer mensaje, usa los **atajos de texto del teléfono**:
+escribes tres letras y suelta el párrafo completo, y funcionan en todas las
+apps, no solo en Facebook.
+
+**Ajustes → General → Teclado → Sustitución de texto → +** — la frase arriba, el
+atajo abajo. Empiezan con `zz` a propósito: nadie los escribe por accidente.
+
+| Atajo | Para | Texto |
+|---|---|---|
+| `zzd` | «¿Sigue disponible?» | Sí, sigue disponible. ¿Para qué ciudad lo estás buscando? |
+| `zzb` | «Es que estoy en buró» | No importa estar en buró. No se revisa en ningún momento del proceso, porque el crédito es directo con la desarrolladora y no hay banco de por medio. Tampoco piden aval ni comprobante de ingresos. |
+| `zze` | «¿Cuánto es el enganche?» | El enganche es desde 1%. El monto exacto depende del lote y del plazo que elijas. Dime cuánto puedes dar y te calculo la mensualidad. |
+| `zzp` | Pasarlo a la página | Con gusto te paso el detalle de cada desarrollo por acá: [ENLACE DE TU PÁGINA] |
+
+Van de un solo párrafo porque el iPhone no maneja bien los saltos de línea aquí.
+El mensaje largo (el de la respuesta automática) guárdalo en Notas y cópialo de
+ahí.
 
 Antes de configurarlo hay que hacer dos cosas, en este orden:
 
@@ -102,7 +126,8 @@ Mientras lo confirmas, en todos va $550,000 y la descripción aclara que es
 
 **No pongas enlaces en la descripción.** Facebook empuja hacia abajo lo que
 saca gente de la plataforma, y además el chiste es que te escriban por
-Messenger — ahí es donde tu bot los atiende y los califica.
+Messenger. Ojo: esos mensajes llegan a tu **Messenger personal** y los contestas
+tú; de ahí los mueves a la página, que es donde vive el bot.
 
 ---
 
