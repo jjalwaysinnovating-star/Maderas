@@ -46,6 +46,29 @@ Dos formas de pasar la plática al bot:
 
 ---
 
+## ⚠️ La ubicación es la del terreno, no la tuya
+
+Marketplace enseña cada anuncio a la gente cerca de **la ubicación que le
+pongas**. El perfil trae Tijuana por defecto, y ahí Ciudad Maderas no tiene ni
+un desarrollo: los ocho anuncios se los enseñaría a quien no se le puede vender
+nada. En cada uno hay que cambiarla a la ciudad del terreno.
+
+## Dos trampas de la configuración de Marketplace
+
+**Apaga «Usar creación de anuncios simple».** Viene encendida y muestra "menos
+opciones durante la creación" — esconde campos que sí se ocupan, como la
+ubicación por ciudad y la descripción larga.
+
+**«Establecer un mensaje personalizado» NO es la respuesta automática.** Es el
+mensaje que TÚ mandas cuando le escribes a otro vendedor para comprarle. Poner
+ahí el texto de redirección se lo manda a gente a la que le compras. Va vacío.
+
+**La respuesta automática se configura POR ANUNCIO**, no en la pantalla de
+configuración general: se edita "antes de publicarla con el anuncio". Hay que
+publicar el primero y buscarla ahí dentro.
+
+---
+
 ## ⚠️ Antes de publicar: confirma el precio
 
 Marketplace obliga a poner **un número** en el campo de precio, y la gente lo
@@ -66,7 +89,7 @@ Mientras lo confirmas, en todos va $550,000 y la descripción aclara que es
 
 **Categoría:** Terreno · En venta
 **Precio:** 550000 *(ajústalo cuando confirmes por plaza)*
-**Ubicación:** la ciudad del anuncio, no la tuya
+**Ubicación:** ⚠️ la ciudad del TERRENO, no la tuya
 **Estado:** Nuevo
 
 **Fotos (4 o 5, en este orden).** Salen de `contenido/salida/`:
