@@ -292,6 +292,45 @@
   </p>
   <div class="lista" id="lista"></div>
 
+  <h2 class="seccion">Que conteste solo el primer mensaje</h2>
+  <p class="sub">
+    Marketplace trae respuestas automáticas propias (Meta AI, desde marzo de
+    2026). No platica —contesta una vez— pero evita que la persona se enfríe y
+    la manda a tu página, que es donde sí vive el bot. Es de Facebook, así que
+    no arriesgas la cuenta.
+  </p>
+
+  <div class="aviso">
+    <h2>Nunca automatices tu perfil con apps de fuera</h2>
+    <p>
+      Los perfiles personales no tienen API de mensajes. Todo lo que promete
+      «automatiza tu Messenger personal» va contra las reglas de Facebook.
+    </p>
+    <p>
+      Y tu perfil es el <b>administrador de tu página</b>: si te lo suspenden
+      pierdes los ocho anuncios <b>y la página</b> — y con ella el bot, el
+      embudo de comentarios, las publicaciones programadas y los avisos de
+      leads. Todo cuelga de esa cuenta.
+    </p>
+  </div>
+
+  <div class="notas">
+    <div class="nota">
+      <h3>1 · Cambia el nombre de la página primero</h3>
+      <p>Meta Business Suite → Configuración → Información de la página. Quítale «y Casas Premium». Tarda unos días en aprobarse; no configures lo demás hasta que esté listo, o el texto mandará a un nombre que no existe.</p>
+    </div>
+    <div class="nota">
+      <h3>2 · Copia el enlace de tu página</h3>
+      <p>En la página → «…» → Copiar enlace. Usa el enlace y no el nombre: si algún día lo cambias otra vez, el mensaje seguiría funcionando.</p>
+    </div>
+    <div class="nota">
+      <h3>3 · Busca la respuesta automática</h3>
+      <p>Marketplace → Tus publicaciones → entra a un anuncio → «…» o Configuración. Busca «Respuestas automáticas» o «Asistente de mensajes». Meta acomoda este menú distinto por país y versión; si no está ahí, mira en Marketplace → tu foto → Configuración de vendedor. Si no aparece en ningún lado, sáltate a las respuestas guardadas: esas sí existen siempre.</p>
+    </div>
+  </div>
+
+  <div class="lista" id="respuestas"></div>
+
   <h2 class="seccion">Después de publicar</h2>
   <div class="notas">
     <div class="nota">
@@ -531,4 +570,50 @@ function avance() {
   document.getElementById("lleno").style.width = (n / 8 * 100) + "%";
 }
 avance();
+
+// ── Respuestas para Marketplace ──────────────────────────────────────────
+// El primer bloque va en la respuesta automática (si tu cuenta ya la tiene);
+// los otros cuatro son respuestas guardadas, que se mandan con un toque.
+const RESPUESTAS = [
+  { tipo:"Respuesta automática", titulo:"El primer mensaje",
+    nota:"Borra la que Meta AI escribe y pon esta. Corta a propósito: se lee en una notificación.",
+    texto:`Hola, gracias por escribir. Sí está disponible.
+
+El crédito es directo con la desarrolladora: sin aval, sin revisión de buró y desde 1% de enganche.
+
+Para pasarte el detalle completo —los desarrollos de tu ciudad, medidas y cuánto quedaría tu mensualidad— escríbeme aquí y te atiendo al momento, a cualquier hora:
+
+[PEGA AQUÍ EL ENLACE DE TU PÁGINA]` },
+  { tipo:"Respuesta guardada", titulo:"«¿Sigue disponible?»", nota:"La pregunta número uno de Marketplace.",
+    texto:`Sí, sigue disponible. ¿Para qué ciudad lo estás buscando?` },
+  { tipo:"Respuesta guardada", titulo:"«Es que estoy en buró»", nota:"Tu gancho más fuerte. Contéstala completa.",
+    texto:`No importa. No se revisa buró en ningún momento del proceso, porque el crédito es directo con la desarrolladora y no hay banco de por medio. Tampoco piden aval ni comprobante de ingresos.` },
+  { tipo:"Respuesta guardada", titulo:"«¿Cuánto es el enganche?»", nota:"Sin dar un número cerrado.",
+    texto:`Desde 1%. El monto exacto depende del lote y del plazo que elijas. Dime cuánto puedes dar y te calculo la mensualidad.` },
+  { tipo:"Respuesta guardada", titulo:"Pasarlo a la página", nota:"El que mueve la plática a donde vive el bot.",
+    texto:`Con gusto te paso el detalle de cada desarrollo por acá:
+[PEGA AQUÍ EL ENLACE DE TU PÁGINA]` },
+];
+
+const cajaResp = document.getElementById("respuestas");
+RESPUESTAS.forEach(function (r) {
+  const art = document.createElement("article");
+  art.className = "plaza";
+  const cab = document.createElement("div");
+  cab.className = "cabeza";
+  cab.style.display = "block";
+  const tp = document.createElement("p");
+  tp.style.cssText = "font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--oro);margin:0 0 6px";
+  tp.textContent = r.tipo;
+  const h = document.createElement("h3");
+  h.className = "ciudad";
+  h.style.fontSize = "23px";
+  h.textContent = r.titulo;
+  const nt = document.createElement("p");
+  nt.style.cssText = "font-size:12.5px;color:var(--suave);margin:6px 0 0";
+  nt.textContent = r.nota;
+  cab.append(tp, h, nt);
+  art.append(cab, bloque("Texto", r.texto, false));
+  cajaResp.append(art);
+});
 </script>

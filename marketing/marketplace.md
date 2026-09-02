@@ -12,6 +12,30 @@ desde el perfil personal. Y el bot está conectado a la página, no al perfil.
 Los mensajes de estos ocho anuncios llegan a tu Messenger personal y **los
 respondes a mano**.
 
+### Que Marketplace conteste el primer mensaje
+
+Marketplace trae **respuestas automáticas propias** (Meta AI, desde marzo de
+2026): contestan una vez con los datos del anuncio y el texto **se puede
+editar**. Es de Facebook, así que no arriesga la cuenta.
+
+Ruta: Marketplace → Tus publicaciones → el anuncio → «…» o Configuración →
+*Respuestas automáticas*. Meta acomoda ese menú distinto por país y versión; si
+no está ahí, mira en Marketplace → tu foto → *Configuración de vendedor*. Si no
+aparece, usa las **respuestas guardadas**, que sí existen siempre (icono ⚡ bajo
+el cuadro de texto de cualquier conversación).
+
+Antes de configurarlo hay que hacer dos cosas, en este orden:
+
+1. **Cambiarle el nombre a la página** (quitarle "y Casas Premium"). Tarda días
+   en aprobarse y no tiene caso mandar gente a una página que promete casas.
+2. **Copiar el ENLACE de la página**, no su nombre: si el nombre cambia otra
+   vez, el enlace sigue sirviendo.
+
+**Nunca automatices el perfil personal con apps de fuera.** Los perfiles no
+tienen API de mensajes; todo lo que lo promete va contra las reglas. Y el
+perfil administra la página: si lo suspenden se caen los ocho anuncios **y la
+página** — con ella el bot, el embudo, las publicaciones y los avisos.
+
 Dos formas de pasar la plática al bot:
 
 1. En tu respuesta, ofrécele seguir en la página: *"Con gusto. Si me escribes a
