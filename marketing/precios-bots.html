@@ -1,0 +1,585 @@
+<title>Cuánto cobrar por un bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+:root{
+  --ground:#E9ECEE;
+  --surface:#FFFFFF;
+  --surface-2:#F3F5F6;
+  --ink:#141D26;
+  --ink-2:#3C4954;
+  --muted:#66737F;
+  --line:#D3D9DD;
+  --line-2:#BFC7CD;
+  --accent:#0F6B4F;
+  --accent-soft:#E2EFE9;
+  --accent-ink:#0A4A37;
+  --warn:#9C3D0A;
+  --warn-soft:#F7E9E0;
+  --panel:#16232E;
+  --panel-ink:#EEF1F3;
+  --panel-muted:#93A3B0;
+  --panel-line:#2C3D4B;
+  --shadow:0 1px 2px rgba(20,29,38,.06), 0 8px 24px -14px rgba(20,29,38,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101820;
+    --surface:#18222C;
+    --surface-2:#1E2A35;
+    --ink:#E8EDF0;
+    --ink-2:#C0CBD4;
+    --muted:#8B99A5;
+    --line:#2A3945;
+    --line-2:#3A4B59;
+    --accent:#4FBF95;
+    --accent-soft:#16332A;
+    --accent-ink:#8FD9BB;
+    --warn:#E09462;
+    --warn-soft:#33231A;
+    --panel:#0B1219;
+    --panel-ink:#E8EDF0;
+    --panel-muted:#8B99A5;
+    --panel-line:#233240;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101820;
+  --surface:#18222C;
+  --surface-2:#1E2A35;
+  --ink:#E8EDF0;
+  --ink-2:#C0CBD4;
+  --muted:#8B99A5;
+  --line:#2A3945;
+  --line-2:#3A4B59;
+  --accent:#4FBF95;
+  --accent-soft:#16332A;
+  --accent-ink:#8FD9BB;
+  --warn:#E09462;
+  --warn-soft:#33231A;
+  --panel:#0B1219;
+  --panel-ink:#E8EDF0;
+  --panel-muted:#8B99A5;
+  --panel-line:#233240;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px;margin:0 auto;padding:28px 20px 72px;display:flex;flex-direction:column;gap:32px}
+
+h1,h2,h3{font-family:Archivo, system-ui, sans-serif;text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(28px,5.4vw,40px);font-weight:800;letter-spacing:-.022em}
+h2{font-size:clamp(19px,3.2vw,23px);font-weight:700;letter-spacing:-.012em}
+h3{font-size:16px;font-weight:700;letter-spacing:-.005em}
+p{margin:0}
+
+.eyebrow{
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);
+}
+.lede{color:var(--ink-2);max-width:62ch}
+.small{font-size:13.5px;color:var(--muted)}
+.num{font-family:"IBM Plex Mono", ui-monospace, monospace;font-variant-numeric:tabular-nums}
+
+header.head{display:flex;flex-direction:column;gap:10px;padding-top:8px}
+header.head .rule{height:3px;width:52px;background:var(--accent);border-radius:2px;margin-top:4px}
+
+section{display:flex;flex-direction:column;gap:16px}
+.sec-head{display:flex;flex-direction:column;gap:6px}
+
+/* ---------- calculadora ---------- */
+.calc{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:10px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.calc-body{padding:20px;display:flex;flex-direction:column;gap:24px}
+.field{display:flex;flex-direction:column;gap:10px}
+.field > .eyebrow{margin-bottom:-2px}
+
+.opts{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:620px){ .opts.three{grid-template-columns:repeat(3,1fr)} .opts.two{grid-template-columns:repeat(2,1fr)} }
+
+.opt{
+  position:relative;display:flex;flex-direction:column;gap:4px;
+  padding:13px 14px;border:1px solid var(--line-2);border-radius:8px;
+  background:var(--surface);cursor:pointer;
+  transition:border-color .12s ease, background .12s ease;
+}
+.opt:hover{border-color:var(--accent)}
+.opt input{position:absolute;opacity:0;width:0;height:0}
+.opt .t{font-weight:600;font-size:15px}
+.opt .r{font-family:"IBM Plex Mono", ui-monospace, monospace;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}
+.opt .d{font-size:13px;color:var(--muted);line-height:1.45}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt:has(input:checked) .r{color:var(--accent-ink)}
+.opt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+
+.extras{display:flex;flex-direction:column;gap:0;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+.xrow{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;
+  border-bottom:1px solid var(--line);background:var(--surface);cursor:pointer;
+}
+.xrow:last-child{border-bottom:0}
+.xrow:has(input:checked){background:var(--accent-soft)}
+.xrow input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);flex:none;cursor:pointer}
+.xrow .xn{flex:1;font-size:14.5px}
+.xrow .xp{font-family:"IBM Plex Mono", ui-monospace, monospace;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);white-space:nowrap}
+.xrow:has(input:checked) .xp{color:var(--accent-ink)}
+.qty{display:flex;align-items:center;gap:8px;flex:none}
+.qty button{
+  width:26px;height:26px;border:1px solid var(--line-2);background:var(--surface-2);
+  color:var(--ink);border-radius:5px;font-size:15px;line-height:1;cursor:pointer;
+  font-family:"IBM Plex Mono", monospace;
+}
+.qty button:hover{border-color:var(--accent);color:var(--accent)}
+.qty button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.qty .q{font-family:"IBM Plex Mono", monospace;font-variant-numeric:tabular-nums;min-width:12px;text-align:center;font-size:14px}
+
+.rate{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rate input{
+  width:74px;padding:6px 9px;border:1px solid var(--line-2);border-radius:6px;
+  background:var(--surface);color:var(--ink);
+  font-family:"IBM Plex Mono", monospace;font-variant-numeric:tabular-nums;font-size:14px;
+}
+.rate input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+
+/* ---------- panel de total ---------- */
+.total{background:var(--panel);color:var(--panel-ink);padding:20px;display:flex;flex-direction:column;gap:16px}
+.tgrid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:620px){.tgrid{grid-template-columns:1.15fr 1fr}}
+.tblock{display:flex;flex-direction:column;gap:3px}
+.tblock .k{font-family:"IBM Plex Mono", monospace;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--panel-muted)}
+.tblock .v{font-family:Archivo, sans-serif;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;font-size:clamp(26px,5.4vw,34px);line-height:1.1}
+.tblock .v.sm{font-size:clamp(20px,4vw,25px)}
+.tblock .sub{font-family:"IBM Plex Mono", monospace;font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--panel-muted)}
+.tfoot{border-top:1px solid var(--panel-line);padding-top:13px;display:flex;flex-direction:column;gap:9px}
+.tline{display:flex;justify-content:space-between;gap:14px;font-size:13.5px;color:var(--panel-muted)}
+.tline b{color:var(--panel-ink);font-family:"IBM Plex Mono", monospace;font-variant-numeric:tabular-nums;font-weight:500}
+
+.pitch{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:8px;
+  padding:14px;font-size:14px;line-height:1.65;white-space:pre-wrap;
+  font-family:"IBM Plex Mono", ui-monospace, monospace;font-variant-numeric:tabular-nums;
+  color:var(--ink-2);
+}
+.copy{
+  align-self:flex-start;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);
+  padding:8px 14px;border-radius:7px;font-family:"IBM Plex Sans",sans-serif;font-size:14px;
+  font-weight:600;cursor:pointer;
+}
+.copy:hover{border-color:var(--accent);color:var(--accent)}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- avisos ---------- */
+.flag{
+  border-left:3px solid var(--warn);background:var(--warn-soft);
+  padding:14px 16px;border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:7px;
+}
+.flag h3{color:var(--warn)}
+.flag p{font-size:14.5px;color:var(--ink-2)}
+
+.note{
+  border-left:3px solid var(--accent);background:var(--accent-soft);
+  padding:14px 16px;border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:7px;
+}
+.note h3{color:var(--accent-ink)}
+.note p{font-size:14.5px;color:var(--ink-2)}
+
+/* ---------- tablas / listas ---------- */
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:440px;font-size:14.5px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+th{
+  font-family:"IBM Plex Mono", monospace;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--surface-2);
+}
+td.n{font-family:"IBM Plex Mono", monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+td b{font-weight:600}
+
+.cards{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:620px){.cards{grid-template-columns:1fr 1fr}}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:15px 16px;display:flex;flex-direction:column;gap:6px;
+}
+.card .q{font-weight:600;font-size:14.5px;color:var(--ink)}
+.card .a{font-size:14px;color:var(--ink-2);line-height:1.6}
+
+ul.plain{margin:0;padding-left:19px;display:flex;flex-direction:column;gap:7px}
+ul.plain li{font-size:14.5px;color:var(--ink-2)}
+ul.plain li b{color:var(--ink)}
+
+footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13px;line-height:1.65}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="head">
+  <p class="eyebrow">Hoja de trabajo · Joswuar</p>
+  <h1>Cuánto cobrar por un bot</h1>
+  <p class="lede">Arma el número antes de decirlo en voz alta. Los rangos salen de la guía de reventa de Forja; el piso de $2,000 USD no se toca.</p>
+  <div class="rule"></div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <h2>Arma la cotización</h2>
+    <p class="small">Empieza cargada con un ejemplo (Intermedio + agenda + 1 canal). Cámbialo a lo que pidió tu prospecto.</p>
+  </div>
+
+  <div class="calc">
+    <div class="calc-body">
+
+      <div class="field">
+        <p class="eyebrow">1 · Tamaño del trabajo</p>
+        <div class="opts three" id="niveles">
+          <label class="opt">
+            <input type="radio" name="nivel" value="basico">
+            <span class="t">Básico</span>
+            <span class="r">$2,000 – $3,000</span>
+            <span class="d">Un canal, sin integraciones, giro estándar.</span>
+          </label>
+          <label class="opt">
+            <input type="radio" name="nivel" value="intermedio" checked>
+            <span class="t">Intermedio</span>
+            <span class="r">$3,000 – $5,000</span>
+            <span class="d">Dos o tres canales, o agenda, o catálogo.</span>
+          </label>
+          <label class="opt">
+            <input type="radio" name="nivel" value="avanzado">
+            <span class="t">Avanzado</span>
+            <span class="r">$5,000 – $10,000</span>
+            <span class="d">Multicanal + integraciones, o varias sucursales.</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <p class="eyebrow">2 · Extras que pidió</p>
+        <div class="extras" id="extras">
+          <label class="xrow">
+            <input type="checkbox" data-lo="300" data-hi="800" data-qty="1" checked>
+            <span class="xn">Canal adicional <span class="small">(WhatsApp, Instagram, web, Telegram)</span></span>
+            <span class="qty" data-for="canales">
+              <button type="button" data-step="-1" aria-label="Quitar un canal">−</button>
+              <span class="q">1</span>
+              <button type="button" data-step="1" aria-label="Agregar un canal">+</button>
+            </span>
+            <span class="xp">$300–800 c/u</span>
+          </label>
+          <label class="xrow">
+            <input type="checkbox" data-lo="500" data-hi="1500" checked>
+            <span class="xn">Agenda de citas conectada a su calendario</span>
+            <span class="xp">$500–1,500</span>
+          </label>
+          <label class="xrow">
+            <input type="checkbox" data-lo="500" data-hi="2000">
+            <span class="xn">Integrar su CRM o exportar contactos</span>
+            <span class="xp">$500–2,000</span>
+          </label>
+          <label class="xrow">
+            <input type="checkbox" data-lo="300" data-hi="1000">
+            <span class="xn">Cargar base de conocimiento grande <span class="small">(menús, catálogos, políticas)</span></span>
+            <span class="xp">$300–1,000</span>
+          </label>
+          <label class="xrow">
+            <input type="checkbox" data-lo="500" data-hi="1500">
+            <span class="xn">Dejar listas las campañas de WhatsApp</span>
+            <span class="xp">$500–1,500</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <p class="eyebrow">3 · Mensualidad</p>
+        <div class="opts two" id="mensualidades">
+          <label class="opt">
+            <input type="radio" name="mens" value="basica" checked>
+            <span class="t">Estándar</span>
+            <span class="r">$150 – $300 / mes</span>
+            <span class="d">Que no se caiga, soporte y ajustes normales.</span>
+          </label>
+          <label class="opt">
+            <input type="radio" name="mens" value="prioritaria">
+            <span class="t">Prioritaria</span>
+            <span class="r">$300 – $600 / mes</span>
+            <span class="d">Soporte prioritario, reporte mensual y afinación continua.</span>
+          </label>
+        </div>
+        <div class="rate">
+          <label class="small" for="tc">Tipo de cambio para los pesos:</label>
+          <input id="tc" type="number" min="1" max="99" step="0.5" value="18" inputmode="decimal">
+          <span class="small">pesos por dólar — orientativo, no es el del día.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="total">
+      <div class="tgrid">
+        <div class="tblock">
+          <span class="k">Puesta en marcha · sugerido</span>
+          <span class="v num" id="setupSug">$4,650 USD</span>
+          <span class="sub" id="setupMx">≈ $83,700 MXN</span>
+          <span class="sub" id="setupRango">Rango: $3,800 – $5,500 USD</span>
+        </div>
+        <div class="tblock">
+          <span class="k">Mensualidad · sugerido</span>
+          <span class="v sm num" id="mensSug">$225 USD</span>
+          <span class="sub" id="mensMx">≈ $4,050 MXN al mes</span>
+          <span class="sub" id="mensRango">Rango: $150 – $300 USD</span>
+        </div>
+      </div>
+      <div class="tfoot">
+        <div class="tline"><span>Total del primer mes</span><b id="primerMes">$4,875 USD</b></div>
+        <div class="tline"><span>Lo mismo en pesos</span><b id="primerMesMx">≈ $87,750 MXN</b></div>
+        <div class="tline"><span>Al año, contando 12 mensualidades</span><b id="anual">$7,350 USD</b></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="eyebrow">Para mandarle al prospecto</p>
+  <div class="pitch" id="pitch"></div>
+  <button class="copy" id="copyBtn" type="button">Copiar el resumen</button>
+</section>
+
+<section>
+  <div class="flag">
+    <h3>El piso son $2,000 USD y no se baja</h3>
+    <p>Ni aunque el negocio sea chico, ni "para cerrar este". Operar un bot cuesta centavos, así que todo lo que cobras de más es tu margen — y tirar el precio no te hace competitivo, te hace ver chico y quema el precio para la próxima vez. Si el prospecto no llega a $2,000, el problema es el prospecto, no tu precio.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Tu propio bot, como vara de medir</h2>
+    <p class="small">Es el que conoces por dentro, así que es tu mejor referencia cuando alguien te pida algo parecido.</p>
+  </div>
+  <div class="note">
+    <h3>Ciudad Maderas sería «Avanzado»: $6,000 – $8,000 de puesta en marcha, $400 – $600 al mes</h3>
+    <p>Tres canales (web, Messenger, Instagram), sitio propio de 12 páginas, base de conocimiento grande, calificación de prospectos, avisos al teléfono, separación por asesor, publicaciones programadas y embudo de comentarios. Si alguien te pide eso mismo, ese es el número.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Lo que te cuesta a ti</h2>
+    <p class="small">Números reales de tu bot. Son para <b>ti</b>, para que sepas dónde estás parado — nunca se los enseñas al cliente.</p>
+  </div>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Concepto</th><th>Costo real</th></tr></thead>
+      <tbody>
+        <tr><td><b>Servidor</b> (Cloudflare)</td><td class="n">$0 · nivel gratuito</td></tr>
+        <tr><td><b>El cerebro de IA</b>, por respuesta</td><td class="n">$0.002 – $0.003 USD</td></tr>
+        <tr><td><b>WhatsApp</b>, por conversación</td><td class="n">$0.008 – $0.07 USD</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">Un bot que atiende 1,000 conversaciones al mes te cuesta unos pocos dólares. Cobrando $300 de mensualidad, casi todo es tuyo. Por eso el precio se justifica por <b>lo que el negocio gana</b>, nunca por lo que a ti te cuesta.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Cuando te regateen</h2>
+    <p class="small">Nunca vendas horas ni costos. Vende el resultado.</p>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <p class="q">«Está muy caro»</p>
+      <p class="a">«Te entiendo. Pregúntate cuánto vale un cliente para ti. Si el bot te recupera dos al año de los que hoy se te van por no contestar a tiempo, ya se pagó solo — y sigue trabajando los otros 363 días.»</p>
+    </div>
+    <div class="card">
+      <p class="q">«Otro me lo hace más barato»</p>
+      <p class="a">«Puede ser. Pregúntale qué pasa cuando deje de funcionar en tres meses. Lo mío incluye que yo lo cuide todos los meses, y por eso hay mensualidad — no te vendo un archivo, te vendo que esté vivo.»</p>
+    </div>
+    <div class="card">
+      <p class="q">«¿Y si lo dejamos sin mensualidad?»</p>
+      <p class="a">«No lo hago sin mensualidad, y es por ti: un bot sin mantenimiento se desactualiza y empieza a decirle cosas viejas a tus clientes. Prefiero no dejarte con algo que se te va a echar a perder.»</p>
+    </div>
+    <div class="card">
+      <p class="q">«Déjame pensarlo»</p>
+      <p class="a">«Claro. Te dejo la cotización, vale 15 días. Mientras tanto, ¿cuántos mensajes te entraron el fin de semana pasado que nadie contestó? Eso es lo que estamos resolviendo.»</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>A quién sí venderle</h2>
+    <p class="small">$2,000 USD son unos $36,000 pesos. Para la taquería de la esquina eso es imposible — y no es que tu precio esté mal, es que ese no es tu cliente.</p>
+  </div>
+  <ul class="plain">
+    <li><b>Los que ya gastan en publicidad.</b> Si ya paga por anuncios, ya sabe que un prospecto cuesta dinero — y le duele perderlo por no contestar.</li>
+    <li><b>Los que pierden clientes de noche y en fin de semana.</b> Inmobiliarias, clínicas dentales, gimnasios, hoteles, escuelas privadas, talleres.</li>
+    <li><b>Los que ya tienen a alguien contestando mensajes.</b> Ahí la comparación se hace sola, sin que tú tengas que inventar cifras de sueldos.</li>
+    <li><b>Los que tienen varias sucursales.</b> Mismo trabajo para ti, mucho más valor para ellos — y es donde se cobra «Avanzado».</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Dos cosas que tienes que resolver antes de vender</h2>
+  </div>
+  <div class="flag">
+    <h3>1 · Confirma que tu licencia te deja revender</h3>
+    <p>No sé qué dice tu contrato de Forja y no me lo voy a inventar: no está en los archivos del proyecto. Pregúntale directo a Horizontes IA si tu licencia cubre montar bots para terceros, y si hace falta una licencia por cada cliente. Es la primera llamada, antes de cotizarle a nadie.</p>
+  </div>
+  <div class="flag">
+    <h3>2 · Las herramientas de agencia son de pago</h3>
+    <p>Tu bot está en nivel <b>Starter (gratis)</b>. Los comandos para revender —cotizar, propuesta, montar el bot de un cliente, calcular su retorno, cobrar— vienen con <b>Forja+</b>. Puedes vender sin ellos: te toca armar los documentos a mano, y esta hoja es justamente para eso.</p>
+  </div>
+</section>
+
+<footer>
+  Los rangos son guía orientativa, no una tarifa oficial: ajústalos a tu mercado y a tu experiencia conforme vayas cerrando. Lo único que no se mueve es el piso. Las conversiones a pesos usan el tipo de cambio que tú pongas arriba y son aproximadas.
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var NIVEL = {
+    basico:     {lo:2000, hi:3000, nombre:"Básico"},
+    intermedio: {lo:3000, hi:5000, nombre:"Intermedio"},
+    avanzado:   {lo:5000, hi:10000, nombre:"Avanzado"}
+  };
+  var MENS = {
+    basica:      {lo:150, hi:300, nombre:"Estándar"},
+    prioritaria: {lo:300, hi:600, nombre:"Prioritaria"}
+  };
+
+  var canales = 1;
+  var qtyWrap = document.querySelector('.qty[data-for="canales"]');
+  var qtyLabel = qtyWrap.querySelector('.q');
+  var canalRow = qtyWrap.closest('.xrow');
+  var canalBox = canalRow.querySelector('input[type=checkbox]');
+
+  function usd(n){ return "$" + Math.round(n).toLocaleString("en-US") + " USD"; }
+  function mxn(n){ return "≈ $" + Math.round(n).toLocaleString("en-US") + " MXN"; }
+  function plano(n){ return "$" + Math.round(n).toLocaleString("en-US"); }
+
+  function tipoCambio(){
+    var v = parseFloat(document.getElementById("tc").value);
+    return (isFinite(v) && v > 0) ? v : 18;
+  }
+
+  function calcula(){
+    var nivelVal = document.querySelector('input[name=nivel]:checked').value;
+    var mensVal  = document.querySelector('input[name=mens]:checked').value;
+    var n = NIVEL[nivelVal], m = MENS[mensVal];
+
+    var lo = n.lo, hi = n.hi;
+    var listaExtras = [];
+
+    document.querySelectorAll('#extras input[type=checkbox]').forEach(function(cb){
+      if(!cb.checked) return;
+      var q = cb.hasAttribute('data-qty') ? canales : 1;
+      if(q < 1) return;
+      var xlo = parseInt(cb.dataset.lo,10) * q;
+      var xhi = parseInt(cb.dataset.hi,10) * q;
+      lo += xlo; hi += xhi;
+      var nombre = cb.closest('.xrow').querySelector('.xn').childNodes[0].textContent.trim();
+      listaExtras.push({ nombre: nombre, q: q, lo: xlo, hi: xhi });
+    });
+
+    var sug  = Math.round((lo + hi) / 2 / 50) * 50;
+    var mSug = Math.round((m.lo + m.hi) / 2 / 25) * 25;
+    var tc   = tipoCambio();
+
+    document.getElementById("setupSug").textContent   = usd(sug);
+    document.getElementById("setupMx").textContent    = mxn(sug * tc);
+    document.getElementById("setupRango").textContent = "Rango: " + plano(lo) + " – " + plano(hi) + " USD";
+
+    document.getElementById("mensSug").textContent   = usd(mSug);
+    document.getElementById("mensMx").textContent    = mxn(mSug * tc) + " al mes";
+    document.getElementById("mensRango").textContent = "Rango: " + plano(m.lo) + " – " + plano(m.hi) + " USD";
+
+    document.getElementById("primerMes").textContent   = usd(sug + mSug);
+    document.getElementById("primerMesMx").textContent = mxn((sug + mSug) * tc);
+    document.getElementById("anual").textContent       = usd(sug + mSug * 12);
+
+    var lineas = [];
+    lineas.push("Asistente virtual con IA — " + n.nombre);
+    lineas.push("");
+    lineas.push("Puesta en marcha (una sola vez):  " + plano(sug) + " USD");
+    if(listaExtras.length){
+      lineas.push("");
+      lineas.push("Incluye:");
+      listaExtras.forEach(function(e){
+        lineas.push("  · " + e.nombre + (e.q > 1 ? " (x" + e.q + ")" : ""));
+      });
+    }
+    lineas.push("");
+    lineas.push("Mensualidad (mantenimiento y soporte):  " + plano(mSug) + " USD/mes");
+    lineas.push("Total del primer mes:  " + plano(sug + mSug) + " USD  (≈ " + plano((sug + mSug) * tc) + " MXN)");
+    lineas.push("");
+    lineas.push("Atiende a tus clientes las 24 horas, captura los datos de cada");
+    lineas.push("interesado y te avisa cuando alguien necesita hablar con una persona.");
+    lineas.push("");
+    lineas.push("Cotización válida por 15 días.");
+    document.getElementById("pitch").textContent = lineas.join("\n");
+  }
+
+  function pintaCanales(){
+    qtyLabel.textContent = canales;
+    qtyWrap.style.opacity = canalBox.checked ? "1" : ".4";
+  }
+
+  qtyWrap.querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click', function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      canales = Math.min(4, Math.max(1, canales + parseInt(b.dataset.step,10)));
+      if(!canalBox.checked) canalBox.checked = true;
+      pintaCanales();
+      calcula();
+    });
+  });
+
+  document.querySelectorAll('input[name=nivel], input[name=mens], #extras input[type=checkbox]')
+    .forEach(function(el){ el.addEventListener('change', function(){ pintaCanales(); calcula(); }); });
+  document.getElementById("tc").addEventListener('input', calcula);
+
+  var btn = document.getElementById("copyBtn");
+  btn.addEventListener('click', function(){
+    var txt = document.getElementById("pitch").textContent;
+    var listo = function(){
+      btn.textContent = "Copiado ✓";
+      setTimeout(function(){ btn.textContent = "Copiar el resumen"; }, 1800);
+    };
+    var aMano = function(){
+      var r = document.createRange();
+      r.selectNodeContents(document.getElementById("pitch"));
+      var s = window.getSelection();
+      s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Selecciónalo y cópialo";
+      setTimeout(function(){ btn.textContent = "Copiar el resumen"; }, 2600);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(listo).catch(aMano);
+    } else { aMano(); }
+  });
+
+  pintaCanales();
+  calcula();
+})();
+</script>
