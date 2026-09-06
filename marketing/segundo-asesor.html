@@ -101,6 +101,49 @@ section{display:flex;flex-direction:column;gap:16px}
 .chip.falta{background:var(--falta-soft);color:var(--falta)}
 .chip.bloq{background:var(--bloqueo-soft);color:var(--bloqueo)}
 
+/* ---- recomendación ---- */
+.rec{
+  background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--nuevo);
+  border-radius:0 9px 9px 0;padding:18px 20px;display:flex;flex-direction:column;gap:9px;
+  box-shadow:var(--shadow);
+}
+.rec h3{font-size:clamp(17px,3vw,20px);color:var(--nuevo)}
+.rec p{font-size:15.5px;color:var(--ink-2)}
+
+ol.pasos-rec{
+  margin:0;padding:0;list-style:none;counter-reset:r;
+  display:flex;flex-direction:column;gap:11px;
+}
+ol.pasos-rec li{
+  counter-increment:r;position:relative;padding-left:38px;
+  font-size:15.5px;color:var(--ink-2);line-height:1.6;
+}
+ol.pasos-rec li::before{
+  content:counter(r);position:absolute;left:0;top:1px;
+  width:25px;height:25px;border-radius:6px;
+  background:var(--tuyo-soft);color:var(--tuyo);
+  font-family:Chivo,sans-serif;font-weight:700;font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+}
+ol.pasos-rec li b{color:var(--ink)}
+
+.nos{display:flex;flex-direction:column;gap:9px}
+.no{
+  border:1px solid var(--line);border-left:3px solid var(--bloqueo);
+  background:var(--surface);border-radius:0 8px 8px 0;
+  padding:12px 15px;font-size:15px;color:var(--ink-2);line-height:1.58;
+}
+.no b{color:var(--ink)}
+
+.alt{
+  background:var(--tuyo-soft);border:1px solid var(--tuyo);
+  border-radius:9px;padding:17px 19px;display:flex;flex-direction:column;gap:8px;margin-top:6px;
+}
+.alt h3{color:var(--tuyo)}
+.alt p{font-size:15.5px;color:var(--ink-2)}
+.alt .eyebrow{color:var(--tuyo)}
+.alt .small{color:var(--muted)}
+
 /* ---- tabla de estado ---- */
 .estado{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
 .erow{display:flex;gap:13px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--line)}
@@ -202,6 +245,52 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
   <p class="lede">Sus redes, su lista de prospectos, sus avisos al teléfono y su sitio — dentro del mismo bot. Cuatro de las cinco cosas ya están construidas; la quinta te la marco aparte para que no te agarre a medio camino.</p>
   <div class="rule"></div>
 </header>
+
+<section>
+  <div class="sec-head">
+    <h2>Mi recomendación, antes de los pasos</h2>
+    <p class="small">Lo técnico es lo fácil. Lo que se rompe después es lo otro.</p>
+  </div>
+
+  <div class="rec">
+    <p class="eyebrow">Si solo haces una cosa de esta página</p>
+    <h3>Cóbrale desde el primer día, aunque sea poco</h3>
+    <p>No por el dinero. Por la salida.</p>
+    <p>Si le das el acceso gratis, el día que quieras terminar —porque no vende, porque se pelearon, porque te subió el recibo— quitárselo se siente como una traición y te vas a aguantar meses de más. Si te paga algo cada mes, dejarlo de hacer es un trámite normal: se acabó el servicio y ya.</p>
+    <p>Todo esto es <b>tuyo</b>: tu servidor, tu llave de IA, tu cuenta de Zernio, tu bot de avisos, tu licencia. Él no pone nada. Un favor de ese tamaño, sin nada a cambio, casi siempre termina mal — y termina mal contigo cargando el recibo.</p>
+  </div>
+
+  <div class="sec-head" style="margin-top:6px">
+    <h3>La mejor manera de hacerlo</h3>
+  </div>
+  <ol class="pasos-rec">
+    <li><b>Uno solo, no cinco.</b> Preguntaste por cinco asesores. Empieza con uno y déjalo correr un mes. Todo lo que aprendas con el primero —cuánto sube el recibo, si de verdad vende, qué te pide— cambia cómo montas los otros cuatro. Cinco de golpe es cinco veces el problema antes de saber si hay problema.</li>
+    <li><b>Acuerden cuatro cosas por escrito, antes de conectar nada.</b> Quién paga el consumo de Zernio y de la IA. Qué pasa con sus prospectos si se va. Que tú puedes ver sus conversaciones. Y que está usando tu licencia, no la suya. Un mensaje de WhatsApp de cinco líneas basta — lo que importa es que quede escrito antes, no discutido después.</li>
+    <li><b>Dile de frente que ves sus conversaciones.</b> Es verdad, y lo va a descubrir tarde o temprano. Dicho antes es una condición del trato; descubierto después es que lo estabas espiando.</li>
+    <li><b>Prométele que se puede llevar sus prospectos.</b> El panel exporta la lista de cada quien en su archivo. Ofrécelo tú, sin que lo pida. Es lo que hace que el trato no se sienta como una jaula — y no te cuesta nada.</li>
+    <li><b>Párate en la fase 5 y prueba de verdad</b> antes de seguir. Un prospecto real, entrando por su Instagram, cayendo en su lista, con el aviso llegando a su teléfono. Hasta que veas eso con tus ojos, no montes nada más encima.</li>
+  </ol>
+
+  <div class="sec-head" style="margin-top:10px">
+    <h3>Lo que NO te recomiendo</h3>
+  </div>
+  <div class="nos">
+    <div class="no"><b>No empieces por el sitio web.</b> Es lo único que falta construir y es lo que menos vale hoy: tu sitio casi no recibe visitas. Arreglar el reparto de un canal por el que no entra nadie es trabajo bonito y sin retorno. Déjalo para cuando haya tráfico.</div>
+    <div class="no"><b>No conectes sus redes antes de acordar quién paga.</b> Conectado es fácil; desconectarlo cuando ya le está entrando trabajo es un pleito. Tu plan de Zernio es por uso y no tiene tope — el techo lo pone su volumen, no tu presupuesto.</div>
+    <div class="no"><b>No le des la contraseña maestra.</b> Nunca, ni «tantito para que vea». Esa contraseña ve absolutamente todo y deshace la separación completa en un solo mensaje. Y no se puede des-compartir.</div>
+    <div class="no"><b>No compartan la misma página de Facebook ni el mismo Instagram.</b> El reparto funciona porque cada mensaje llega marcado con la cuenta por la que entró. Si los dos usan tus redes, no hay nada que distinguir y todos los prospectos vuelven a caer en un solo montón.</div>
+    <div class="no"><b>No te saltes la prueba.</b> Un aviso que se va al teléfono equivocado se ve idéntico a uno que funciona — hasta el día que se pierde un cliente y nadie sabe por qué.</div>
+    <div class="no"><b>No le digas que sus prospectos son «privados»</b> mientras la pestaña de Conversaciones le enseña las pláticas de los dos. O lo filtramos primero, o se lo dices tal cual. Prometer privacidad que no existe es lo único de esta lista que no tiene arreglo después.</div>
+  </div>
+
+  <div class="alt">
+    <p class="eyebrow">La otra opción, que no me pediste</p>
+    <h3>¿Y si en vez de meterlo a tu bot, se lo vendes?</h3>
+    <p>Si esta persona es otro asesor autorizado, es exactamente el cliente del que hablábamos en la hoja de precios: ya vende, ya sabe lo que vale un prospecto perdido, y ya vio el tuyo funcionando.</p>
+    <p>Con su propio bot, él pone su servidor, su llave y su recibo. Tú cobras la puesta en marcha y una mensualidad, y no cargas su consumo ni ves sus conversaciones ni tienes que negociar nada de lo de arriba. Sale más caro para él y más trabajo para ti al principio — pero es un negocio, no un favor.</p>
+    <p class="small" style="margin-top:2px">Antes de ofrecerlo tienes que confirmar con Horizontes IA si tu licencia te deja montar bots para terceros. Esa llamada sirve para las dos rutas.</p>
+  </div>
+</section>
 
 <section>
   <div class="sec-head">
