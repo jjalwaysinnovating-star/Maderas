@@ -1,0 +1,442 @@
+<title>Agregar un segundo asesor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700;800&family=Roboto+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+
+<style>
+:root{
+  --ground:#EBEAE7;
+  --surface:#FFFFFF;
+  --surface-2:#F4F3F0;
+  --ink:#1A1917;
+  --ink-2:#3E3C38;
+  --muted:#6E6B65;
+  --line:#DAD8D3;
+  --line-2:#C4C1BA;
+
+  --tuyo:#1F5E5B;          /* lo que ya existe — tu lado */
+  --tuyo-soft:#DFEBEA;
+  --nuevo:#8E2F5B;         /* el asesor nuevo */
+  --nuevo-soft:#F3E4EB;
+  --falta:#8A5A00;         /* falta construirlo */
+  --falta-soft:#F6EBD6;
+  --bloqueo:#9C2B20;       /* bloqueado ahora mismo */
+  --bloqueo-soft:#F7E3E1;
+
+  --shadow:0 1px 2px rgba(26,25,23,.05), 0 10px 28px -18px rgba(26,25,23,.30);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#15161A;
+    --surface:#1D1F24;
+    --surface-2:#24262C;
+    --ink:#EDECE9;
+    --ink-2:#C7C5C0;
+    --muted:#8D8B85;
+    --line:#2E3138;
+    --line-2:#3E424A;
+    --tuyo:#63C0BA;
+    --tuyo-soft:#16302F;
+    --nuevo:#E28AAF;
+    --nuevo-soft:#331C27;
+    --falta:#DDA84E;
+    --falta-soft:#332918;
+    --bloqueo:#E58278;
+    --bloqueo-soft:#331E1B;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#15161A;
+  --surface:#1D1F24;
+  --surface-2:#24262C;
+  --ink:#EDECE9;
+  --ink-2:#C7C5C0;
+  --muted:#8D8B85;
+  --line:#2E3138;
+  --line-2:#3E424A;
+  --tuyo:#63C0BA;
+  --tuyo-soft:#16302F;
+  --nuevo:#E28AAF;
+  --nuevo-soft:#331C27;
+  --falta:#DDA84E;
+  --falta-soft:#332918;
+  --bloqueo:#E58278;
+  --bloqueo-soft:#331E1B;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -18px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);color:var(--ink);
+  font-family:"Source Sans 3", system-ui, -apple-system, sans-serif;
+  font-size:16.5px;line-height:1.62;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:28px 20px 76px;display:flex;flex-direction:column;gap:34px}
+
+h1,h2,h3{font-family:Chivo, system-ui, sans-serif;margin:0;text-wrap:balance;line-height:1.14}
+h1{font-size:clamp(28px,5.6vw,42px);font-weight:800;letter-spacing:-.025em}
+h2{font-size:clamp(19px,3.2vw,24px);font-weight:700;letter-spacing:-.014em}
+h3{font-size:16.5px;font-weight:700;letter-spacing:-.006em}
+p{margin:0}
+.lede{color:var(--ink-2);max-width:64ch}
+.small{font-size:14px;color:var(--muted);line-height:1.55}
+.mono{font-family:"Roboto Mono", ui-monospace, monospace;font-variant-numeric:tabular-nums}
+.eyebrow{font-family:"Roboto Mono", monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+
+header.head{display:flex;flex-direction:column;gap:11px;padding-top:6px}
+header.head .rule{height:3px;width:56px;background:var(--nuevo);border-radius:2px;margin-top:5px}
+
+section{display:flex;flex-direction:column;gap:16px}
+.sec-head{display:flex;flex-direction:column;gap:6px}
+
+/* ---- chips de estado ---- */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;flex:none;
+  font-family:"Roboto Mono", monospace;font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;padding:3px 9px;border-radius:4px;font-weight:500;
+  white-space:nowrap;
+}
+.chip.listo{background:var(--tuyo-soft);color:var(--tuyo)}
+.chip.falta{background:var(--falta-soft);color:var(--falta)}
+.chip.bloq{background:var(--bloqueo-soft);color:var(--bloqueo)}
+
+/* ---- tabla de estado ---- */
+.estado{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.erow{display:flex;gap:13px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--line)}
+.erow:last-child{border-bottom:0}
+.erow .txt{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.erow .txt b{font-weight:600;font-size:15.5px}
+.erow .txt span{font-size:14px;color:var(--muted);line-height:1.5}
+
+/* ---- bloqueo ---- */
+.alerta{
+  border:1px solid var(--bloqueo);background:var(--bloqueo-soft);
+  border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;
+}
+.alerta h3{color:var(--bloqueo)}
+.alerta p{font-size:15px;color:var(--ink-2)}
+
+/* ---- datos a juntar ---- */
+.datos{border:1px solid var(--line);border-radius:9px;background:var(--surface);overflow:hidden}
+.drow{display:flex;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);align-items:baseline}
+.drow:last-child{border-bottom:0}
+.drow .n{
+  font-family:"Roboto Mono", monospace;font-size:12px;color:var(--nuevo);
+  flex:none;width:20px;font-weight:500;
+}
+.drow .b{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.drow .b b{font-weight:600;font-size:15.5px}
+.drow .b span{font-size:14px;color:var(--muted);line-height:1.5}
+
+/* ---- fases ---- */
+.fases{display:flex;flex-direction:column;gap:14px}
+.fase{
+  background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.fase-h{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.fase-h .fn{
+  font-family:Chivo,sans-serif;font-weight:800;font-size:15px;
+  width:28px;height:28px;flex:none;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--nuevo);color:var(--surface);
+}
+.fase-h h3{flex:1;min-width:0}
+.pasos{list-style:none;margin:0;padding:6px 16px 14px;display:flex;flex-direction:column;gap:0}
+.paso{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.paso:last-child{border-bottom:0}
+.paso input{width:17px;height:17px;margin-top:3px;flex:none;accent-color:var(--nuevo);cursor:pointer}
+.paso label{flex:1;font-size:15.5px;color:var(--ink-2);cursor:pointer;min-width:0}
+.paso input:checked + label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-2)}
+.paso label code{
+  font-family:"Roboto Mono", monospace;font-size:13px;
+  background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink);
+  word-break:break-word;
+}
+.paso label .yo{color:var(--nuevo);font-weight:600}
+.fase-nota{
+  margin:0 16px 14px;padding:11px 13px;border-left:3px solid var(--falta);
+  background:var(--falta-soft);border-radius:0 6px 6px 0;font-size:14px;color:var(--ink-2);line-height:1.55;
+}
+
+.prog{display:flex;align-items:center;gap:11px;padding-top:2px}
+.bar{flex:1;height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--nuevo);width:0%;transition:width .2s ease}
+.prog .pct{font-family:"Roboto Mono",monospace;font-size:12.5px;color:var(--muted);flex:none}
+.reset{
+  border:1px solid var(--line-2);background:var(--surface);color:var(--muted);
+  font-family:"Source Sans 3",sans-serif;font-size:13px;padding:5px 11px;border-radius:6px;cursor:pointer;flex:none;
+}
+.reset:hover{border-color:var(--nuevo);color:var(--nuevo)}
+.reset:focus-visible{outline:2px solid var(--nuevo);outline-offset:2px}
+
+/* ---- avisos ---- */
+.avisos{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:640px){.avisos{grid-template-columns:1fr 1fr}}
+.aviso{
+  background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  padding:15px 16px;display:flex;flex-direction:column;gap:6px;
+}
+.aviso.pin{border-left:3px solid var(--falta)}
+.aviso h3{font-size:15.5px}
+.aviso p{font-size:14.5px;color:var(--ink-2);line-height:1.6}
+
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:430px;font-size:15px}
+th,td{padding:11px 15px;text-align:left;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+th{font-family:"Roboto Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--surface-2)}
+td.n{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+
+footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13.5px;line-height:1.65}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="head">
+  <p class="eyebrow">Runbook · Ciudad Maderas</p>
+  <h1>Agregar un segundo asesor</h1>
+  <p class="lede">Sus redes, su lista de prospectos, sus avisos al teléfono y su sitio — dentro del mismo bot. Cuatro de las cinco cosas ya están construidas; la quinta te la marco aparte para que no te agarre a medio camino.</p>
+  <div class="rule"></div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <h2>Qué está listo y qué no</h2>
+    <p class="small">Antes de mover nada, esto es lo que hay hoy.</p>
+  </div>
+  <div class="estado">
+    <div class="erow">
+      <span class="chip listo">Listo</span>
+      <span class="txt"><b>Sus propias redes sociales</b><span>Su Facebook y su Instagram se conectan aparte. Cada mensaje llega marcado con la cuenta por la que entró, y de ahí el bot sabe de quién es el prospecto.</span></span>
+    </div>
+    <div class="erow">
+      <span class="chip listo">Listo</span>
+      <span class="txt"><b>Su propia lista de prospectos</b><span>Entra al panel con su correo y ve solo los suyos. Tu contraseña maestra sigue viendo todo.</span></span>
+    </div>
+    <div class="erow">
+      <span class="chip listo">Listo</span>
+      <span class="txt"><b>Sus propios avisos a Telegram</b><span>Sus prospectos calientes le llegan a él, no a ti. Es el mismo bot de avisos, solo cambia a quién le escribe.</span></span>
+    </div>
+    <div class="erow">
+      <span class="chip listo">Listo</span>
+      <span class="txt"><b>El chat en su sitio web</b><span>Se le pega el mismo pedacito de código a su página y el bot contesta ahí.</span></span>
+    </div>
+    <div class="erow">
+      <span class="chip falta">Falta</span>
+      <span class="txt"><b>Que los prospectos de SU sitio caigan en SU lista</b><span>Hoy el chat de la web no trae marca de asesor, así que todo lo que entre por ahí aterriza en tu lista. Es un ajuste chico y te lo hago yo — pero no está hecho todavía.</span></span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="alerta">
+    <h3>Antes de todo esto: no se puede desplegar nada</h3>
+    <p>Tu permiso de Cloudflare venció el 30 de agosto. Mientras no lo renueves, ningún cambio llega al bot en vivo — ni este ni los <b>nueve que ya están escritos y esperando</b> (la separación por asesor entre ellos).</p>
+    <p>No es complicado y lo hacemos juntos en cinco minutos, pero es lo primero. Todo lo de abajo se queda en papel hasta que eso esté.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Lo que le tienes que pedir a él</h2>
+    <p class="small">Cuatro datos. Con estos ya puedo darlo de alta; sin uno de ellos se queda a medias.</p>
+  </div>
+  <div class="datos">
+    <div class="drow">
+      <span class="n">01</span>
+      <span class="b"><b>Su correo</b><span>Con ese entra al panel y con ese se decide qué prospectos ve. Que sea uno que use de verdad.</span></span>
+    </div>
+    <div class="drow">
+      <span class="n">02</span>
+      <span class="b"><b>Su chat de Telegram</b><span>No te lo puede dar tal cual: tiene que abrir Telegram, buscar <code class="mono">@ciudadmaderas_avisos_bot</code> y escribirle <code class="mono">/start</code>. Después de eso yo saco el número.</span></span>
+    </div>
+    <div class="drow">
+      <span class="n">03</span>
+      <span class="b"><b>Acceso a su página de Facebook y su Instagram</b><span>Su Instagram tiene que ser cuenta profesional y estar ligado a su página. Los identificadores salen solos al conectarlas.</span></span>
+    </div>
+    <div class="drow">
+      <span class="n">04</span>
+      <span class="b"><b>Su dominio</b>, si va a tener sitio propio<span>Solo si quiere el chat en su página. Si no va a tener sitio, sáltate la fase 6.</span></span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Los pasos, en orden</h2>
+    <p class="small">El orden importa: sin las redes conectadas no existen sus identificadores, y sin esos no se puede repartir nada. Lo marcado <span class="mono" style="color:var(--nuevo)">yo</span> lo hago desde aquí.</p>
+    <div class="prog">
+      <div class="bar"><span id="barFill"></span></div>
+      <span class="pct" id="pct">0 de 0</span>
+      <button class="reset" id="reset" type="button">Reiniciar</button>
+    </div>
+  </div>
+
+  <div class="fases" id="fases">
+
+    <div class="fase">
+      <div class="fase-h"><span class="fn">0</span><h3>Destrabar el bot</h3></div>
+      <ul class="pasos">
+        <li class="paso"><input type="checkbox" id="p01"><label for="p01">Entras a Cloudflare y creas un permiso nuevo. Te voy diciendo dónde picarle.</label></li>
+        <li class="paso"><input type="checkbox" id="p02"><label for="p02"><span class="yo">yo</span> · Despliego los nueve cambios que ya están esperando, incluida la separación por asesor.</label></li>
+        <li class="paso"><input type="checkbox" id="p03"><label for="p03">Revocas el permiso viejo, el que ya venció, para que no quede tirado por ahí.</label></li>
+      </ul>
+    </div>
+
+    <div class="fase">
+      <div class="fase-h"><span class="fn">1</span><h3>Conectar sus redes</h3></div>
+      <ul class="pasos">
+        <li class="paso"><input type="checkbox" id="p11"><label for="p11">Él te da acceso de administrador a su página de Facebook.</label></li>
+        <li class="paso"><input type="checkbox" id="p12"><label for="p12">Confirma que su Instagram es <b>cuenta profesional</b> y está ligado a esa página. Si no, no llegan los mensajes.</label></li>
+        <li class="paso"><input type="checkbox" id="p13"><label for="p13">En Zernio, conectas sus dos cuentas con <b>«Connect with Facebook»</b> — no con la puerta de Instagram, que no siempre trae los permisos de mensajes.</label></li>
+        <li class="paso"><input type="checkbox" id="p14"><label for="p14"><span class="yo">yo</span> · Saco los identificadores de sus dos cuentas y los anoto.</label></li>
+      </ul>
+      <p class="fase-nota"><b>Ojo con esto:</b> sus redes van a colgar de <b>tu</b> cuenta de Zernio. Eso significa que tú puedes ver sus conversaciones, y que su consumo se cobra en tu cuenta. Tu plan es por uso, así que no hay un tope que se rompa — pero el recibo llega a tu nombre. Acuerden desde ahora quién paga esa parte.</p>
+    </div>
+
+    <div class="fase">
+      <div class="fase-h"><span class="fn">2</span><h3>Sus avisos al teléfono</h3></div>
+      <ul class="pasos">
+        <li class="paso"><input type="checkbox" id="p21"><label for="p21">Él le escribe <code class="mono">/start</code> a <code class="mono">@ciudadmaderas_avisos_bot</code> desde su Telegram.</label></li>
+        <li class="paso"><input type="checkbox" id="p22"><label for="p22"><span class="yo">yo</span> · Saco su número de chat y lo guardo con su nombre.</label></li>
+      </ul>
+      <p class="fase-nota">Solo se avisa de los prospectos <b>calientes</b>. Es a propósito: avisar de todos enseña a ignorar los avisos, y el día que llegue el bueno ya nadie lo abre.</p>
+    </div>
+
+    <div class="fase">
+      <div class="fase-h"><span class="fn">3</span><h3>Darlo de alta en el reparto</h3></div>
+      <ul class="pasos">
+        <li class="paso"><input type="checkbox" id="p31"><label for="p31"><span class="yo">yo</span> · Lo agrego con su nombre, su correo, su Telegram y sus dos cuentas.</label></li>
+        <li class="paso"><input type="checkbox" id="p32"><label for="p32"><span class="yo">yo</span> · Corro las pruebas y despliego.</label></li>
+      </ul>
+      <p class="fase-nota">Ese archivo vive donde las actualizaciones no lo tocan, así que el reparto sobrevive solo. Lo que <b>sí</b> se borra en cada actualización son los enganches — me lo recuerdas y los vuelvo a poner.</p>
+    </div>
+
+    <div class="fase">
+      <div class="fase-h"><span class="fn">4</span><h3>Su acceso al panel</h3></div>
+      <ul class="pasos">
+        <li class="paso"><input type="checkbox" id="p41"><label for="p41">Entras al panel → pestaña <b>Equipo</b> → creas un usuario con su correo.</label></li>
+        <li class="paso"><input type="checkbox" id="p42"><label for="p42">Él elige su contraseña en el navegador. <b>Nunca por chat, ni tú se la pones.</b></label></li>
+        <li class="paso"><input type="checkbox" id="p43"><label for="p43">Entra una vez y confirma que en <b>Prospectos</b> ve su lista — vacía al principio, y eso está bien.</label></li>
+      </ul>
+      <p class="fase-nota">El correo tiene que ser <b>exactamente</b> el que quedó en el reparto. Si hay un dedazo, el sistema no le enseña nada y le dice por qué — preferimos eso a enseñarle los prospectos de todos por una letra mal escrita.</p>
+    </div>
+
+    <div class="fase">
+      <div class="fase-h"><span class="fn">5</span><h3>Probarlo de verdad</h3></div>
+      <ul class="pasos">
+        <li class="paso"><input type="checkbox" id="p51"><label for="p51">Alguien de fuera le escribe a <b>su</b> Instagram y llega hasta dar teléfono.</label></li>
+        <li class="paso"><input type="checkbox" id="p52"><label for="p52">Ese prospecto aparece en <b>su</b> lista, y <b>no</b> en la tuya.</label></li>
+        <li class="paso"><input type="checkbox" id="p53"><label for="p53">El aviso le llega a <b>su</b> Telegram, y a ti no te suena nada.</label></li>
+        <li class="paso"><input type="checkbox" id="p54"><label for="p54">Repites lo mismo por tu Instagram y compruebas que sigue cayendo en la tuya.</label></li>
+      </ul>
+      <p class="fase-nota">Esta fase no se salta. Un reparto que se ve bien en el panel y manda el aviso al teléfono equivocado se descubre el día que se pierde un cliente.</p>
+    </div>
+
+    <div class="fase">
+      <div class="fase-h"><span class="fn">6</span><h3>Su sitio web con su chat</h3></div>
+      <ul class="pasos">
+        <li class="paso"><input type="checkbox" id="p61"><label for="p61">Él arma su sitio donde quiera, con su dominio. No sale de aquí.</label></li>
+        <li class="paso"><input type="checkbox" id="p62"><label for="p62"><span class="yo">yo</span> · Autorizo su dominio y le paso el pedacito de código del chat para que lo pegue.</label></li>
+        <li class="paso"><input type="checkbox" id="p63"><label for="p63"><span class="yo">yo</span> · <b>El ajuste que falta:</b> hacer que el chat sepa de qué sitio viene y mande esos prospectos a la lista correcta.</label></li>
+        <li class="paso"><input type="checkbox" id="p64"><label for="p64">Prueban: alguien escribe por el chat de <b>su</b> página y el prospecto cae en la lista de él.</label></li>
+      </ul>
+      <p class="fase-nota"><b>Lo único que no está construido es el paso 3 de esta fase.</b> Hoy el chat de la web no distingue de qué sitio vino, así que todo cae en tu lista por defecto. Los otros tres pasos funcionan desde ya. Si él no va a tener sitio propio, esta fase entera se salta y no falta nada.</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><h2>Lo que tienes que saber antes de decirle que sí</h2></div>
+  <div class="avisos">
+    <div class="aviso pin">
+      <h3>Él va a ver todas las conversaciones</h3>
+      <p>La separación es de <b>prospectos</b>, no de conversaciones. En la pestaña de Conversaciones va a ver también las tuyas. Si eso no te late, dímelo y lo filtro igual que los prospectos — es el mismo tipo de ajuste.</p>
+    </div>
+    <div class="aviso">
+      <h3>Tú sigues viendo todo</h3>
+      <p>Con la contraseña maestra ves los prospectos de los dos, siempre. Es a propósito: el bot es tuyo y tú respondes por él.</p>
+    </div>
+    <div class="aviso">
+      <h3>Los prospectos sin dueño son tuyos</h3>
+      <p>Los que ya estaban, y los que entran por el sitio web o por WhatsApp, caen contigo. Esos canales no traen marca de asesor.</p>
+    </div>
+    <div class="aviso">
+      <h3>El bot habla igual para los dos</h3>
+      <p>Mismo guion, mismos precios, misma base de conocimiento. Es el mismo negocio. Si él necesitara un guion distinto, eso ya sería otro bot.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Cuánto cuesta agregarlo</h2>
+    <p class="small">Comparte tu bot, así que no se duplica casi nada.</p>
+  </div>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Concepto</th><th>Qué cambia</th></tr></thead>
+      <tbody>
+        <tr><td><b>Servidor y base de datos</b></td><td class="n">$0 · es el mismo</td></tr>
+        <tr><td><b>Panel</b></td><td class="n">$0 · un usuario más</td></tr>
+        <tr><td><b>Avisos de Telegram</b></td><td class="n">$0 · mismo bot</td></tr>
+        <tr><td><b>Zernio</b>, por sus dos cuentas</td><td class="n">Sube por uso</td></tr>
+        <tr><td><b>El cerebro de IA</b>, por sus conversaciones</td><td class="n">~$0.003 c/respuesta</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">Lo único que crece es lo que se paga por uso, y crece porque hay más clientes atendidos. Ponte de acuerdo con él sobre quién cubre esa parte <b>antes</b> de conectar nada — después es una plática incómoda.</p>
+</section>
+
+<footer>
+  Este runbook cubre <b>un segundo asesor del mismo negocio</b>, compartiendo tu bot. Si en algún momento quieres que cada quien tenga un bot completamente aparte —su propio servidor, su propia licencia, su propio guion—, ese es otro camino y otro documento: sale más caro y hay que preguntarle antes a Horizontes IA si tu licencia lo permite.
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var LLAVE = "maderas-segundo-asesor-v1";
+  var cajas = Array.prototype.slice.call(document.querySelectorAll('.paso input[type=checkbox]'));
+  var fill = document.getElementById("barFill");
+  var pct  = document.getElementById("pct");
+
+  function lee(){
+    try{
+      var raw = localStorage.getItem(LLAVE);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function guarda(){
+    try{
+      var o = {};
+      cajas.forEach(function(c){ if(c.checked) o[c.id] = 1; });
+      localStorage.setItem(LLAVE, JSON.stringify(o));
+    }catch(e){ /* modo privado o cookies bloqueadas: la hoja sigue sirviendo */ }
+  }
+  function pinta(){
+    var hechos = cajas.filter(function(c){ return c.checked; }).length;
+    var total = cajas.length;
+    fill.style.width = total ? Math.round(hechos / total * 100) + "%" : "0%";
+    pct.textContent = hechos + " de " + total;
+  }
+
+  var guardado = lee();
+  cajas.forEach(function(c){
+    if(guardado[c.id]) c.checked = true;
+    c.addEventListener('change', function(){ guarda(); pinta(); });
+  });
+
+  document.getElementById("reset").addEventListener('click', function(){
+    cajas.forEach(function(c){ c.checked = false; });
+    guarda(); pinta();
+  });
+
+  pinta();
+})();
+</script>
