@@ -44,6 +44,85 @@ export interface Asesor {
    * `_id`, no `id`). Una por red: Facebook, Instagram…
    */
   cuentasZernio: string[];
+  /**
+   * Solo si el asesor tiene su PROPIA cuenta de Zernio (no las redes colgadas
+   * de la del dueño). Aquí van los NOMBRES de los secrets, jamás las claves:
+   * este archivo está en git y una clave escrita aquí queda en el historial
+   * para siempre. Las claves se guardan con `wrangler secret put <NOMBRE>`.
+   *
+   * Omitirlo = usa las del dueño (`ZERNIO_API_KEY` / `ZERNIO_WEBHOOK_SECRET`),
+   * que es el caso cuando sus redes cuelgan de la cuenta del dueño.
+   */
+  zernio?: {
+    /** Secret con el Bearer de SU cuenta. Ej: "ZERNIO_API_KEY_SEGUNDO". */
+    apiKeyVar: string;
+    /** Secret con el que SU Zernio firma el webhook. */
+    webhookSecretVar: string;
+  };
+}
+
+/**
+ * Nombres de secret aceptados. Restringirlo no es paranoia de más: el nombre
+ * sale de este archivo y se usa para leer `env` por índice, así que una entrada
+ * rara (`"__proto__"`, algo con espacios) devolvería basura en vez de una clave
+ * y el fallo se vería como "Zernio no contesta", que es de lo más caro de
+ * diagnosticar.
+ */
+const NOMBRE_SECRET = /^[A-Z][A-Z0-9_]*$/;
+
+/** Lee un secret por nombre. `undefined` si no existe o el nombre no es válido. */
+function secret(env: Env, nombre: string | undefined): string | undefined {
+  if (!nombre || !NOMBRE_SECRET.test(nombre)) return undefined;
+  const v = (env as unknown as Record<string, unknown>)[nombre];
+  return typeof v === "string" && v.trim() !== "" ? v : undefined;
+}
+
+/**
+ * La clave con la que hay que CONTESTAR por una cuenta de Zernio.
+ *
+ * Si la cuenta es de un asesor con Zernio propio, su clave. Si no —cuenta del
+ * dueño, o una cuenta que todavía no está en esta lista— la del dueño, que es
+ * exactamente como se comportaba el bot antes de que existiera esto.
+ *
+ * Contestar con la clave equivocada no es un error silencioso cualquiera: le
+ * respondería al cliente de alguien más desde la cuenta de otro. Por eso el
+ * caso "el asesor declaró Zernio propio pero su secret no está puesto" NO cae
+ * a la del dueño: se queda sin clave y quien llama lo reporta.
+ */
+export function claveZernioDeCuenta(
+  env: Env,
+  accountId: string | null | undefined,
+  lista: Asesor[] = ASESORES,
+): { apiKey?: string; asesor?: Asesor; faltaSecret?: string } {
+  const asesor = asesorDeCuenta(accountId, lista);
+  if (asesor?.zernio) {
+    const apiKey = secret(env, asesor.zernio.apiKeyVar);
+    return apiKey ? { apiKey, asesor } : { asesor, faltaSecret: asesor.zernio.apiKeyVar };
+  }
+  return { apiKey: env.ZERNIO_API_KEY, asesor: asesor ?? undefined };
+}
+
+/**
+ * Todos los secrets con los que puede venir firmado un webhook de Zernio: el
+ * del dueño más el de cada asesor con cuenta propia.
+ *
+ * Se prueban todos porque la firma es lo ÚNICO que llega antes de poder leer
+ * el cuerpo — no hay forma de saber de qué cuenta viene sin verificarla
+ * primero. Con dos o seis asesores son dos o seis HMAC de un cuerpo chico;
+ * si algún día fueran cientos, habría que cambiar de enfoque.
+ *
+ * Sin duplicados: dos asesores apuntando al mismo secret no lo prueban dos
+ * veces.
+ */
+export function secretosWebhookZernio(env: Env, lista: Asesor[] = ASESORES): string[] {
+  const vistos = new Set<string>();
+  const salida: string[] = [];
+  const mete = (s: string | undefined) => {
+    if (s && !vistos.has(s)) { vistos.add(s); salida.push(s); }
+  };
+  mete(env.ZERNIO_WEBHOOK_SECRET);
+  for (const a of lista) mete(secret(env, a.zernio?.webhookSecretVar));
+  return salida;
 }
 
 export const ASESORES: Asesor[] = [
@@ -57,9 +136,15 @@ export const ASESORES: Asesor[] = [
     ],
   },
   // ── Segundo asesor ────────────────────────────────────────────────────────
-  // Se agrega cuando conecte sus redes a la misma cuenta de Zernio. Necesita
-  // tres cosas: sus `_id` de Zernio, su chat de Telegram (que le escriba
-  // /start al bot de avisos) y el correo con el que entrará al panel.
+  // Necesita cuatro cosas suyas: sus `_id` de Zernio, su chat de Telegram (que
+  // le escriba /start al bot de avisos), el correo con el que entrará al panel
+  // y —si tiene cuenta de Zernio propia— sus dos claves.
+  //
+  // Las claves NO se escriben aquí. Aquí van los NOMBRES; las claves se guardan
+  // aparte y él las pega en la terminal, en campo oculto:
+  //
+  //   wrangler secret put ZERNIO_API_KEY_SEGUNDO
+  //   wrangler secret put ZERNIO_WEBHOOK_SECRET_SEGUNDO
   //
   // {
   //   slug: "segundo",
@@ -67,6 +152,10 @@ export const ASESORES: Asesor[] = [
   //   telegramChatId: "123456789",
   //   emails: ["correo@ejemplo.com"],
   //   cuentasZernio: ["...", "..."],
+  //   zernio: {
+  //     apiKeyVar: "ZERNIO_API_KEY_SEGUNDO",
+  //     webhookSecretVar: "ZERNIO_WEBHOOK_SECRET_SEGUNDO",
+  //   },
   // },
 ];
 

@@ -94,6 +94,30 @@ export async function verifyZernioSignature(
   return timingSafeEqual(expected, signature.trim());
 }
 
+/**
+ * Igual que la de arriba, pero contra VARIOS secrets: uno por cuenta de Zernio.
+ *
+ * Cuando un asesor tiene su propia cuenta de Zernio, su webhook firma con SU
+ * clave, no con la del dueño. La firma es lo único que se puede mirar antes de
+ * confiar en el cuerpo, así que no hay manera de saber de qué cuenta viene sin
+ * probarlas todas.
+ *
+ * Sigue siendo fail-closed en los dos casos que importan: sin firma, y sin
+ * ningún secret configurado. Un secreto de más en la lista no abre nada — cada
+ * uno se compara igual de estricto que antes.
+ */
+export async function verificaFirmaZernio(
+  rawBody: string,
+  signature: string | null | undefined,
+  secrets: string[],
+): Promise<boolean> {
+  if (!signature || secrets.length === 0) return false;
+  for (const s of secrets) {
+    if (await verifyZernioSignature(rawBody, signature, s)) return true;
+  }
+  return false;
+}
+
 // ── normalización ─────────────────────────────────────────────────────────────
 /** Tolera un evento suelto o un batch (array / {items|events:[]}). */
 export function normalizeZernioEvents(body: unknown): ZernioEvent[] {
@@ -205,6 +229,43 @@ export async function rememberZernioCtx(
 }
 
 /**
+ * La clave con la que se contesta por una cuenta de Zernio, ya resuelta y con
+ * el fallo dicho en voz alta.
+ *
+ * El reparto vive en `member/asesores.local.ts` (sobrevive `forjabot update`);
+ * aquí solo se traduce a un log útil. Se importa en caliente para no arrastrar
+ * `member/` dentro de las pruebas del adapter que no lo necesitan.
+ *
+ * Los dos fallos posibles se ven idénticos desde fuera —el bot no contesta— y
+ * tienen arreglos distintos, así que se distinguen en el log: falta la clave
+ * del dueño, o falta el secret que un asesor declaró y nadie guardó.
+ */
+async function claveDeEnvio(
+  env: Env,
+  accountId: string | null | undefined,
+  accion: string,
+): Promise<string | undefined> {
+  let r: { apiKey?: string; asesor?: { nombre: string }; faltaSecret?: string };
+  try {
+    const { claveZernioDeCuenta } = await import("../../member/asesores.local");
+    r = claveZernioDeCuenta(env, accountId);
+  } catch {
+    r = { apiKey: env.ZERNIO_API_KEY }; // sin reparto configurado: como siempre
+  }
+  if (r.apiKey) return r.apiKey;
+  if (r.faltaSecret) {
+    console.error(
+      `[zernio] falta el secret ${r.faltaSecret} de ${r.asesor?.nombre ?? "un asesor"} — ` +
+        `no se puede ${accion} por la cuenta ${accountId}. Guárdalo con ` +
+        `\`wrangler secret put ${r.faltaSecret}\` y vuelve a desplegar.`,
+    );
+    return undefined;
+  }
+  console.error(`[zernio] falta ZERNIO_API_KEY — no se puede ${accion}`);
+  return undefined;
+}
+
+/**
  * Manda una PLANTILLA aprobada de WhatsApp a una conversación EXISTENTE por Zernio.
  * Es la vía para re-enganchar fuera de la ventana de 24h (WhatsApp no permite
  * texto libre para reabrir). Va por el MISMO endpoint que el texto libre
@@ -223,11 +284,8 @@ export async function sendZernioTemplate(
   templateLanguage: string,
   templateParams: string[],
 ): Promise<void> {
-  const apiKey = env.ZERNIO_API_KEY;
-  if (!apiKey) {
-    console.error("[zernio] falta ZERNIO_API_KEY — no se puede enviar plantilla");
-    return;
-  }
+  const apiKey = await claveDeEnvio(env, accountId, "enviar plantilla");
+  if (!apiKey) return;
   const element: Record<string, unknown> = { name: templateName, language: templateLanguage };
   if (templateParams.length) {
     element.components = [
@@ -295,16 +353,16 @@ export const zernioAdapter: ChannelAdapter = {
   },
 
   async sendReply(reply: OutgoingReply, env: Env): Promise<void> {
-    const apiKey = env.ZERNIO_API_KEY;
-    if (!apiKey) {
-      console.error("[zernio] falta ZERNIO_API_KEY — no se puede responder");
-      return;
-    }
     const ctx = await getZernioCtx(env, reply.channelUserId);
     if (!ctx) {
       console.error(`[zernio] sin contexto de envío para ${reply.channelUserId} — no se responde`);
       return;
     }
+    // La clave depende de la CUENTA por la que entró el mensaje, no del bot:
+    // con dos asesores hay dos cuentas de Zernio y contestar con la del otro
+    // le escribiría a su cliente desde la cuenta equivocada.
+    const apiKey = await claveDeEnvio(env, ctx.account_id, "responder");
+    if (!apiKey) return;
     const url = `${zernioBase(env)}/inbox/conversations/${encodeURIComponent(ctx.conversation_id)}/messages`;
     const plataforma = (ctx.platform ?? "").toLowerCase();
     // Meta trunca a 80 el texto de un mensaje con botones. Si el último chunk

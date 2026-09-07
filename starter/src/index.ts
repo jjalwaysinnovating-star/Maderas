@@ -12,7 +12,8 @@ import { twilioAdapter } from "./channels/twilio";
 import { parseMetaEvents, verifyMetaSignature } from "./channels/meta";
 import { parseWhatsAppEvents, serveWhatsAppMedia } from "./channels/whatsapp";
 import { parseKapsoEvents, verifyKapsoSignature, kapsoOwnerTakeover, normalizeKapsoEvents } from "./channels/kapso";
-import { parseZernioEvents, verifyZernioSignature, normalizeZernioEvents, rememberZernioCtx } from "./channels/zernio";
+import { parseZernioEvents, verificaFirmaZernio, normalizeZernioEvents, rememberZernioCtx } from "./channels/zernio";
+import { secretosWebhookZernio } from "../member/asesores.local";
 // Atribución de origen (vive en member/, sobrevive `forjabot update`).
 import { extraeAnuncio, guardaOrigen, limpiaRef } from "../member/origen.local";
 import { parseYCloudEvents, verifyYCloudSignature, ycloudOwnerTakeover, normalizeYCloudEvents, serveYCloudMedia } from "./channels/ycloud";
@@ -552,7 +553,10 @@ app.post("/webhooks/kapso", async (c) => {
 app.post("/webhooks/zernio", async (c) => {
   const raw = await c.req.text();
   const sig = c.req.header("x-zernio-signature") ?? c.req.header("x-late-signature");
-  const valid = await verifyZernioSignature(raw, sig, c.env.ZERNIO_WEBHOOK_SECRET);
+  // Se prueban los secrets de TODAS las cuentas de Zernio: la del dueño y la de
+  // cada asesor que tenga la suya. Con una sola cuenta la lista trae un solo
+  // secret y esto es exactamente lo de antes. Sigue fail-closed.
+  const valid = await verificaFirmaZernio(raw, sig, secretosWebhookZernio(c.env));
   if (!valid) return c.text("bad signature", 403);
   let body: unknown;
   try {
