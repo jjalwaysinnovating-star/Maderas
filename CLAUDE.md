@@ -329,38 +329,39 @@ curl -X POST -u "admin:<contraseña>" \
 El panel basta para KB y comportamiento; solo hace falta un API token de
 Cloudflare para desplegar código.
 
-## ⚠️ LO PRIMERO EN UNA SESIÓN NUEVA: hay código sin desplegar
+## Estado del despliegue
 
-El token de Cloudflare venció el 2026-08-30 y desde entonces **nada se ha
-desplegado**. Todo lo de abajo está commiteado, probado y en verde en la rama
-`claude/instala-npx-forjabot-init-2nhc1n` — pero el bot en vivo NO lo tiene.
+**Todo lo pendiente está desplegado** (2026-09-07). El token de Cloudflare venció el
+2026-08-30 y durante una semana el bot en vivo se quedó atrás; en cuanto el dueño
+puso el token nuevo se corrió `cd starter && pnpm test && pnpm run deploy` y salió
+todo lo que estaba commiteado en la rama: separación por asesor, origen de cada
+lead, dos cuentas de Zernio, red de seguridad del lead, sesión web que no se cae al
+cambiar de IP, corte a 80 caracteres con botones, y es-MX sin voseo.
+1171 pruebas en verde antes de subirlo.
 
-En cuanto `CLOUDFLARE_API_TOKEN` exista en el entorno (el dueño lo guarda en la
-configuración del entorno de Claude Code; **nunca por el chat**):
+Comprobado en vivo tras el deploy: la portada y las 8 páginas de región contestan
+200, `/admin` pide contraseña (401), `/webhooks/zernio` sin firma se rechaza con 403
+—la firma sigue fail-closed—, y el chat de la página respondió con las 8 plazas,
+solo terrenos y sin voseo, así que el saldo de Anthropic también alcanza.
+La KB **no** se tocó en esos commits, por eso no hubo que reindexar.
+
+**El token nuevo vence el 2027-09-06.** Ya está programado el aviso para el
+2027-08-23 (dos semanas antes) — es la Routine
+`trig_01UHDMb3opRmqTBAvMYRpjSc`. La caída de una semana fue exactamente por no
+tener ese aviso; si algún día se cambia el token antes de tiempo, hay que mover
+también esa fecha.
+
+Si en una sesión futura hay código nuevo sin desplegar, el comando es siempre el
+mismo — y el contenedor de Claude Code nace vacío, así que primero hay que
+instalar las dependencias:
 
 ```bash
-cd starter && pnpm test && pnpm run deploy
+cd starter && pnpm install && pnpm test && pnpm run deploy
 ```
 
-Lo que sale en ese despliegue, y por qué importa cada cosa:
-
-- **Separación por asesor** (`member/asesores.local.ts` + 5 enganches en `src/`).
-  Sin esto el panel enseña todos los leads a todos.
-- **De dónde vino cada lead** (`member/origen.local.ts` + `src/index.ts`,
-  `src/leads/rescate.ts`). Sin esto, gastar en anuncios es adivinar.
-- **Dos cuentas de Zernio** (`src/index.ts`, `src/channels/zernio.ts`). El
-  segundo asesor va a tener cuenta propia; hoy el Worker rechazaría su webhook
-  con 403 y contestaría a sus clientes con la cuenta del dueño.
-- **Red de seguridad del lead**, **sesión web que no se cae al cambiar de IP**,
-  **corte a 80 caracteres con botones**, **es-MX sin voseo**.
-
-Después del deploy, **reindexar la KB** si se tocó `member/kb/` (ver abajo), y
-comprobar una entrega real con `wrangler tail` buscando
+Después del deploy, **reindexar la KB** solo si se tocó `member/kb/` (ver arriba),
+y comprobar una entrega real con `wrangler tail` buscando
 `[messageOwner] telegram entregado`.
-
-**Recordatorio que hay que poner:** el token nuevo se creó con TTL de un año.
-Programar un aviso **dos semanas antes de que venza** — esta caída de una semana
-fue exactamente por no tenerlo.
 
 ## Pendientes
 
