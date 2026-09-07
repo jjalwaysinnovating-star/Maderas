@@ -364,6 +364,13 @@ Cloudflare para desplegar código.
   existe"**. Se confunden porque las dos se ven igual desde afuera. Para
   distinguirlas basta `businessAccounts`: si también está en 0, nadie está
   revisando nada — hay que rehacer el alta.
+  **El botón exacto donde se atoró** (captura del dueño, 2026-09-07): la pantalla
+  de Meta *"Your account is connected to YCloud"* termina con un botón azul
+  **"Continue to feature setup"**. Ese es el paso que faltó: el título suena a
+  "ya terminaste" y no lo es — el número se crea DESPUÉS de ese botón. Y su
+  texto desmiente la espera: *"we'll… reach out within 24 hours **if there's an
+  issue**"* — te escriben solo si hay problema, no para aprobarte. Nueve días de
+  silencio querían decir que todo iba bien.
   **Rehacerla es todo lo que falta.** En YCloud: *Create channels → WhatsApp
   Business App Coexistence → WhatsApp Business App Number*, autorizar con
   Facebook, meter `+526866066613`, **escanear el QR con la app de WhatsApp
