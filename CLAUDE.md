@@ -329,6 +329,39 @@ curl -X POST -u "admin:<contraseña>" \
 El panel basta para KB y comportamiento; solo hace falta un API token de
 Cloudflare para desplegar código.
 
+## ⚠️ LO PRIMERO EN UNA SESIÓN NUEVA: hay código sin desplegar
+
+El token de Cloudflare venció el 2026-08-30 y desde entonces **nada se ha
+desplegado**. Todo lo de abajo está commiteado, probado y en verde en la rama
+`claude/instala-npx-forjabot-init-2nhc1n` — pero el bot en vivo NO lo tiene.
+
+En cuanto `CLOUDFLARE_API_TOKEN` exista en el entorno (el dueño lo guarda en la
+configuración del entorno de Claude Code; **nunca por el chat**):
+
+```bash
+cd starter && pnpm test && pnpm run deploy
+```
+
+Lo que sale en ese despliegue, y por qué importa cada cosa:
+
+- **Separación por asesor** (`member/asesores.local.ts` + 5 enganches en `src/`).
+  Sin esto el panel enseña todos los leads a todos.
+- **De dónde vino cada lead** (`member/origen.local.ts` + `src/index.ts`,
+  `src/leads/rescate.ts`). Sin esto, gastar en anuncios es adivinar.
+- **Dos cuentas de Zernio** (`src/index.ts`, `src/channels/zernio.ts`). El
+  segundo asesor va a tener cuenta propia; hoy el Worker rechazaría su webhook
+  con 403 y contestaría a sus clientes con la cuenta del dueño.
+- **Red de seguridad del lead**, **sesión web que no se cae al cambiar de IP**,
+  **corte a 80 caracteres con botones**, **es-MX sin voseo**.
+
+Después del deploy, **reindexar la KB** si se tocó `member/kb/` (ver abajo), y
+comprobar una entrega real con `wrangler tail` buscando
+`[messageOwner] telegram entregado`.
+
+**Recordatorio que hay que poner:** el token nuevo se creó con TTL de un año.
+Programar un aviso **dos semanas antes de que venza** — esta caída de una semana
+fue exactamente por no tenerlo.
+
 ## Pendientes
 
 - **WhatsApp por YCloud — configurado, esperando la verificación del negocio.**
