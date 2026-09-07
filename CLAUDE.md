@@ -396,6 +396,39 @@ Cloudflare para desplegar código.
   Las **dos API keys del panel (la "default" y la de "Ciudad Maderas") son de la
   misma cuenta** — mismo saldo, mismo webhook. No hay subcuentas que confundan.
   Guía: `starter/skill/references/channel-setup-guides/ycloud-whatsapp.md`.
+- **WhatsApp por TWILIO — en marcha, arrancando por el Sandbox** (decidido por el
+  dueño el 2026-09-07, tras 9 días atorado en el alta de YCloud). Se arranca por
+  el **Sandbox** a propósito: es el único camino a WhatsApp que **no toca su
+  número, no borra nada y no pasa por Meta**. Sirve para ver el bot vivo en
+  WhatsApp; para clientes reales hay que decidir después.
+  **Twilio NO tiene coexistencia.** Su adapter fija `isOwnerMessage: false`
+  siempre ("Twilio webhooks fire only for inbound messages"): no hay evento de
+  eco del dueño, así que no hay takeover desde la app — porque con Twilio no
+  queda app. Registrar su número real exigiría **borrar la cuenta de WhatsApp
+  del número** y pasar igual por las pantallas de Meta que ya lo detuvieron, así
+  que sería el mismo trámite **más** perder la app. Está dicho y él lo sabe.
+  **Botones: caen a lista numerada, y eso NO es un retroceso.** `twilio` no está
+  en `BUTTON_CHANNELS` (`src/channels/shared.ts`) — pero **`ycloud` y `kapso`
+  tampoco**. Solo `telegram`, `whatsapp` (Cloud API), `zernio`, `messenger` e
+  `instagram` traen botones nativos. El fallback de `sender.ts` pega los títulos
+  como `1) … 2) …` al final del texto, igual que en la web, así que las tres
+  preguntas del guion siguen ofreciendo sus opciones. Nada se pierde en silencio.
+  `twilio` **sí** está en `MEDIA_CHANNELS`: imágenes y galería funcionan.
+  **Lo de "canal Pro" de la guía NO está aplicado en el código:** la ruta
+  `app.post("/webhooks/twilio")` de `src/index.ts` no tiene ningún `isPro`. Este
+  bot es `free` y aun así el canal funciona.
+  **Las credenciales van como secrets del Worker, no en el panel:** el adapter
+  las lee de `env` (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WA_FROM`),
+  nunca de D1, así que la pantalla de Conexiones solo las *reporta* como
+  faltantes. Se ponen con `wrangler secret put` —que pide token de Cloudflare— o
+  **desde el dashboard de Cloudflare a puros clics** (Workers → `ciudad-maderas`
+  → Settings → Variables and Secrets), que es lo que aplica aquí porque el dueño
+  no usa terminal. Los secrets surten efecto **sin redeploy**.
+  ⚠️ `TWILIO_WA_FROM` va **solo el número con `+`, SIN `whatsapp:`** — el adapter
+  agrega ese prefijo solo y si viene doble no envía nada.
+  Webhook a configurar en Twilio (Sandbox settings → *When a message comes in*,
+  método POST): `https://ciudad-maderas.jjalwaysinnovating.workers.dev/webhooks/twilio`
+  Guía: `starter/skill/references/channel-setup-guides/twilio-whatsapp.md`.
 - **Cuál Instagram es el oficial** — Meta Business Suite muestra
   `jjalwaysinnovating` como el IG de la página, pero el bot vive en
   `ciudadmaderaswoodcity`. No rompe nada (Zernio va directo a la cuenta), pero
