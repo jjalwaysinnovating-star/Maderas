@@ -346,35 +346,44 @@ Cloudflare para desplegar código.
   verify your business. You'll receive an email"*. Hasta ese correo,
   `GET /v2/whatsapp/phoneNumbers` y `/businessAccounts` contestan **cero** y no
   se puede ni mandar ni recibir. Cuando llegue: probar en vivo, nada más.
-  **Ojo con ese "esperar el correo" (2026-09-07): esperar puede ser esperar
-  nada.** La Business Verification **la hace META, no YCloud** — su propia ayuda
-  lo dice textual: *"This is a fully internal process managed by Meta. As
-  YCloud, we cannot check or update your verification status or expedite the
-  process"*
-  (`helpdocs.ycloud.com/help-center/whatsapp-basics/business-verification`).
-  Se envía desde el **Business Manager de Meta** (Configuración del negocio →
-  Centro de seguridad → *Verificar*) y **alguien tiene que enviarla**: si nadie
-  llenó ese formulario, no hay nada en cola y el correo no va a llegar nunca.
-  Meta resuelve en **~2 días hábiles**; a los 9 días (2026-08-29 → 09-07) ya no
-  es lentitud, es que está parado esperando algo del dueño — o el formulario sin
-  enviar, o un rechazo cuyo correo se fue a spam.
-  Meta pide: nombre legal, domicilio, teléfono, un **documento oficial del
-  negocio** (constancia de situación fiscal / acta constitutiva) y un **sitio
-  cuyo dominio coincida** con el correo o con una meta-tag. El asesor es
-  independiente: si no tiene empresa dada de alta, esa puerta está cerrada y hay
-  que decidir otra ruta antes de seguir esperando.
-  **Y puede que ni haga falta:** sin verificar, los topes de Meta son de
-  *conversaciones que TÚ inicias* (250 clientes distintos por número cada 24 h,
-  máximo 2 números). Este bot solo **contesta** a quien escribe, así que ese tope
-  le sobra. Si el número sigue sin aparecer en `/v2/whatsapp/phoneNumbers`, el
-  problema probablemente **no** es la verificación de Meta sino que el alta del
-  número (embedded signup / QR de coexistencia) nunca terminó, o la verificación
-  de cuenta del propio YCloud. **Antes de esperar más: mirar en qué estado está
-  el número en el panel de YCloud.**
-  Desde una sesión de Claude Code **no se puede revisar esto**: `YCLOUD_API_KEY`
-  vive como secret en Cloudflare y los secrets **no se pueden leer de vuelta**
-  (`wrangler secret` solo escribe). O el dueño mira el panel, o pasa la key para
-  la revisión.
+  **NO HABÍA NADA QUE ESPERAR — el alta nunca se completó** (revisado con la API
+  el 2026-09-07, tras 9 días de espera). La cuenta de YCloud contesta:
+  `GET /v2/balance` → $0.50 ✅ · `GET /v2/webhookEndpoints` → 1, `active`, con
+  la URL y los dos eventos correctos ✅ · pero
+  **`GET /v2/whatsapp/businessAccounts` → 0** y
+  **`GET /v2/whatsapp/phoneNumbers` → 0** (también con `includeDeleted=true`), y
+  `whatsapp/templates` → 0. **Cero WABAs es la prueba:** una verificación de
+  negocio se hace *contra* una WABA, y la propia ayuda de YCloud lo dice al
+  revés — *"Verification button not available: you can create a WABA through
+  YCloud first, and the verification button will appear."* Sin WABA no hay
+  trámite en cola, no hay nada en revisión y **ese correo no iba a llegar
+  nunca**. La pantalla *"YCloud will need to verify your business"* salió al
+  **principio** del flujo, no al final: el embedded signup / QR de coexistencia
+  se abandonó ahí y no creó nada.
+  La lección: **`phoneNumbers` en 0 no significa "en revisión", significa "no
+  existe"**. Se confunden porque las dos se ven igual desde afuera. Para
+  distinguirlas basta `businessAccounts`: si también está en 0, nadie está
+  revisando nada — hay que rehacer el alta.
+  **Rehacerla es todo lo que falta.** En YCloud: *Create channels → WhatsApp
+  Business App Coexistence → WhatsApp Business App Number*, autorizar con
+  Facebook, meter `+526866066613`, **escanear el QR con la app de WhatsApp
+  Business** (2.24.17+, y el número tiene que estar hoy en la app *Business*, no
+  en la normal), nombre del negocio + sitio, y **confirmar el binding hasta el
+  final, sin cerrar la ventana**. Cerrarla antes es exactamente lo que pasó.
+  **La verificación de Meta no bloquea esto y probablemente no hace falta:** la
+  hace **Meta, no YCloud** (*"a fully internal process managed by Meta… we
+  cannot check or update your verification status or expedite the process"*,
+  `helpdocs.ycloud.com/help-center/whatsapp-basics/business-verification`), y
+  sin verificar los topes son de *conversaciones que inicia el negocio* (250
+  clientes distintos por número cada 24 h, máximo 2 números). Este bot solo
+  **contesta**, así que le sobra. Si algún día se quisiera verificar, Meta pide
+  documento legal del negocio y un dominio que coincida — y el asesor es
+  independiente, así que esa puerta puede estar cerrada; no es un problema
+  mientras el bot solo responda.
+  Desde una sesión de Claude Code esto **no se puede revisar solo**:
+  `YCLOUD_API_KEY` vive como secret en Cloudflare y los secrets **no se pueden
+  leer de vuelta** (`wrangler secret` solo escribe). El dueño la pasa, o mira el
+  panel.
   El **saldo de YCloud está en $0.50 USD** — alcanza para probar y poco más;
   Meta cobra $0.008–$0.07 por conversación y sale de ese wallet.
   Las **dos API keys del panel (la "default" y la de "Ciudad Maderas") son de la
