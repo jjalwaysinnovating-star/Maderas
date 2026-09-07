@@ -329,38 +329,39 @@ curl -X POST -u "admin:<contraseña>" \
 El panel basta para KB y comportamiento; solo hace falta un API token de
 Cloudflare para desplegar código.
 
-## ⚠️ LO PRIMERO EN UNA SESIÓN NUEVA: hay código sin desplegar
+## Desplegar
 
-El token de Cloudflare venció el 2026-08-30 y desde entonces **nada se ha
-desplegado**. Todo lo de abajo está commiteado, probado y en verde en la rama
-`claude/instala-npx-forjabot-init-2nhc1n` — pero el bot en vivo NO lo tiene.
-
-En cuanto `CLOUDFLARE_API_TOKEN` exista en el entorno (el dueño lo guarda en la
-configuración del entorno de Claude Code; **nunca por el chat**):
+`CLOUDFLARE_API_TOKEN` vive en la configuración del **entorno de Claude Code**
+(el suyo se llama "Chat Bot Maderas"), no en un secret del Worker: `wrangler`
+lo lee de ahí solo. **Nunca por el chat** — un token pegado en la conversación
+queda escrito y hay que revocarlo; ya pasó una vez.
 
 ```bash
 cd starter && pnpm test && pnpm run deploy
 ```
 
-Lo que sale en ese despliegue, y por qué importa cada cosa:
+**Todo lo de este repo está desplegado al 2026-09-07** (versión
+`19c78e05-2d71-4c82-92d8-0d7246cc9ece`): separación por asesor, origen de cada
+lead, dos cuentas de Zernio, red de seguridad, sesión web que aguanta el cambio
+de IP, corte a 80 caracteres con botones y es-MX sin voseo.
 
-- **Separación por asesor** (`member/asesores.local.ts` + 5 enganches en `src/`).
-  Sin esto el panel enseña todos los leads a todos.
-- **De dónde vino cada lead** (`member/origen.local.ts` + `src/index.ts`,
-  `src/leads/rescate.ts`). Sin esto, gastar en anuncios es adivinar.
-- **Dos cuentas de Zernio** (`src/index.ts`, `src/channels/zernio.ts`). El
-  segundo asesor va a tener cuenta propia; hoy el Worker rechazaría su webhook
-  con 403 y contestaría a sus clientes con la cuenta del dueño.
-- **Red de seguridad del lead**, **sesión web que no se cae al cambiar de IP**,
-  **corte a 80 caracteres con botones**, **es-MX sin voseo**.
+Comprobación rápida después de desplegar — los tres códigos importan:
 
-Después del deploy, **reindexar la KB** si se tocó `member/kb/` (ver abajo), y
-comprobar una entrega real con `wrangler tail` buscando
-`[messageOwner] telegram entregado`.
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://ciudad-maderas.jjalwaysinnovating.workers.dev/       # 200
+curl -s -o /dev/null -w "%{http_code}\n" https://ciudad-maderas.jjalwaysinnovating.workers.dev/admin  # 401
+curl -s -o /dev/null -w "%{http_code}\n" -X POST -d '{}' \
+  https://ciudad-maderas.jjalwaysinnovating.workers.dev/webhooks/zernio                                # 403
+```
 
-**Recordatorio que hay que poner:** el token nuevo se creó con TTL de un año.
-Programar un aviso **dos semanas antes de que venza** — esta caída de una semana
-fue exactamente por no tenerlo.
+Ese 403 es la firma de Zernio funcionando: si sale 200, el webhook quedó abierto.
+Si se tocó `member/kb/`, **reindexar** (ver abajo).
+
+**El token vence ~2027-09-07.** Hay aviso programado para el 2027-08-24
+(`trig_012Q7AWLQLMG3tg4XB7V7REt`). El anterior venció sin avisar y costó una
+semana con diez cambios probados y atorados: al renovar, **primero se crea y
+guarda el nuevo, se comprueba con `npx wrangler whoami`, y hasta entonces se
+borra el viejo.**
 
 ## Pendientes
 
