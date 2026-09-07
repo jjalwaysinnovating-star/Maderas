@@ -335,11 +335,27 @@ El token de Cloudflare venció el 2026-08-30 y desde entonces **nada se ha
 desplegado**. Todo lo de abajo está commiteado, probado y en verde en la rama
 `claude/instala-npx-forjabot-init-2nhc1n` — pero el bot en vivo NO lo tiene.
 
-En cuanto `CLOUDFLARE_API_TOKEN` exista en el entorno (el dueño lo guarda en la
-configuración del entorno de Claude Code; **nunca por el chat**):
+**Revisado otra vez el 2026-09-07: sigue sin desplegarse, y ya se sabe por qué.**
+La variable `CLOUDFLARE_API_TOKEN` **sí existe** en el entorno, pero su valor es
+el texto de ejemplo (`tu_...`, 14 caracteres), no un token. Por eso `wrangler`
+contesta *"Invalid format for Authorization header [code: 6111]"* en vez de un
+error de permisos: nunca se guardó el token verdadero, se guardó el ejemplo.
+Que la variable aparezca NO quiere decir que el token esté puesto — hay que
+comprobarlo con `npx wrangler whoami`, que tarda dos segundos.
+Lo demás ya se verificó ese día y está listo: `pnpm install`, las **1171 pruebas
+en verde**, `pnpm deploy-check` OK y `wrangler deploy --dry-run` empaquetando
+bien con todos los bindings. En cuanto entre el token de verdad, el despliegue
+es un solo comando y no hace falta revisar nada más.
+
+Cómo se pone bien: en claude.ai/code, en la configuración del **entorno** de este
+proyecto, la variable `CLOUDFLARE_API_TOKEN` con el token que da Cloudflare en
+*My Profile → API Tokens → Create Token → Edit Cloudflare Workers*. Son ~40
+caracteres. **Nunca por el chat.**
+
+Con el token puesto:
 
 ```bash
-cd starter && pnpm test && pnpm run deploy
+cd starter && pnpm install && pnpm test && pnpm run deploy
 ```
 
 Lo que sale en ese despliegue, y por qué importa cada cosa:
