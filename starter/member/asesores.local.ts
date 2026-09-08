@@ -149,7 +149,11 @@ export const ASESORES: Asesor[] = [
     //    que el adapter guarda en `zernio_ctx`. Ese primer mensaje se queda sin
     //    respuesta a propósito: es el que revela el dato.
     emails: [],
-    cuentasZernio: [],
+    cuentasZernio: [
+      "6a9f52f177555aae01ef1b70", // Facebook · página de Paula
+      // Instagram: pendiente. Su cuenta no se pudo ligar a la página todavía;
+      // cuando se conecte, aquí va su `_id` y no hace falta nada más.
+    ],
     zernio: {
       apiKeyVar: "ZERNIO_API_KEY_PAULA",
       webhookSecretVar: "ZERNIO_WEBHOOK_SECRET_PAULA",
