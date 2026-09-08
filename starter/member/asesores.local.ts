@@ -151,16 +151,12 @@ export const ASESORES: Asesor[] = [
     // sus leads calientes le suenan a ELLA y no al dueño.
     telegramChatId: "8693208995",
 
-    // SIGUE FALTANDO, y por eso queda vacío: cuál es su cuenta de Zernio.
-    // Hay una de Facebook nueva ("6a9f52f177555aae01ef1b70", primera
-    // conversación 2026-09-08 04:39) que casi seguro es la suya, pero
-    // adivinarlo manda los leads de una persona a la lista de otra — y eso no
-    // se ve distinto de que funcione. Se pone cuando el dueño lo confirme
-    // mirando su panel de Zernio.
-    //
-    // Mientras: los leads que entren por su página caen en el
-    // ASESOR_POR_DEFECTO y su aviso suena en el teléfono del dueño.
-    cuentasZernio: [],
+    // Confirmado el 2026-09-08 con una captura de la conversación: la página se
+    // llama "Paula y Ciudad Maderas". No se dio por buena antes de verlo —
+    // Zernio manda el id pero no el nombre, y una cuenta mal asignada aquí
+    // manda los leads de una persona a la lista de otra sin que nada se vea
+    // raro en el panel.
+    cuentasZernio: ["6a9f52f177555aae01ef1b70"], // Facebook · Paula y Ciudad Maderas
   },
   // ── Para el tercer asesor ─────────────────────────────────────────────────
   // Si tiene cuenta de Zernio PROPIA, sus dos claves NO se escriben aquí: aquí
