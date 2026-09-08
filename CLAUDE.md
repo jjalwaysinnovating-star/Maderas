@@ -220,9 +220,21 @@ la reemplaza (no se puede recuperar la anterior).
   del dueño, no del código: **crearle el usuario en la pestaña Equipo** con ESE
   MISMO correo y rol `staff`, y pasarle el enlace de invitación **a mano** —
   vence a los 7 días y el correo automático NO sale, este bot no tiene
-  `RESEND_API_KEY`. Su **Instagram no se pudo conectar**: Meta exige cuenta
-  profesional ligada a una Página, y hasta que eso pase no hay comentarios ni
-  reels de IG que atender.
+  `RESEND_API_KEY`. Sus **dos redes están conectadas**: Facebook
+  `6a9f52f177555aae01ef1b70` ("Paula y Ciudad Maderas") e Instagram
+  `6a9f5d9c77555aae01ef51b1` (`c.maderaspaula`) — el Instagram se arregló solo
+  en algún momento y nadie lo notó; lo destapó consultar sus cuentas.
+  Su **embudo de comentarios ya existe**, uno por cuenta y con los mismos
+  ajustes que los del dueño: Facebook `6a9f91b4531a4231aefbf452` e Instagram
+  `6a9f91b4531a4231aefbf45a`. Se crearon por API, no a mano, porque los dos
+  ajustes que fallan en silencio se escriben mal en un formulario:
+  `alsoMatchInDms` prendido manda DOS respuestas a la misma persona, y una
+  lista de exclusiones incompleta hace que un reclamo por fraude reciba un
+  mensaje de venta.
+  La clave que se usó fue **desechable**: ella creó una segunda aparte y la
+  borró al terminar, así que la que vive en Cloudflare nunca se sacó. Ese es
+  el patrón para el tercer asesor — la clave buena no se lee de Cloudflare, se
+  pide una de un solo uso.
   **Conversaciones está oculta al rol `staff`** (`staff_tabs` en `settings`,
   puesto el 2026-09-08 a petición del dueño). Esa pestaña NO se filtra por
   asesor, así que sin ocultarla Paula leería las pláticas de los clientes de
