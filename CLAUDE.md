@@ -127,6 +127,18 @@ la reemplaza (no se puede recuperar la anterior).
   Se registra distinto en el log por si algún día aparece un null que no lo sea.
   La pausa dura lo que diga `takeoverMinutes` (vacío = 60 min; 0 = hasta que el
   dueño reactive a mano), igual que el takeover del panel y el de WhatsApp.
+  **La pausa se revisa DOS veces, y la segunda es la que importa**
+  (`src/agent.ts`, al final de `processBuffer`, justo antes de
+  `sendChunkedReply`). Solo con la de entrada el arreglo NO servía: el bot junta
+  los mensajes unos segundos antes de contestar, y el asesor responde
+  justamente en esa ventana —es cuando está leyendo—, así que el turno ya había
+  cruzado la puerta. Medido en vivo: pausa a las 07:07:52.752, mensaje del
+  cliente a las 07:07:54.180, respuesta del bot a las 07:07:55.929. La segunda
+  revisión es **fail-open**: si la lectura truena se envía igual, como el guard
+  de presupuesto y el de customer facts — quedarse mudo por un tropiezo de la
+  base es peor que el riesgo que cubre. El mensaje del cliente ya quedó
+  guardado antes, así que el asesor lo ve en el panel aunque se descarte la
+  respuesta.
   **HAY QUE SUSCRIBIR EL WEBHOOK A `message.sent`** o el aviso no llega y el
   arreglo no hace nada: se actualiza con `PUT /api/v1/webhooks/settings`
   (`{_id, events}`) o desde el panel de Zernio. El de Paula ya lo tiene; **el

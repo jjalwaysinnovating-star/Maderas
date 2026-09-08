@@ -779,6 +779,32 @@ export class SupportAgent extends Agent<Env, SupportAgentState> {
       lastSearchKbScore: turnUsedKb ? lastKbTopScore : 1,
     });
 
+    // ÚLTIMA revisión de la pausa, ya con la respuesta escrita y a punto de
+    // salir. La de arriba (al recibir) no basta: entre que el cliente escribe y
+    // que el bot suelta la respuesta pasan los segundos del buffer, y el asesor
+    // suele contestar JUSTO en esa ventana — es cuando lee el mensaje. Pasó en
+    // vivo el 2026-09-08: pausa a las 07:07:52, respuesta del bot a las
+    // 07:07:55, porque el turno ya había cruzado la puerta de entrada 15
+    // segundos antes.
+    //
+    // El turno no se tira: la respuesta se descarta pero el mensaje del cliente
+    // YA quedó guardado arriba, que es el punto de pausar — el asesor lo ve en
+    // el panel y contesta a mano.
+    // Si la lectura falla se ENVÍA igual (fail-open, como el guard de
+    // presupuesto y el de customer facts de arriba): la puerta de entrada ya
+    // dijo que no estaba pausada hace segundos, y quedarse mudo por un
+    // tropiezo de la base es peor que el riesgo que cubre esta segunda vuelta.
+    let pausadaAhora = false;
+    try {
+      pausadaAhora = await convs.isPaused(convId);
+    } catch (e) {
+      console.error("[processBuffer] no se pudo releer la pausa, se envía igual:", e);
+    }
+    if (pausadaAhora) {
+      console.log("[processBuffer] pausada mientras se redactaba → respuesta descartada");
+      return;
+    }
+
     // Chunk + send via the channel adapter. SIEMPRE por sendChunkedReply: ahí
     // viven los marcadores ([[botones: …]] y [[media: …]]) — un sendReply
     // directo aquí los dejaba pasar CRUDOS al cliente (bug real, visto en el
