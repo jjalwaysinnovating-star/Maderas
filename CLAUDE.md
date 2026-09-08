@@ -428,6 +428,25 @@ Cloudflare para desplegar código.
   agrega ese prefijo solo y si viene doble no envía nada.
   Webhook a configurar en Twilio (Sandbox settings → *When a message comes in*,
   método POST): `https://ciudad-maderas.jjalwaysinnovating.workers.dev/webhooks/twilio`
+  **⚠️ LA PRUEBA GRATIS DE TWILIO YA NO SIRVE PARA UN BOT** (comprobado contra su
+  API el 2026-09-08, con la cuenta recién creada del dueño). La cuenta responde
+  `type: Trial`, `status: active`, **0 números** (`IncomingPhoneNumbers` → 0) y
+  **balance $0.00** — ya no dan los ~$15 de crédito de antes. Y lo que mata el
+  canal: **una cuenta Trial no manda texto libre**.
+  - SMS → `572006: "Invalid template name. Trial accounts can only use
+    predefined SMS templates."` El `Body` tiene que ser el NOMBRE de una
+    plantilla de Twilio (por eso el snippet del console trae
+    `Body=sms_appointment_reminders`, que parece un mensaje y es un nombre).
+  - WhatsApp desde el sandbox → `code 0: "Invalid or disallowed parameters
+    provided - trial accounts have limited parameter access, upgrade your
+    account to unlock full functionality"`.
+  Un bot escribe distinto a cada cliente: sin texto libre no hay canal. Falta
+  descartar si el **sandbox de WhatsApp** se salva una vez que el dueño se una
+  con su `join <código>` desde el celular (el intento de arriba salió con el
+  número sin haberse unido, así que el error puede ser de eso y no del plan).
+  Si tampoco pasa, la única salida por Twilio es **salir del Trial y cargar
+  saldo** (~$20 USD) — lo que vuelve a Twilio más caro y más lento que el botón
+  azul que falta en YCloud. Decisión del dueño, ya advertido.
   Guía: `starter/skill/references/channel-setup-guides/twilio-whatsapp.md`.
 - **Cuál Instagram es el oficial** — Meta Business Suite muestra
   `jjalwaysinnovating` como el IG de la página, pero el bot vive en
