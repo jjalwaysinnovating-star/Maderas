@@ -213,10 +213,30 @@ la reemplaza (no se puede recuperar la anterior).
   `src/admin/routes.ts`, el `chatId` opcional de `messageOwner` en
   `src/tools/handoffHuman.ts` y las dos llamadas de `src/leads/rescate.ts`.
   Pruebas en `test/leads/asesores.test.ts` y `test/admin/leads-por-asesor.test.ts`.
-  Para dar de alta al segundo asesor hacen falta tres datos suyos: sus `_id` de
-  Zernio, su chat de Telegram (que le escriba `/start` al bot de avisos) y el
-  correo del panel. El sitio web sigue siendo del dueño: si el segundo quiere
-  leads de web propios, necesita su propio sitio.
+  **Paula ya está dada de alta** (2026-09-08). Su Facebook
+  (`6a9f52f177555aae01ef1b70`) y su Telegram están puestos; sus claves viven en
+  `ZERNIO_API_KEY_PAULA` y `ZERNIO_WEBHOOK_SECRET_PAULA`. Le falta **el correo
+  del panel** — hasta que lo dé no puede ver sus prospectos, y hay que crearle
+  el usuario en Equipo con ESE MISMO correo. Su **Instagram no se pudo
+  conectar**: Meta exige cuenta profesional ligada a una Página, y hasta que
+  eso pase no hay comentarios ni reels de IG que atender.
+  Cómo se sacó su `accountId` sin su clave, porque volverá a pasar con el
+  tercero: la clave vive en Cloudflare y **de ahí no se lee de vuelta**. Se da
+  de alta al asesor con `cuentasZernio: []`, se despliega —su webhook ya se
+  acepta porque su secret sí está en la lista— y el PRIMER mensaje real deja el
+  `accountId` en `zernio_ctx`. Ese mensaje no recibe respuesta (`sendReply 404:
+  Account not found`, se ve en `wrangler tail`) y eso es correcto: el bot NO
+  contesta con la clave del dueño, que es la falla que sí importaría.
+  **Los nombres de los secrets van en MAYÚSCULAS.** Se guardó
+  `ZERNIO_API_KEY_Paula` y `NOMBRE_SECRET` solo acepta `[A-Z]`: la habría dejado
+  sin clave y sin poder contestarle a sus clientes, sin marcar nada en pantalla.
+  Ahora hay una prueba que mira la lista REAL y falla si un nombre no es
+  legible (`test/channels/zernio-multicuenta.test.ts`, bloque final).
+  El sitio web sigue siendo del dueño: si el segundo quiere leads de web
+  propios, necesita su propio sitio.
+  **El embudo de comentarios de un asesor nuevo lo crea ÉL en SU Zernio**, no
+  nuestro código — mismos ajustes que los del dueño (ver arriba), con
+  `alsoMatchInDms` en `false`.
 - **Una conversación = un lead, pero solo dentro de 6 horas**
   (`LeadsRepo.VENTANA_MISMA_PLATICA_MS`). `calificarLead` reemplaza el lead
   pendiente de esa plática en vez de agregar otro (un prospecto se registraba al

@@ -138,16 +138,14 @@ export const ASESORES: Asesor[] = [
   {
     slug: "paula",
     nombre: "Paula Amador",
-    // Pendientes, y cada uno tiene consecuencia hasta que se llene:
-    //  • telegramChatId — sin esto SUS avisos calientes caen en el chat del
-    //    dueño (el fallback de messageOwner). No se pierden; llegan al de al lado.
-    //  • emails — sin esto no puede entrar al panel a ver sus prospectos.
-    //  • cuentasZernio — sin esto sus leads se le adjudican al ASESOR_POR_DEFECTO
-    //    y el bot NO puede contestarle a sus clientes: `claveZernioDeCuenta` no
-    //    reconoce la cuenta y cae a la key del dueño, que no tiene acceso a su
-    //    inbox. Se llena con el `accountId` que traiga su PRIMER mensaje real,
-    //    que el adapter guarda en `zernio_ctx`. Ese primer mensaje se queda sin
-    //    respuesta a propósito: es el que revela el dato.
+    // Su chat con @ciudadmaderas_avisos_bot. Mismo bot que el del dueño, otro
+    // destinatario: sus leads calientes le suenan a ELLA y al dueño no.
+    telegramChatId: "8693208995",
+    // ÚNICO pendiente: sin correo no puede entrar al panel a ver sus
+    // prospectos. Sus leads ya se le adjudican bien y sus avisos ya le suenan
+    // a ella; lo que falta es la puerta para que los vea. En cuanto lo dé, va
+    // aquí Y hay que crearle el usuario en el panel (pestaña Equipo) con el
+    // MISMO correo: si no coincide letra por letra, no ve nada.
     emails: [],
     cuentasZernio: [
       "6a9f52f177555aae01ef1b70", // Facebook · página de Paula
