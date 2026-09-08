@@ -217,6 +217,27 @@ la reemplaza (no se puede recuperar la anterior).
   Zernio, su chat de Telegram (que le escriba `/start` al bot de avisos) y el
   correo del panel. El sitio web sigue siendo del dueño: si el segundo quiere
   leads de web propios, necesita su propio sitio.
+  **Paula Amador entró el 2026-09-08** — correo
+  `paula.amador.cdmaderas@gmail.com`, Telegram `8693208995`, y sus dos redes:
+  Facebook "Paula y Ciudad Maderas" y `@c.maderaspaula` en Instagram.
+  Tres cosas que dejó ese alta y no se deducen del código:
+  (1) **Se dio de alta ANTES de tener todos sus datos, a propósito.** Ella ya
+  tenía acceso al panel (rol staff), y con un solo asesor en la lista el filtro
+  se apaga entero: estuvo viendo la lista COMPLETA de leads del dueño hasta que
+  existió su fila. Si algún día se le da acceso a alguien más, **su fila va
+  primero, aunque quede incompleta**.
+  (2) Su `_id` de Instagram no salía de la base porque nadie le había escrito
+  todavía — Zernio lo enseña con el botón de copiar en Connections. Un `_id` no
+  es secreto y puede ir por chat; las claves no.
+  (3) **Sus redes cuelgan de la cuenta de Zernio del DUEÑO**, no de una suya. Se
+  comprobó solo: sus mensajes llegan a este Worker y pasan la firma HMAC, y la
+  única llave configurada es la del dueño. Consecuencia real: el consumo de
+  Paula se cobra en la tarjeta de él, sin tope (plan por uso), y él ve la
+  bandeja de ella. El soporte para que cada asesor tenga su cuenta ya está
+  hecho (ver arriba); mudarla es trabajo de configuración, no de código.
+  **Falta la prueba en vivo**: alguien de fuera —ni el dueño ni ella— escribe a
+  una red de Paula y se comprueba que el lead cae en la lista de ELLA, no en la
+  del dueño, y que el aviso suena en el teléfono de ella.
 - **Una conversación = un lead, pero solo dentro de 6 horas**
   (`LeadsRepo.VENTANA_MISMA_PLATICA_MS`). `calificarLead` reemplaza el lead
   pendiente de esa plática en vez de agregar otro (un prospecto se registraba al
