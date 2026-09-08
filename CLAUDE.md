@@ -373,10 +373,17 @@ queda escrito y hay que revocarlo; ya pasó una vez.
 cd starter && pnpm test && pnpm run deploy
 ```
 
-**Todo lo de este repo está desplegado al 2026-09-07** (versión
-`19c78e05-2d71-4c82-92d8-0d7246cc9ece`): separación por asesor, origen de cada
-lead, dos cuentas de Zernio, red de seguridad, sesión web que aguanta el cambio
-de IP, corte a 80 caracteres con botones y es-MX sin voseo.
+**Todo lo de este repo está desplegado al 2026-09-08** (versión
+`35129c89-3fdc-4adc-8e82-9de0696a2418`): separación por asesor, origen de cada
+lead, una cuenta de Zernio por asesor, red de seguridad, sesión web que aguanta
+el cambio de IP, corte a 80 caracteres con botones y es-MX sin voseo. Lo último
+de esa madrugada: el bot **se calla cuando un asesor contesta a mano** desde la
+bandeja de Zernio (`message.sent` con `sentVia:"human"` → pausa; `api` y las
+automatizaciones NO pausan, o el bot se apagaría con su propio eco; `null` es
+"no se sabe" y tampoco pausa, así que contestar desde la app de Facebook
+todavía necesita el botón manual), y el **rescate ya no levanta la ficha en
+blanco**: lee el nombre y la calificación de la transcripción con
+`nombreDe`/`datosDe` y la misma `calcularPrioridad` de `calificarLead`.
 
 Comprobación rápida después de desplegar — los tres códigos importan:
 
