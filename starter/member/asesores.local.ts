@@ -135,7 +135,27 @@ export const ASESORES: Asesor[] = [
       "6a91166377555aae013db017", // Instagram · ciudadmaderaswoodcity
     ],
   },
-  // ── Segundo asesor ────────────────────────────────────────────────────────
+  {
+    slug: "paula",
+    nombre: "Paula Amador",
+    // Pendientes, y cada uno tiene consecuencia hasta que se llene:
+    //  • telegramChatId — sin esto SUS avisos calientes caen en el chat del
+    //    dueño (el fallback de messageOwner). No se pierden; llegan al de al lado.
+    //  • emails — sin esto no puede entrar al panel a ver sus prospectos.
+    //  • cuentasZernio — sin esto sus leads se le adjudican al ASESOR_POR_DEFECTO
+    //    y el bot NO puede contestarle a sus clientes: `claveZernioDeCuenta` no
+    //    reconoce la cuenta y cae a la key del dueño, que no tiene acceso a su
+    //    inbox. Se llena con el `accountId` que traiga su PRIMER mensaje real,
+    //    que el adapter guarda en `zernio_ctx`. Ese primer mensaje se queda sin
+    //    respuesta a propósito: es el que revela el dato.
+    emails: [],
+    cuentasZernio: [],
+    zernio: {
+      apiKeyVar: "ZERNIO_API_KEY_PAULA",
+      webhookSecretVar: "ZERNIO_WEBHOOK_SECRET_PAULA",
+    },
+  },
+  // ── Tercer asesor ─────────────────────────────────────────────────────────
   // Necesita cuatro cosas suyas: sus `_id` de Zernio, su chat de Telegram (que
   // le escriba /start al bot de avisos), el correo con el que entrará al panel
   // y —si tiene cuenta de Zernio propia— sus dos claves.

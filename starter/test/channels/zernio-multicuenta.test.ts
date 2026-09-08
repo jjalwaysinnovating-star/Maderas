@@ -18,6 +18,7 @@ import { verifyZernioSignature, verificaFirmaZernio } from "../../src/channels/z
 import {
   claveZernioDeCuenta,
   secretosWebhookZernio,
+  ASESORES,
   type Asesor,
 } from "../../member/asesores.local";
 
@@ -181,4 +182,40 @@ describe("con un solo asesor todo sigue igual que antes", () => {
     expect(claveZernioDeCuenta(ENV, CUENTA_DUENO, SOLO).apiKey).toBe("clave-del-dueno");
     expect(claveZernioDeCuenta(ENV, CUENTA_SEGUNDO, SOLO).apiKey).toBe("clave-del-dueno");
   });
+});
+
+/**
+ * El nombre del secret no es cosmético: `claveZernioDeCuenta` lee `env` por
+ * índice y solo acepta MAYÚSCULAS (ver NOMBRE_SECRET). Un nombre con una
+ * minúscula —`ZERNIO_API_KEY_Paula`, que es exactamente lo que se guardó la
+ * primera vez— se rechaza, el asesor se queda sin clave y el bot deja de
+ * contestarle a SUS clientes. No truena ni marca nada en pantalla: solo deja
+ * de responder, y eso solo se ve en el log.
+ *
+ * Esta prueba mira la lista REAL, no una de mentiras: si alguien da de alta a
+ * un asesor apuntando a un nombre que el código no sabe leer, falla aquí y no
+ * en producción una semana después.
+ */
+describe("los secrets declarados en la lista real se pueden leer", () => {
+  for (const a of ASESORES.filter((x) => x.zernio)) {
+    it(`${a.slug}: sus dos nombres de secret son válidos`, () => {
+      const z = a.zernio!;
+      const env = {
+        ZERNIO_API_KEY: "la-del-dueño",
+        [z.apiKeyVar]: "la-de-este-asesor",
+        [z.webhookSecretVar]: "firma-de-este-asesor",
+      } as unknown as Parameters<typeof claveZernioDeCuenta>[0];
+
+      // Se le presta una cuenta de mentiras para poder resolverlo por
+      // accountId: así el nombre se valida aunque el asesor todavía no tenga
+      // sus cuentas reales dadas de alta —que es justo cuando se cometen estos
+      // errores y cuando nadie los notaría—.
+      const conCuenta = [{ ...a, cuentasZernio: ["CUENTA-DE-PRUEBA"] }];
+      const r = claveZernioDeCuenta(env, "CUENTA-DE-PRUEBA", conCuenta);
+      expect(r.faltaSecret).toBeUndefined();
+      expect(r.apiKey).toBe("la-de-este-asesor");
+
+      expect(secretosWebhookZernio(env, conCuenta)).toContain("firma-de-este-asesor");
+    });
+  }
 });
