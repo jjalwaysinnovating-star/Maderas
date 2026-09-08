@@ -141,12 +141,11 @@ export const ASESORES: Asesor[] = [
     // Su chat con @ciudadmaderas_avisos_bot. Mismo bot que el del dueño, otro
     // destinatario: sus leads calientes le suenan a ELLA y al dueño no.
     telegramChatId: "8693208995",
-    // ÚNICO pendiente: sin correo no puede entrar al panel a ver sus
-    // prospectos. Sus leads ya se le adjudican bien y sus avisos ya le suenan
-    // a ella; lo que falta es la puerta para que los vea. En cuanto lo dé, va
-    // aquí Y hay que crearle el usuario en el panel (pestaña Equipo) con el
-    // MISMO correo: si no coincide letra por letra, no ve nada.
-    emails: [],
+    // Con ESTE correo entra al panel y ve SOLO sus prospectos. El usuario de
+    // la pestaña Equipo tiene que llevar el mismo, letra por letra: si no
+    // coincide, no ve nada y el panel le dice por qué (preferimos eso a
+    // enseñarle los prospectos de todos por un dedazo).
+    emails: ["paula.amador.cdmaderas@gmail.com"],
     cuentasZernio: [
       "6a9f52f177555aae01ef1b70", // Facebook · página de Paula
       // Instagram: pendiente. Su cuenta no se pudo ligar a la página todavía;

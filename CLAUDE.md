@@ -213,13 +213,20 @@ la reemplaza (no se puede recuperar la anterior).
   `src/admin/routes.ts`, el `chatId` opcional de `messageOwner` en
   `src/tools/handoffHuman.ts` y las dos llamadas de `src/leads/rescate.ts`.
   Pruebas en `test/leads/asesores.test.ts` y `test/admin/leads-por-asesor.test.ts`.
-  **Paula ya está dada de alta** (2026-09-08). Su Facebook
-  (`6a9f52f177555aae01ef1b70`) y su Telegram están puestos; sus claves viven en
-  `ZERNIO_API_KEY_PAULA` y `ZERNIO_WEBHOOK_SECRET_PAULA`. Le falta **el correo
-  del panel** — hasta que lo dé no puede ver sus prospectos, y hay que crearle
-  el usuario en Equipo con ESE MISMO correo. Su **Instagram no se pudo
-  conectar**: Meta exige cuenta profesional ligada a una Página, y hasta que
-  eso pase no hay comentarios ni reels de IG que atender.
+  **Paula ya está dada de alta** (2026-09-08): su Facebook
+  (`6a9f52f177555aae01ef1b70`), su Telegram y su correo
+  (`paula.amador.cdmaderas@gmail.com`) están puestos, y sus claves viven en
+  `ZERNIO_API_KEY_PAULA` y `ZERNIO_WEBHOOK_SECRET_PAULA`. Falta un paso que es
+  del dueño, no del código: **crearle el usuario en la pestaña Equipo** con ESE
+  MISMO correo y rol `staff`, y pasarle el enlace de invitación **a mano** —
+  vence a los 7 días y el correo automático NO sale, este bot no tiene
+  `RESEND_API_KEY`. Su **Instagram no se pudo conectar**: Meta exige cuenta
+  profesional ligada a una Página, y hasta que eso pase no hay comentarios ni
+  reels de IG que atender.
+  **Conversaciones está oculta al rol `staff`** (`staff_tabs` en `settings`,
+  puesto el 2026-09-08 a petición del dueño). Esa pestaña NO se filtra por
+  asesor, así que sin ocultarla Paula leería las pláticas de los clientes de
+  él. El costo es que tampoco ve las suyas; se decidió así a propósito.
   Cómo se sacó su `accountId` sin su clave, porque volverá a pasar con el
   tercero: la clave vive en Cloudflare y **de ahí no se lee de vuelta**. Se da
   de alta al asesor con `cuentasZernio: []`, se despliega —su webhook ya se
