@@ -136,10 +136,40 @@ describe("el rescate", () => {
     await rescataLeadPrometido(env, CONV, "Un asesor te contactará hoy mismo.");
 
     expect(telegram).toHaveLength(1);
-    expect(telegram[0].text).toContain("sin registrar");
+    // Antes se exigía la frase exacta "sin registrar". Eso caducó a propósito:
+    // ahora el encabezado cambia cuando el prospecto califica caliente, y decir
+    // "🔥 CALIENTE que el bot no registró" es mejor aviso que el genérico. Lo
+    // que NO puede cambiar —y es lo que se fija aquí— es que al asesor se le
+    // diga que NO quedó registrado, con qué llamarle y a dónde ir.
+    expect(telegram[0].text).toMatch(/no.{0,3}registr|sin registrar/i);
     // El teléfono va tal como lo escribió el cliente, con sus espacios.
     expect(telegram[0].text.replace(/\s/g, "")).toContain("6861112233");
     expect(telegram[0].text).toContain("/admin/leads");
+  });
+
+  it("un rescate que SÍ califica se avisa como caliente, no como uno más", async () => {
+    // La plática trae plazo ("Si este mes") y forma de pago ("en
+    // financiamiento"): con las reglas de siempre eso es caliente. Antes la
+    // ficha salía "sin_calificar" y en la lista del asesor se veía igual que un
+    // tibio — un prospecto bueno escondido entre los demás.
+    await rescataLeadPrometido(env, CONV, "Un asesor te contactará hoy mismo.");
+
+    const [lead] = await new LeadsRepo(new Db(env.DB)).list(10);
+    expect(leadMetadata(lead).prioridad).toBe("caliente");
+    expect(leadMetadata(lead).plazo).toBe("inmediato");
+    expect(leadMetadata(lead).forma_pago).toBe("financiamiento");
+    expect(telegram[0].text).toContain("CALIENTE");
+  });
+
+  it("no inventa el nombre cuando el bot nunca lo preguntó", async () => {
+    // El cliente escribió "Jorge, mi tel es 686 111 2233", pero el bot jamás
+    // preguntó "¿cuál es tu nombre?". Sin esa ancla no se adivina: sacar
+    // "Jorge" de ahí funcionaría hoy y fallaría feo con "Hola, mi tel es…".
+    await rescataLeadPrometido(env, CONV, "Un asesor te contactará hoy mismo.");
+
+    const [lead] = await new LeadsRepo(new Db(env.DB)).list(10);
+    expect(lead.name).toBeNull();
+    expect(lead.contact?.replace(/\D/g, "")).toBe("6861112233");
   });
 
   it("NO se mete si el bot sí registró al prospecto", async () => {

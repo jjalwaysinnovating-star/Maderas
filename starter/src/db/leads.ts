@@ -157,10 +157,16 @@ export class LeadsRepo {
   }
 
   /** Completa un lead con lo que se supo después (teléfono, contexto nuevo). */
-  async enrich(id: string, campos: { contact?: string | null; notes?: string | null }): Promise<void> {
+  async enrich(
+    id: string,
+    campos: { contact?: string | null; notes?: string | null; name?: string | null },
+  ): Promise<void> {
+    // COALESCE en los tres: completar NUNCA borra. El rescate se dispara en
+    // cada turno y en el primero casi nunca hay teléfono ni nombre; sin esto,
+    // el segundo pase pisaría con null lo que el primero sí había atrapado.
     await this.db.run(
-      "UPDATE leads SET contact = COALESCE(?, contact), notes = COALESCE(?, notes), updated_at = ? WHERE id = ?",
-      [campos.contact ?? null, campos.notes ?? null, Date.now(), id],
+      "UPDATE leads SET contact = COALESCE(?, contact), notes = COALESCE(?, notes), name = COALESCE(?, name), updated_at = ? WHERE id = ?",
+      [campos.contact ?? null, campos.notes ?? null, campos.name ?? null, Date.now(), id],
     );
   }
 
