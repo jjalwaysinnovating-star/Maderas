@@ -169,10 +169,17 @@ async function canalDe(db: Db, conversationId: string): Promise<{ canal: string;
     .catch(() => null);
   if (!conv) return { canal: "desconocido", usuario: null };
   if (conv.channel !== "zernio") return { canal: conv.channel, usuario: conv.channel_user_id };
+  // Se busca por `channel_user_id`, que es la PRIMARY KEY de `zernio_ctx`. La
+  // columna `conversation_id` de esa tabla guarda el id de ZERNIO, no el
+  // nuestro, así que buscar por el nuestro no empata nunca y el canal se
+  // quedaba en "zernio" — justo el dato que no sirve para decidir dónde gastar.
+  // El usuario ya lo teníamos aquí arriba; solo se estaba usando la llave que no era.
   const ctx = await db
     .first<{ platform: string | null }>(
-      "SELECT platform FROM zernio_ctx WHERE conversation_id = ? ORDER BY updated_at DESC LIMIT 1",
-      [conversationId],
+      `SELECT platform FROM zernio_ctx
+        WHERE channel_user_id = ? OR conversation_id = ?
+        ORDER BY updated_at DESC LIMIT 1`,
+      [conv.channel_user_id, conversationId],
     )
     .catch(() => null);
   return { canal: (ctx?.platform || "zernio").toLowerCase(), usuario: conv.channel_user_id };

@@ -196,6 +196,20 @@ export function asesorDeEmail(email: string | null | undefined, lista: Asesor[] 
  * El asesor dueño de una conversación. Busca el `accountId` que el adapter de
  * Zernio guardó en `zernio_ctx` y lo traduce.
  *
+ * ── OJO CON LA LLAVE ────────────────────────────────────────────────────────
+ * `zernio_ctx` NO se busca por el id de conversación nuestro. Su PRIMARY KEY es
+ * `channel_user_id`, y su columna `conversation_id` guarda el id que usa
+ * ZERNIO (`6a9f5063…`), que no es el nuestro (`zernio:28492858663659014`).
+ * Buscar por `conversation_id = <id nuestro>` no empata NUNCA — y como esta
+ * función cae al asesor por defecto cuando no encuentra, el reparto se veía
+ * perfecto mientras mandaba todos los leads al mismo asesor.
+ *
+ * Lo destapó un lead real (Paula, 2026-09-08): entró por la página del dueño,
+ * y al revisar la base su fila de contexto existía pero con OTRA llave.
+ *
+ * Se buscan las dos formas: la correcta —el usuario de esta conversación— y,
+ * por si algún llamador pasa el id de Zernio directo, también esa.
+ *
  * **Nunca lanza.** Si la tabla no existe todavía (bot sin Zernio) o la consulta
  * falla, cae en el asesor por defecto: es preferible que un lead aparezca en la
  * lista equivocada a que se pierda el registro por un error de reparto.
@@ -203,16 +217,22 @@ export function asesorDeEmail(email: string | null | undefined, lista: Asesor[] 
 export async function asesorDeConversacion(
   env: Env,
   conversationId: string | null,
+  lista: Asesor[] = ASESORES,
+  porDefecto: string = ASESOR_POR_DEFECTO,
 ): Promise<Asesor | null> {
-  if (!conversationId) return asesorPorDefecto();
+  const defecto = () => lista.find((a) => a.slug === porDefecto) ?? null;
+  if (!conversationId) return defecto();
   try {
     const fila = await new Db(env.DB).first<{ account_id: string }>(
-      "SELECT account_id FROM zernio_ctx WHERE conversation_id = ? ORDER BY updated_at DESC LIMIT 1",
-      [conversationId],
+      `SELECT account_id FROM zernio_ctx
+        WHERE channel_user_id = (SELECT channel_user_id FROM conversations WHERE id = ?)
+           OR conversation_id = ?
+        ORDER BY updated_at DESC LIMIT 1`,
+      [conversationId, conversationId],
     );
-    return asesorDeCuenta(fila?.account_id) ?? asesorPorDefecto();
+    return asesorDeCuenta(fila?.account_id, lista) ?? defecto();
   } catch {
-    return asesorPorDefecto();
+    return defecto();
   }
 }
 
