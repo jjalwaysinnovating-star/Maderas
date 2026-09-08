@@ -135,26 +135,48 @@ export const ASESORES: Asesor[] = [
       "6a91166377555aae013db017", // Instagram · ciudadmaderaswoodcity
     ],
   },
-  // ── Segundo asesor ────────────────────────────────────────────────────────
-  // Necesita cuatro cosas suyas: sus `_id` de Zernio, su chat de Telegram (que
-  // le escriba /start al bot de avisos), el correo con el que entrará al panel
-  // y —si tiene cuenta de Zernio propia— sus dos claves.
+  {
+    // Dada de alta el 2026-09-08, EN CUANTO activó su acceso al panel.
+    //
+    // No se esperó a tener todos sus datos a propósito: con un solo asesor en
+    // esta lista el filtro se apaga entero (`hayVariosAsesores`) y el panel le
+    // enseña TODOS los leads a cualquiera que entre. Paula ya tenía acceso con
+    // rol staff, así que hasta que existió esta fila estaba viendo la lista
+    // completa del dueño. Cerrar eso pesa más que esperar a los datos que
+    // faltan.
+    slug: "paula",
+    nombre: "Paula Amador",
+    emails: ["paula.amador.cdmaderas@gmail.com"],
+
+    // FALTA confirmar con el dueño, y hasta entonces esto queda vacío:
+    //
+    //   · `cuentasZernio` — hay una cuenta de Facebook nueva
+    //     ("6a9f52f177555aae01ef1b70", primera conversación 2026-09-08 04:39)
+    //     que casi seguro es la suya, pero adivinarlo aquí manda los leads de
+    //     alguien a la lista de quien no es. Se pone cuando él lo confirme.
+    //   · `telegramChatId` — que le escriba /start a @ciudadmaderas_avisos_bot.
+    //
+    // Mientras: sus leads caen en el ASESOR_POR_DEFECTO y sus avisos suenan en
+    // el teléfono del dueño. Es lo mismo que pasaba antes, y no se pierde nada.
+    cuentasZernio: [],
+  },
+  // ── Para el tercer asesor ─────────────────────────────────────────────────
+  // Si tiene cuenta de Zernio PROPIA, sus dos claves NO se escriben aquí: aquí
+  // van los NOMBRES de los secrets, y las claves se guardan aparte, en campo
+  // oculto, con:
   //
-  // Las claves NO se escriben aquí. Aquí van los NOMBRES; las claves se guardan
-  // aparte y él las pega en la terminal, en campo oculto:
-  //
-  //   wrangler secret put ZERNIO_API_KEY_SEGUNDO
-  //   wrangler secret put ZERNIO_WEBHOOK_SECRET_SEGUNDO
+  //   wrangler secret put ZERNIO_API_KEY_TERCERO
+  //   wrangler secret put ZERNIO_WEBHOOK_SECRET_TERCERO
   //
   // {
-  //   slug: "segundo",
+  //   slug: "tercero",
   //   nombre: "Nombre del asesor",
   //   telegramChatId: "123456789",
   //   emails: ["correo@ejemplo.com"],
   //   cuentasZernio: ["...", "..."],
   //   zernio: {
-  //     apiKeyVar: "ZERNIO_API_KEY_SEGUNDO",
-  //     webhookSecretVar: "ZERNIO_WEBHOOK_SECRET_SEGUNDO",
+  //     apiKeyVar: "ZERNIO_API_KEY_TERCERO",
+  //     webhookSecretVar: "ZERNIO_WEBHOOK_SECRET_TERCERO",
   //   },
   // },
 ];
