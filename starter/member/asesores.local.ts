@@ -156,7 +156,10 @@ export const ASESORES: Asesor[] = [
     // Zernio manda el id pero no el nombre, y una cuenta mal asignada aquí
     // manda los leads de una persona a la lista de otra sin que nada se vea
     // raro en el panel.
-    cuentasZernio: ["6a9f52f177555aae01ef1b70"], // Facebook · Paula y Ciudad Maderas
+    cuentasZernio: [
+      "6a9f52f177555aae01ef1b70", // Facebook · Paula y Ciudad Maderas
+      "6a9f5d9c77555aae01ef51b1", // Instagram · @c.maderaspaula
+    ],
   },
   // ── Para el tercer asesor ─────────────────────────────────────────────────
   // Si tiene cuenta de Zernio PROPIA, sus dos claves NO se escriben aquí: aquí
