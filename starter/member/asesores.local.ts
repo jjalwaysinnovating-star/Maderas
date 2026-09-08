@@ -147,9 +147,8 @@ export const ASESORES: Asesor[] = [
     // enseñarle los prospectos de todos por un dedazo).
     emails: ["paula.amador.cdmaderas@gmail.com"],
     cuentasZernio: [
-      "6a9f52f177555aae01ef1b70", // Facebook · página de Paula
-      // Instagram: pendiente. Su cuenta no se pudo ligar a la página todavía;
-      // cuando se conecte, aquí va su `_id` y no hace falta nada más.
+      "6a9f52f177555aae01ef1b70", // Facebook · Paula y Ciudad Maderas
+      "6a9f5d9c77555aae01ef51b1", // Instagram · c.maderaspaula
     ],
     zernio: {
       apiKeyVar: "ZERNIO_API_KEY_PAULA",
