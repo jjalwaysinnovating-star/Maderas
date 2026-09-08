@@ -229,12 +229,24 @@ la reemplaza (no se puede recuperar la anterior).
   (2) Su `_id` de Instagram no salía de la base porque nadie le había escrito
   todavía — Zernio lo enseña con el botón de copiar en Connections. Un `_id` no
   es secreto y puede ir por chat; las claves no.
-  (3) **Sus redes cuelgan de la cuenta de Zernio del DUEÑO**, no de una suya. Se
-  comprobó solo: sus mensajes llegan a este Worker y pasan la firma HMAC, y la
-  única llave configurada es la del dueño. Consecuencia real: el consumo de
-  Paula se cobra en la tarjeta de él, sin tope (plan por uso), y él ve la
-  bandeja de ella. El soporte para que cada asesor tenga su cuenta ya está
-  hecho (ver arriba); mudarla es trabajo de configuración, no de código.
+  (3) **Paula tiene su PROPIA cuenta de Zernio**, y eso costó una caída.
+  Al principio sus redes colgaban de la cuenta del dueño —se dedujo de que sus
+  mensajes pasaban la firma HMAC con la única llave configurada, la de él—, y
+  eso quedó escrito aquí como si fuera definitivo. Horas después el dueño le
+  abrió su cuenta y guardó sus claves como secrets (`ZERNIO_API_KEY_PAULA`,
+  `ZERNIO_WEBHOOK_SECRET_PAULA`), **pero el bloque `zernio` de su fila en
+  `member/asesores.local.ts` no existía**. Guardar los secrets no basta: si la
+  fila no los declara, `secretosWebhookZernio` ni los mira, la firma no empata
+  y el Worker devuelve 403. Sus mensajes se cayeron **en silencio** durante una
+  hora — sin error, sin aviso, sin nada en el panel; desde fuera el bot
+  simplemente no contestaba en su página.
+  **La lección para el próximo asesor con cuenta propia:** los dos secrets y el
+  bloque `zernio` de su fila son UNA sola operación. Guardar los secrets sin
+  declararlos no falla ruidosamente, falla mudo.
+  El síntoma se diagnosticó mirando `messages` en D1 (nada nuevo desde tal
+  hora = el mensaje no llegó al Worker) y `wrangler secret list` (aparecieron
+  dos secrets que nadie había declarado). `wrangler tail` no sirvió aquí: no
+  llegó a conectarse y no capturó nada.
   **Falta la prueba en vivo**: alguien de fuera —ni el dueño ni ella— escribe a
   una red de Paula y se comprueba que el lead cae en la lista de ELLA, no en la
   del dueño, y que el aviso suena en el teléfono de ella.

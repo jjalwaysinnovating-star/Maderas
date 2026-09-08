@@ -160,6 +160,16 @@ export const ASESORES: Asesor[] = [
       "6a9f52f177555aae01ef1b70", // Facebook · Paula y Ciudad Maderas
       "6a9f5d9c77555aae01ef51b1", // Instagram · @c.maderaspaula
     ],
+    // Paula tiene su PROPIA cuenta de Zernio, así que su webhook firma con SU
+    // clave. Sin estas dos líneas el Worker la verificaba contra la del dueño,
+    // no empataba, y devolvía 403: sus mensajes se caían **en silencio** —sin
+    // error, sin aviso, sin nada en el panel— y el bot parecía muerto en su
+    // página. Pasó en vivo el 2026-09-08: los secrets ya estaban guardados y
+    // esta declaración faltaba, que es justo lo que la hace efectiva.
+    zernio: {
+      apiKeyVar: "ZERNIO_API_KEY_PAULA",
+      webhookSecretVar: "ZERNIO_WEBHOOK_SECRET_PAULA",
+    },
   },
   // ── Para el tercer asesor ─────────────────────────────────────────────────
   // Si tiene cuenta de Zernio PROPIA, sus dos claves NO se escriben aquí: aquí
