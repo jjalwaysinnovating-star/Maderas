@@ -12,7 +12,7 @@ import { twilioAdapter } from "./channels/twilio";
 import { parseMetaEvents, verifyMetaSignature } from "./channels/meta";
 import { parseWhatsAppEvents, serveWhatsAppMedia } from "./channels/whatsapp";
 import { parseKapsoEvents, verifyKapsoSignature, kapsoOwnerTakeover, normalizeKapsoEvents } from "./channels/kapso";
-import { parseZernioEvents, verificaFirmaZernio, normalizeZernioEvents, rememberZernioCtx } from "./channels/zernio";
+import { parseZernioEvents, verificaFirmaZernio, normalizeZernioEvents, rememberZernioCtx, zernioOwnerTakeover } from "./channels/zernio";
 import { secretosWebhookZernio } from "../member/asesores.local";
 // Atribución de origen (vive en member/, sobrevive `forjabot update`).
 import { extraeAnuncio, guardaOrigen, limpiaRef } from "../member/origen.local";
@@ -583,7 +583,15 @@ app.post("/webhooks/zernio", async (c) => {
         }).catch((e) => console.error("[origen] referral:", e));
       }
     }
-    if (ev?.event !== "message.received") continue; // message.sent/otros → 200 sin procesar
+    // COEXISTENCIA: un asesor contestó A MANO desde la bandeja de Zernio
+    // (`message.sent` con sentVia="human") → se pausa esa conversación para que
+    // el bot no le hable encima al cliente. Los envíos del propio bot llegan
+    // como sentVia="api" y no pausan nada. Ver zernioOwnerTakeover.
+    if (ev?.event === "message.sent") {
+      await zernioOwnerTakeover(ev, c.env);
+      continue;
+    }
+    if (ev?.event !== "message.received") continue; // otros eventos → 200 sin procesar
     const convId = ev.message?.conversationId;
     const acctId = ev.account?.accountId || ev.account?.id;
     const userId = ev.message?.sender?.id;

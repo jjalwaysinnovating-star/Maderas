@@ -229,6 +229,65 @@ export async function rememberZernioCtx(
 }
 
 /**
+ * COEXISTENCIA. Un `message.sent` que escribió UNA PERSONA en la bandeja de
+ * Zernio pausa esa conversación, para que el bot se haga a un lado y no queden
+ * dos voces contestándole al mismo cliente.
+ *
+ * Quién lo mandó lo dice `message.sentVia`, y solo `human` cuenta:
+ *   · `human` → un operador tecleando en el inbox de Zernio. ESO es el takeover.
+ *   · `api` → nuestro propio bot. Pausar aquí se pausaría a sí mismo.
+ *   · `broadcast` / `sequence` / `workflow` / `comment_automation` / `bulk-api`
+ *     → automatizaciones de Zernio; tampoco es una persona tomando el hilo.
+ *   · `null` o ausente → lineage desconocido. La documentación de Zernio lo
+ *     dice con todas sus letras: *"treat null as unknown, never as sent by a
+ *     human"*. Pasa, entre otros, cuando alguien contesta desde la app de
+ *     Facebook en vez de desde Zernio. **Ese caso NO se cubre**, y es a
+ *     propósito: pausar por un `null` apagaría el bot por ecos y backfills, y
+ *     un bot que se calla solo sin motivo es peor que uno que no se calla.
+ *     Para eso queda el botón "⏸ Pausar bot aquí" del panel.
+ *
+ * El hilo se ubica por `message.conversationId`, que es el id de ZERNIO — y
+ * esta es la única vez que la columna `conversation_id` de `zernio_ctx` es la
+ * llave correcta. En el resto (asesor, canal) hay que buscar por
+ * `channel_user_id`; confundirlas ya costó un fallo silencioso el 2026-09-08.
+ *
+ * Devuelve true si pausó. **Nunca lanza:** un fallo aquí no debe tumbar el 200
+ * que Zernio espera, o reintentaría el evento en bucle.
+ */
+export async function zernioOwnerTakeover(ev: unknown, env: Env): Promise<boolean> {
+  const e = ev as {
+    event?: string;
+    message?: { conversationId?: string; sentVia?: string | null; direction?: string };
+  };
+  if (e?.event !== "message.sent") return false;
+  if (e.message?.sentVia !== "human") return false;
+  const convZernio = e.message?.conversationId;
+  if (!convZernio) return false;
+  try {
+    const db = new Db(env.DB);
+    await ensureCtx(db);
+    const fila = await db.first<{ channel_user_id: string }>(
+      "SELECT channel_user_id FROM zernio_ctx WHERE conversation_id = ? ORDER BY updated_at DESC LIMIT 1",
+      [convZernio],
+    );
+    if (!fila?.channel_user_id) return false; // hilo que nunca pasó por el bot
+    const { ConversationsRepo } = await import("../db/conversations");
+    const { resolveTakeoverMs } = await import("../db/settings");
+    const convs = new ConversationsRepo(db);
+    const conv = await convs.getOrCreate("zernio", fila.channel_user_id);
+    await convs.setPausedUntil(conv.id, Date.now() + (await resolveTakeoverMs(env)));
+    console.log(
+      "[zernio] un asesor contestó a mano → bot pausado",
+      JSON.stringify({ conversationId: convZernio }),
+    );
+    return true;
+  } catch (err) {
+    console.error("[zernio] takeover:", err);
+    return false;
+  }
+}
+
+/**
  * La clave con la que se contesta por una cuenta de Zernio, ya resuelta y con
  * el fallo dicho en voz alta.
  *
