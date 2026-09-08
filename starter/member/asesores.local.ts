@@ -147,17 +147,19 @@ export const ASESORES: Asesor[] = [
     slug: "paula",
     nombre: "Paula Amador",
     emails: ["paula.amador.cdmaderas@gmail.com"],
+    // Salió de su /start al bot de avisos (getUpdates, 2026-09-08). Desde aquí
+    // sus leads calientes le suenan a ELLA y no al dueño.
+    telegramChatId: "8693208995",
 
-    // FALTA confirmar con el dueño, y hasta entonces esto queda vacío:
+    // SIGUE FALTANDO, y por eso queda vacío: cuál es su cuenta de Zernio.
+    // Hay una de Facebook nueva ("6a9f52f177555aae01ef1b70", primera
+    // conversación 2026-09-08 04:39) que casi seguro es la suya, pero
+    // adivinarlo manda los leads de una persona a la lista de otra — y eso no
+    // se ve distinto de que funcione. Se pone cuando el dueño lo confirme
+    // mirando su panel de Zernio.
     //
-    //   · `cuentasZernio` — hay una cuenta de Facebook nueva
-    //     ("6a9f52f177555aae01ef1b70", primera conversación 2026-09-08 04:39)
-    //     que casi seguro es la suya, pero adivinarlo aquí manda los leads de
-    //     alguien a la lista de quien no es. Se pone cuando él lo confirme.
-    //   · `telegramChatId` — que le escriba /start a @ciudadmaderas_avisos_bot.
-    //
-    // Mientras: sus leads caen en el ASESOR_POR_DEFECTO y sus avisos suenan en
-    // el teléfono del dueño. Es lo mismo que pasaba antes, y no se pierde nada.
+    // Mientras: los leads que entren por su página caen en el
+    // ASESOR_POR_DEFECTO y su aviso suena en el teléfono del dueño.
     cuentasZernio: [],
   },
   // ── Para el tercer asesor ─────────────────────────────────────────────────
