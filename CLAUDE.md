@@ -112,6 +112,26 @@ la reemplaza (no se puede recuperar la anterior).
   El DM no lleva botones a propósito: los de Zernio son de enlace, y un enlace
   NO abre la ventana de 24h de Instagram — solo abre esa ventana un mensaje de
   la persona. Por eso se pide respuesta en vez de un toque.
+- **El asesor contesta a mano y el bot se calla** (`zernioAsesorTakeover` en
+  `src/channels/zernio.ts`, enganchado en el webhook de `src/index.ts`).
+  Le pasó al dueño el 2026-09-08: contestó desde la bandeja de Zernio y el bot
+  siguió hablando encima — el cliente ve dos voces que se contradicen.
+  El aviso es `message.sent`, que el Worker tiraba a la basura. Trae `sentVia`
+  con quién produjo el mensaje: `human` (alguien en la bandeja de Zernio) pausa;
+  `api` (nosotros) y `comment_automation` (el DM del embudo) NO pausan — si el
+  bot se pausara con sus propios mensajes dejaría de contestarle a todo el mundo
+  desde el primer turno, y por fuera se vería igual que "nadie escribió".
+  **`sentVia: null` TAMBIÉN pausa**, contra lo que pide la doc de Zernio: null
+  significa "lo mandaron desde la app de la plataforma", y en este bot toda
+  salida automática viene atribuida, así que un null en vivo es una persona.
+  Se registra distinto en el log por si algún día aparece un null que no lo sea.
+  La pausa dura lo que diga `takeoverMinutes` (vacío = 60 min; 0 = hasta que el
+  dueño reactive a mano), igual que el takeover del panel y el de WhatsApp.
+  **HAY QUE SUSCRIBIR EL WEBHOOK A `message.sent`** o el aviso no llega y el
+  arreglo no hace nada: se actualiza con `PUT /api/v1/webhooks/settings`
+  (`{_id, events}`) o desde el panel de Zernio. El de Paula ya lo tiene; **el
+  del dueño hay que revisarlo**. Pruebas en `test/channels/zernio-takeover.test.ts`.
+  **Vive en `src/`: `forjabot update` lo borra.**
 - **Avisos:** Telegram al dueño (`@ciudadmaderas_avisos_bot`). Solo se avisa de los
   leads **calientes** — avisar de todos entrena a ignorar los avisos. El aviso NO
   depende del canal: `calificarLead` solo recibe `env` y el id de conversación, así

@@ -12,7 +12,7 @@ import { twilioAdapter } from "./channels/twilio";
 import { parseMetaEvents, verifyMetaSignature } from "./channels/meta";
 import { parseWhatsAppEvents, serveWhatsAppMedia } from "./channels/whatsapp";
 import { parseKapsoEvents, verifyKapsoSignature, kapsoOwnerTakeover, normalizeKapsoEvents } from "./channels/kapso";
-import { parseZernioEvents, verificaFirmaZernio, normalizeZernioEvents, rememberZernioCtx } from "./channels/zernio";
+import { parseZernioEvents, verificaFirmaZernio, normalizeZernioEvents, rememberZernioCtx, zernioAsesorTakeover } from "./channels/zernio";
 import { secretosWebhookZernio } from "../member/asesores.local";
 // Atribución de origen (vive en member/, sobrevive `forjabot update`).
 import { extraeAnuncio, guardaOrigen, limpiaRef } from "../member/origen.local";
@@ -583,7 +583,16 @@ app.post("/webhooks/zernio", async (c) => {
         }).catch((e) => console.error("[origen] referral:", e));
       }
     }
-    if (ev?.event !== "message.received") continue; // message.sent/otros → 200 sin procesar
+    // El asesor contestó a mano desde la bandeja de Zernio → el bot se calla.
+    // Va ANTES del filtro de message.received porque este aviso es un
+    // message.sent, y sin esto el bot habla encima del asesor.
+    if (ev?.event === "message.sent") {
+      await zernioAsesorTakeover(ev, c.env).catch((e) =>
+        console.error("[zernio] takeover:", e),
+      );
+      continue;
+    }
+    if (ev?.event !== "message.received") continue; // otros eventos → 200 sin procesar
     const convId = ev.message?.conversationId;
     const acctId = ev.account?.accountId || ev.account?.id;
     const userId = ev.message?.sender?.id;

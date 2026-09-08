@@ -63,6 +63,8 @@ interface ZernioEvent {
   event?: string;
   message?: ZernioMessage;
   account?: ZernioAccount;
+  /** Solo en message.sent: la otra parte (el cliente), en ambas direcciones. */
+  conversation?: { participantId?: string; participantName?: string };
 }
 
 // ── firma ────────────────────────────────────────────────────────────────────
@@ -167,6 +169,71 @@ export function parseZernioEvents(ev: ZernioEvent): IncomingMessage[] {
       providerMessageId: ev.id || m.id || undefined,
     },
   ];
+}
+
+/**
+ * El ASESOR contestó a mano y el bot se calla (takeover).
+ *
+ * Sin esto el bot sigue hablando encima de la persona y el cliente ve dos
+ * voces que se contradicen — pasó en vivo. Es el mismo comportamiento que ya
+ * tenía WhatsApp con `whatsapp.smb.message.echoes` (ver ycloudOwnerTakeover):
+ * aquí el aviso equivalente es `message.sent`.
+ *
+ * `sentVia` dice QUIÉN produjo el mensaje saliente:
+ *   • "human"             → un operador escribiendo en la bandeja de Zernio.
+ *   • "api"               → NOSOTROS. El bot no se pausa a sí mismo.
+ *   • "comment_automation"→ el DM del embudo. Tampoco pausa: ese mensaje
+ *                           existe justamente para que el bot tome la plática.
+ *   • null                → lo mandaron desde la app de la plataforma
+ *                           (la bandeja de Facebook/Instagram). La doc pide
+ *                           tratarlo como "desconocido", y aun así aquí SÍ
+ *                           pausa: en este bot toda salida automática viene
+ *                           atribuida ("api" o "comment_automation"), así que
+ *                           un null en vivo es una persona escribiendo. Se
+ *                           registra distinto para poder revisarlo si algún
+ *                           día aparece un null que no sea humano.
+ *
+ * Devuelve true si pausó.
+ */
+export async function zernioAsesorTakeover(ev: ZernioEvent, env: Env): Promise<boolean> {
+  if (ev?.event !== "message.sent") return false;
+  const via = (ev.message as unknown as { sentVia?: string | null })?.sentVia ?? null;
+  if (via !== "human" && via !== null) return false;
+
+  // A quién se le contestó. `participantId` es la otra parte y viaja en ambas
+  // direcciones; si no viniera, se traduce el conversationId de Zernio con el
+  // contexto que ya guardamos al recibir.
+  let channelUserId = ev.conversation?.participantId?.trim();
+  if (!channelUserId) {
+    const convZernio = ev.message?.conversationId;
+    if (!convZernio) return false;
+    try {
+      const db = new Db(env.DB);
+      await ensureCtx(db);
+      const fila = await db.first<{ channel_user_id: string }>(
+        "SELECT channel_user_id FROM zernio_ctx WHERE conversation_id = ? ORDER BY updated_at DESC LIMIT 1",
+        [convZernio],
+      );
+      channelUserId = fila?.channel_user_id;
+    } catch (e) {
+      console.error("[zernio] takeover: no se pudo traducir la conversación:", e);
+      return false;
+    }
+  }
+  if (!channelUserId) return false;
+
+  const { ConversationsRepo } = await import("../db/conversations");
+  const { resolveTakeoverMs } = await import("../db/settings");
+  const convs = new ConversationsRepo(new Db(env.DB));
+  // getOrCreate y no getById: si por lo que sea no existiera la conversación,
+  // dejarla creada y pausada es más seguro que no pausar nada.
+  const conv = await convs.getOrCreate("zernio", channelUserId, ev.conversation?.participantName);
+  await convs.setPausedUntil(conv.id, Date.now() + (await resolveTakeoverMs(env)));
+  console.log(
+    `[zernio] takeover: el asesor contestó a mano (sentVia=${via ?? "null/app"}) → bot pausado`,
+    JSON.stringify({ channelUserId }),
+  );
+  return true;
 }
 
 // ── contexto de envío (conversationId + accountId por persona) ─────────────────
