@@ -106,7 +106,62 @@ nada. Nace en `[]` — hoy trae 19 trozos de los 8 documentos.
    bot de Maderas pasó con un cliente real —quedó cuatro veces— y no se puede
    dejar puesto antes del deploy porque es un ajuste en D1, no en el código.
 5. **Bot de Telegram propio** para los avisos (uno nuevo, no el de Maderas).
-6. **Crear la página de Facebook** y no conectarle ManyChat ni otra app.
+6. ~~Crear la página de Facebook~~ — **hecha el 2026-09-09**, se llama
+   **"J&J Always Innovating"** (confirmado por el dueño). No conectarle ManyChat
+   ni ninguna otra app: dos apps en la misma página contestan en paralelo, que
+   es lo que costó días en la página de Ciudad Maderas.
 7. **Cuenta de Zernio propia** y conectar la página ahí.
 8. Llenar los **`[COMPLETA AQUÍ:]`** (teléfono, correo, tiempos de entrega,
    formas de pago, la liga para probar el bot de Maderas) y reindexar otra vez.
+
+
+---
+
+## Cómo retomar (estado al 2026-09-09)
+
+Lo hecho en la Cloudflare del dueño:
+
+| Recurso | Nombre / id |
+|---|---|
+| Worker (aún sin desplegar) | `jj-always-innovating` |
+| D1 | `horizontes_bot_starter_614c0e_db` · `7877e25d-1fad-452e-b5f0-8cfe0d68b662` |
+| Vectorize | `horizontes_bot_starter_614c0e_kb` (1024 dim · coseno) |
+| Esquema D1 | aplicado en remoto — 25 tablas |
+
+**No se ha desplegado, a propósito.** Faltan dos secrets, y uno de ellos no es
+opcional por seguridad:
+
+- `ANTHROPIC_API_KEY` — sin ella el bot no piensa. La llave es la de la consola
+  de Anthropic llamada **"Bot J&J"**, creada aparte de la de Maderas para poder
+  ver el gasto de cada bot por separado (misma cuenta, mismo saldo).
+- `DASHBOARD_PASSWORD` — **sin este secret el panel queda ABIERTO.** `adminAuth`
+  se lo pasa a `basicAuth` tal cual, y la comprobación manual compara contra
+  `?? ""`: un Worker sin él acepta el usuario `admin` con contraseña **vacía**.
+  No se despliega sin esto.
+
+Los dos viajan por la **configuración del entorno de Claude Code** (donde ya
+vive `CLOUDFLARE_API_TOKEN`), **nunca por el chat**, y con nombres distintos a
+propósito: `ANTHROPIC_API_KEY_JJ` y `DASHBOARD_PASSWORD_JJ`. El sufijo `_JJ`
+evita que la sesión de Claude Code tome `ANTHROPIC_API_KEY` como suya; al
+guardarlos en el Worker se les pone el nombre real, sin sufijo.
+
+**Las variables del entorno solo se cargan al arrancar el contenedor**, así que
+una sesión que ya estaba abierta cuando se guardaron NO las ve — hay que abrir
+sesión nueva. Ese fue justo el tropiezo del 2026-09-09.
+
+Con las dos variables presentes, el resto es seguido:
+
+```bash
+cd bot-jj/starter
+pnpm test
+printf %s "$ANTHROPIC_API_KEY_JJ"   | npx wrangler secret put ANTHROPIC_API_KEY
+printf %s "$DASHBOARD_PASSWORD_JJ" | npx wrangler secret put DASHBOARD_PASSWORD
+pnpm kb:reindex && pnpm run deploy
+```
+
+Y después del deploy, en este orden:
+
+1. `curl -X POST https://jj-always-innovating.jjalwaysinnovating.workers.dev/admin/kb/reindex -u "admin:<contraseña>"`
+   — si contesta `indexed: 0`, el deploy no había propagado: repetir.
+2. Apagar `captureLead` en `settings` (ver arriba).
+3. Comprobar que `/` da 200 y `/admin` da 401.
