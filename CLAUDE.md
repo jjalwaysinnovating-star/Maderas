@@ -22,6 +22,30 @@ que lo vigila (`test/sitio-web.test.ts`, bloque "solo terrenos").
 **El dueño no programa.** Corre los comandos por él y explícale en español
 sencillo, una pregunta a la vez. Lee `starter/CLAUDE.md` para el mapa del código.
 
+## Ahora hay DOS bots en este repo
+
+`starter/` es el de **Ciudad Maderas** (terrenos) y es de lo que habla todo este
+archivo. `bot-jj/starter/` es un bot **distinto**, el de **J&J Always
+Innovating**, que vende chatbots a otros negocios — su propio README está en
+`bot-jj/README.md` y no se mezcla con este.
+
+No pudo colgarse del bot de Maderas y no es capricho: el Worker es un solo
+negocio (un nombre, una KB, un guion, un panel), y las dos páginas de Facebook
+son el mismo canal (`messenger`) para él, así que no hay forma de que conteste
+distinto según por cuál entró el mensaje. El reparto por asesor decide de quién
+es el prospecto, no de qué habla el bot.
+
+**Lo que sí importa desde aquí:** el webhook de Zernio no se puede filtrar por
+cuenta. Si la página de J&J se conecta a la MISMA cuenta de Zernio que Ciudad
+Maderas, sus mensajes entran a ESTE Worker y el bot contesta de terrenos a quien
+preguntó por chatbots. J&J necesita cuenta de Zernio propia.
+
+De paso quedó contestada una duda vieja: **`forjabot init` crea una licencia
+gratis nueva por su cuenta** (la de J&J es `HZN-LTPC-LF7F-SU3Q`, plan free), sin
+pedir permiso ni la licencia de este bot. Un segundo bot Starter no necesita
+autorización. Lo que sigue sin contestar es si la licencia cubre montar bots
+**para clientes y cobrarles** — esa sigue siendo pregunta para Horizontes IA.
+
 ## Dónde vive
 
 | Qué | Dónde |
