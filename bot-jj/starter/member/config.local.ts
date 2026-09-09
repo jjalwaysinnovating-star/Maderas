@@ -19,7 +19,10 @@ export const memberConfig = {
 export type MemberConfig = typeof memberConfig;
 
 export const businessConfig = {
-  hours: "", // [COMPLETA AQUÍ]
+  // El bot sí atiende a toda hora: es cierto y es parte de lo que se vende.
+  // Falta el horario en que JOSWUAR contesta en persona — cuando se sepa, se
+  // agrega aquí (y a member/kb/06-preguntas-frecuentes.md).
+  hours: "Este chat contesta las 24 horas, todos los días.",
   services: [] as { name: string; price: number }[],
   location: "En línea, con clientes en todo México.",
   paymentMethods: [] as string[], // [COMPLETA AQUÍ]
