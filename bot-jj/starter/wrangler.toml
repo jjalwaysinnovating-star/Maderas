@@ -47,7 +47,7 @@ new_sqlite_classes = ["SupportAgent"]
 [[d1_databases]]
 binding = "DB"
 database_name = "horizontes_bot_starter_614c0e_db"
-database_id = "{{D1_DATABASE_ID}}"  # crea tu D1 (wrangler d1 create horizontes_bot_starter_614c0e_db) y pega aquí su id
+database_id = "7877e25d-1fad-452e-b5f0-8cfe0d68b662"
 
 [[vectorize]]
 binding = "KB"
