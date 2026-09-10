@@ -4,7 +4,10 @@ El **segundo bot**: el de la página de Facebook "J&J Always Innovating", que
 vende chatbots a otros negocios. El bot vive en `starter/`, bajado con
 `npx forjabot init` el 2026-09-09.
 
-**Todavía no está desplegado** — ver "Lo que falta" al final.
+**DESPLEGADO Y CONTESTANDO desde el 2026-09-10** (versión
+`54186342-365c-465e-b3fc-bcac7082a3c7`) en
+https://jj-always-innovating.jjalwaysinnovating.workers.dev — panel en `…/admin`.
+Lo que sigue pendiente ya no es código: ver "Lo que falta" al final.
 
 ## Por qué es un bot aparte y no un ajuste del de Maderas
 
@@ -93,13 +96,18 @@ lo importa el Worker **al construir**, así que sin regenerarlo el bot se
 despliega con la base de conocimiento **vacía** y contesta como si no supiera
 nada. Nace en `[]` — hoy trae 19 trozos de los 8 documentos.
 
-## Lo que falta para que conteste
+## Lo que falta (lo tachado ya se hizo)
 
-1. **`ANTHROPIC_API_KEY`** — sin ella el bot no piensa. Va como secret del
-   Worker (`wrangler secret put`), **nunca por el chat**.
-2. **Desplegar** — crea el D1, el índice Vectorize y el Worker en su Cloudflare.
-3. **Reindexar la KB** después del deploy, o contesta con lo viejo.
-4. **Apagar `captureLead`** en cuanto exista la base:
+El bot **ya contesta**. Lo que queda no es código: son cuentas y textos.
+
+1. ~~**`ANTHROPIC_API_KEY`**~~ — **guardada el 2026-09-10** como secret del
+   Worker, junto con `DASHBOARD_PASSWORD`. Viajaron por la configuración del
+   entorno de Claude Code (`ANTHROPIC_API_KEY_JJ` / `DASHBOARD_PASSWORD_JJ`),
+   **nunca por el chat**.
+2. ~~**Desplegar**~~ — **hecho el 2026-09-10**. El D1 y el Vectorize ya existían;
+   el deploy creó el Worker.
+3. ~~**Reindexar la KB**~~ — **hecho**: 19 trozos, a la primera (sin `indexed: 0`).
+4. ~~**Apagar `captureLead`**~~ — **puesto el 2026-09-10**:
    `disabled_tools = captureLead` en la tabla `settings`. Hace lo mismo que
    `calificarLead` pero sin calificar, y el modelo llama a las dos: cada
    prospecto entra DOS veces al panel, una con prioridad y otra sin ella. En el
@@ -113,55 +121,86 @@ nada. Nace en `[]` — hoy trae 19 trozos de los 8 documentos.
 7. **Cuenta de Zernio propia** y conectar la página ahí.
 8. Llenar los **`[COMPLETA AQUÍ:]`** (teléfono, correo, tiempos de entrega,
    formas de pago, la liga para probar el bot de Maderas) y reindexar otra vez.
+9. **Una pregunta por mensaje.** En la prueba en vivo del 2026-09-10 el bot juntó
+   dos ("¿tamaño del negocio?" y "¿cuántos mensajes al mes?") en la misma
+   respuesta. La regla es **un dato a la vez**: se ajusta en
+   `member/kb/08-guion-de-calificacion.md` y se reindexa.
 
 
 ---
 
-## Cómo retomar (estado al 2026-09-09)
+## Cómo retomar (estado al 2026-09-10)
 
-Lo hecho en la Cloudflare del dueño:
+**Ya está desplegado y contestando.** Esta sección dejó de ser una lista de
+pasos pendientes; ahora es el mapa de lo que hay.
 
 | Recurso | Nombre / id |
 |---|---|
-| Worker (aún sin desplegar) | `jj-always-innovating` |
+| Worker | `jj-always-innovating` · versión `54186342-365c-465e-b3fc-bcac7082a3c7` |
+| Dirección | https://jj-always-innovating.jjalwaysinnovating.workers.dev |
+| Panel | …/admin (usuario `admin`; la contraseña la tiene el dueño) |
 | D1 | `horizontes_bot_starter_614c0e_db` · `7877e25d-1fad-452e-b5f0-8cfe0d68b662` |
 | Vectorize | `horizontes_bot_starter_614c0e_kb` (1024 dim · coseno) |
-| Esquema D1 | aplicado en remoto — 25 tablas |
+| Secrets del Worker | `ANTHROPIC_API_KEY` · `DASHBOARD_PASSWORD` |
 
-**No se ha desplegado, a propósito.** Faltan dos secrets, y uno de ellos no es
-opcional por seguridad:
-
-- `ANTHROPIC_API_KEY` — sin ella el bot no piensa. La llave es la de la consola
-  de Anthropic llamada **"Bot J&J"**, creada aparte de la de Maderas para poder
-  ver el gasto de cada bot por separado (misma cuenta, mismo saldo).
-- `DASHBOARD_PASSWORD` — **sin este secret el panel queda ABIERTO.** `adminAuth`
-  se lo pasa a `basicAuth` tal cual, y la comprobación manual compara contra
-  `?? ""`: un Worker sin él acepta el usuario `admin` con contraseña **vacía**.
-  No se despliega sin esto.
-
-Los dos viajan por la **configuración del entorno de Claude Code** (donde ya
-vive `CLOUDFLARE_API_TOKEN`), **nunca por el chat**, y con nombres distintos a
+Las dos llaves viajan por la **configuración del entorno de Claude Code** (donde
+ya vive `CLOUDFLARE_API_TOKEN`), **nunca por el chat**, y con nombres distintos a
 propósito: `ANTHROPIC_API_KEY_JJ` y `DASHBOARD_PASSWORD_JJ`. El sufijo `_JJ`
 evita que la sesión de Claude Code tome `ANTHROPIC_API_KEY` como suya; al
 guardarlos en el Worker se les pone el nombre real, sin sufijo.
 
 **Las variables del entorno solo se cargan al arrancar el contenedor**, así que
 una sesión que ya estaba abierta cuando se guardaron NO las ve — hay que abrir
-sesión nueva. Ese fue justo el tropiezo del 2026-09-09.
+sesión nueva. Ese fue el tropiezo del 2026-09-09.
 
-Con las dos variables presentes, el resto es seguido:
+`DASHBOARD_PASSWORD` **no es opcional**: `adminAuth` se lo pasa a `basicAuth` tal
+cual y la comprobación compara contra `?? ""`, así que un Worker sin él acepta el
+usuario `admin` con contraseña **vacía**. Ya está puesto y comprobado.
+
+### Volver a desplegar
 
 ```bash
 cd bot-jj/starter
-pnpm test
-printf %s "$ANTHROPIC_API_KEY_JJ"   | npx wrangler secret put ANTHROPIC_API_KEY
-printf %s "$DASHBOARD_PASSWORD_JJ" | npx wrangler secret put DASHBOARD_PASSWORD
-pnpm kb:reindex && pnpm run deploy
+pnpm install
+pnpm test                 # 1,373 pruebas
+pnpm kb:reindex           # regenera scripts/kb-fixtures.json — NO se puede saltar
+pnpm run deploy
+curl -X POST -u "admin:<contraseña>" \
+  https://jj-always-innovating.jjalwaysinnovating.workers.dev/admin/kb/reindex
 ```
 
-Y después del deploy, en este orden:
+El reindex en vivo debe contestar **19**; si contesta `indexed: 0`, el deploy no
+había propagado — repetir.
 
-1. `curl -X POST https://jj-always-innovating.jjalwaysinnovating.workers.dev/admin/kb/reindex -u "admin:<contraseña>"`
-   — si contesta `indexed: 0`, el deploy no había propagado: repetir.
-2. Apagar `captureLead` en `settings` (ver arriba).
-3. Comprobar que `/` da 200 y `/admin` da 401.
+### Comprobación después de desplegar
+
+```bash
+B=https://jj-always-innovating.jjalwaysinnovating.workers.dev
+curl -s -o /dev/null -w "%{http_code}\n" $B/health    # 200
+curl -s -o /dev/null -w "%{http_code}\n" $B/admin     # 401
+curl -s -o /dev/null -w "%{http_code}\n" -u "admin:" $B/admin   # 401
+```
+
+Ese tercero es el que importa de verdad: con contraseña **vacía** debe dar 401.
+Si diera 200, el panel quedó abierto y falta el secret.
+
+**`/` da 404, y está bien.** Este bot **no tiene sitio web** — no existe
+`member/landing.local.ts`, a diferencia del de Ciudad Maderas, que sirve 12
+páginas desde su Worker. Lo que este bot sirve es el panel, `/health`,
+`/widget.js` y los webhooks. No busques la portada: nunca se hizo. Si algún día
+se quiere una página pública para J&J, es trabajo aparte.
+
+### Lo que se comprobó en vivo el 2026-09-10
+
+Se le escribió *"Hola, ¿cuánto cuesta un bot?"* por `/web/send` y contestó con
+los precios "desde", en dólares, con el piso de $2,000 respetado, contestando
+primero y preguntando después. La llave de Anthropic funciona.
+
+Un detalle de guion que quedó a la vista y **no es del despliegue**: metió **dos
+preguntas en el mismo mensaje** ("¿tamaño del negocio?" y "¿cuántos mensajes al
+mes?"), y la regla es **un dato a la vez**. Se corrige en
+`member/kb/08-guion-de-calificacion.md` y se reindexa.
+
+Esa plática de prueba quedó en la tabla `messages`. No generó lead (nunca se dio
+nombre ni teléfono), así que **el panel de leads sigue en cero**: el primero que
+aparezca ya es de verdad.
