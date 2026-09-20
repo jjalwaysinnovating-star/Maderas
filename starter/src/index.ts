@@ -13,6 +13,7 @@ import { parseMetaEvents, verifyMetaSignature } from "./channels/meta";
 import { parseWhatsAppEvents, serveWhatsAppMedia } from "./channels/whatsapp";
 import { parseKapsoEvents, verifyKapsoSignature, kapsoOwnerTakeover, normalizeKapsoEvents } from "./channels/kapso";
 import { parseZernioEvents, verificaFirmaZernio, normalizeZernioEvents, rememberZernioCtx, zernioOwnerTakeover } from "./channels/zernio";
+import { rescataComentario } from "./channels/rescate-comentarios";
 import { secretosWebhookZernio } from "../member/asesores.local";
 // Atribución de origen (vive en member/, sobrevive `forjabot update`).
 import { extraeAnuncio, guardaOrigen, limpiaRef } from "../member/origen.local";
@@ -589,6 +590,24 @@ app.post("/webhooks/zernio", async (c) => {
     // como sentVia="api" y no pausan nada. Ver zernioOwnerTakeover.
     if (ev?.event === "message.sent") {
       await zernioOwnerTakeover(ev, c.env);
+      continue;
+    }
+    // EMBUDO DE COMENTARIOS. Zernio manda UN SOLO DM por persona para siempre:
+    // la segunda vez que alguien comenta, aunque sea en otra publicación y
+    // semanas después, no sale ni el privado ni la respuesta pública. Aquí se
+    // cubre ese hueco. Va en waitUntil porque espera a que Zernio tenga su
+    // turno primero, y Zernio reintenta el evento si tardamos en contestar.
+    // Ver src/channels/rescate-comentarios.ts.
+    if (ev?.event === "comment.received") {
+      const tarea = rescataComentario(ev, c.env);
+      let enSegundoPlano = false;
+      try {
+        c.executionCtx.waitUntil(tarea);
+        enSegundoPlano = true;
+      } catch {
+        /* sin executionCtx (pruebas, dev): se espera aquí mismo */
+      }
+      if (!enSegundoPlano) await tarea;
       continue;
     }
     if (ev?.event !== "message.received") continue; // otros eventos → 200 sin procesar

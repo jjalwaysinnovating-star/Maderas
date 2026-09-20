@@ -112,38 +112,87 @@ la reemplaza (no se puede recuperar la anterior).
   El DM no lleva botones a propósito: los de Zernio son de enlace, y un enlace
   NO abre la ventana de 24h de Instagram — solo abre esa ventana un mensaje de
   la persona. Por eso se pide respuesta en vez de un toque.
-  ### ⚠️ EL EMBUDO ESTÁ ROTO EN LAS DOS CUENTAS (2026-09-20) — sin diagnosticar
 
-  El dueño lo reportó en vivo: **alguien comentó en Ciudad Maderas y no salió
-  el mensaje privado**. Y las redes de Paula casi seguro nunca tuvieron embudo
-  — sus dos automatizaciones nunca se crearon: las que existen se hicieron el
-  2026-08-29 en la cuenta de Zernio del dueño y para SUS dos cuentas, y Paula
-  abrió su propia cuenta de Zernio días después.
+  ### El embudo NO estaba roto: Zernio manda UN DM por persona, PARA SIEMPRE
 
-  **Por qué no se nota:** el embudo vive ENTERO en Zernio. A este Worker solo
-  le llega el `message.received` de cuando la persona CONTESTA el privado. Si
-  el privado nunca sale, aquí no hay error, ni log, ni fila en el panel — se
-  ve idéntico a "nadie comentó". La única forma de saberlo es preguntándole a
-  Zernio.
+  Diagnosticado el 2026-09-20. Lo que se sospechaba arriba era falso en casi
+  todo, y vale la pena dejarlo escrito para no volver a buscar ahí:
 
-  **Qué revisar, con `GET /api/v1/comment-automations` de cada cuenta:**
-  1. ¿Siguen existiendo las del dueño (Instagram `6a92f975894af1fc0642775c`,
-     Facebook `6a92f9769470b63456aa16c3`)? ¿`isActive` en true?
-  2. ¿Sus `stats` (`totalTriggered` / `totalSent` / `totalFailed`) se movieron?
-     `totalFailed` alto = se disparan pero Meta las rechaza (permisos);
-     `totalTriggered` en cero = ni siquiera les llega el comentario.
-  3. Para Paula: si no hay ninguna, crear DOS — Facebook
-     `6a9f52f177555aae01ef1b70` e Instagram `6a9f5d9c77555aae01ef51b1`.
+  - **Las CUATRO automatizaciones existen, están activas y bien configuradas.**
+    Las de Paula sí se crearon (el 2026-09-08, en SU cuenta de Zernio):
+    Instagram `6a9f91b4531a4231aefbf45a` · Facebook `6a9f91b4531a4231aefbf452`.
+  - **`misses: 0` en las cuatro**: ningún comentario se queda fuera por
+    palabras clave. Los permisos de Meta están completos y los tokens vigentes.
+  - **`dmsFailed: 0` en las cuatro**: Meta nunca rechazó un privado.
 
-  **Al crear, copiar las del dueño y no improvisar:** `keywords: []` (CUALQUIER
-  comentario, lo pidió así), los mismos `excludeKeywords` de reclamos,
-  `alsoMatchInDms: false`, sin botones, y el DM terminando en PREGUNTA. Cada
-  uno de esos cuatro evita un problema concreto ya explicado arriba.
+  La causa real la dice la bitácora, `GET /comment-automations/<id>/logs` —el
+  endpoint que faltaba mirar—: `status: "skipped"`,
+  `error: "Already sent DM to this commenter"`.
+
+  **Una automatización de Zernio le manda UN SOLO DM a cada persona, para
+  siempre.** La segunda vez que alguien comenta no recibe nada: da igual que
+  sea otra publicación o que hayan pasado semanas. Y no solo se pierde el
+  privado — **la respuesta pública tampoco sale**, así que la publicación se
+  queda muda a la vista de todos. Las tres veces que el dueño lo probó el
+  2026-09-20 (dos personas, dos publicaciones nuevas) cayeron exactamente ahí.
+
+  **No hay interruptor.** El `POST /comment-automations` no tiene ningún campo
+  de reintento, enfriamiento ni "volver a mandar": se revisó el OpenAPI
+  completo. Apilar una segunda automatización "para que dedupliquen aparte"
+  sería peor — a un comentarista NUEVO le llegarían DOS privados, que es el
+  problema de ManyChat sembrado de nuevo.
+
+  **El arreglo vive en el Worker:** `src/channels/rescate-comentarios.ts`, con
+  el evento `comment.received`. Cuando Zernio se salta un comentario, el Worker
+  manda el privado y la respuesta pública él mismo. El texto lo LEE de la
+  automatización de Zernio, así que el guion sigue teniendo un solo dueño (el
+  panel) y esto no es una segunda copia que se desincroniza.
+
+  Tres cosas de ese archivo no son cosméticas:
+  (1) **Meta es el árbitro, no nosotros.** Un comentario admite EXACTAMENTE UNA
+  respuesta privada. Si Zernio ya mandó la suya, la nuestra vuelve con 400 y
+  `details.privateReplyConsumed` y no pasa nada. Por eso no hay que adivinar
+  quién llega primero ni consultar la bitácora: la plataforma no deja que
+  salgan dos. La respuesta PÚBLICA va después y solo si el privado fue nuestro,
+  por lo mismo.
+  (2) **Se vuelven a aplicar las `excludeKeywords`** antes de mandar nada: un
+  reclamo (*estafa, fraude, denuncia…*) NUNCA recibe guion de venta.
+  (3) **Ventana de 6 horas por persona.** Meta impide dos privados por
+  comentario, pero no dos comentarios: ese mismo día alguien escribió "Infi" y
+  se corrigió con "Info" tres segundos después. Sin la ventana recibía el
+  mismo mensaje dos veces.
+  Espera 15 s antes de actuar, a propósito: que Zernio tenga su turno primero y
+  sus números no mientan. Por eso va en `waitUntil` — Zernio reintenta el
+  evento si tardamos en contestarle 200.
+  Pruebas en `test/channels/rescate-comentarios.test.ts`.
+  **Vive en `src/`: `forjabot update` lo borra.**
+
+  ### El webhook del dueño estaba suscrito a UN SOLO evento
+
+  Se encontró de paso, y explica dos cosas que aquí ya se daban por hechas.
+  `GET /api/v1/webhooks/settings` del dueño traía solo `message.received`; el
+  de Paula traía además `message.sent` y `referral.received`. Consecuencia: en
+  las cuentas del dueño **el bot nunca se calló cuando él contestó a mano**
+  (eso necesita `message.sent`) y **ningún anuncio Click-to-Message llegó a
+  atribuirse** (eso necesita `referral.received`). El código estaba bien desde
+  el 2026-09-08; el evento no llegaba.
+
+  Los dos webhooks deben quedar suscritos a los CUATRO:
+  `message.received`, `message.sent`, `referral.received`, `comment.received`.
+  Se cambian con `PUT /api/v1/webhooks/settings` mandando `_id` y `events`.
+  **Sin `comment.received`, el rescate de arriba es código muerto** — el Worker
+  nunca se entera de que alguien comentó.
+
+  Para comprobar que el embudo respira, sin esperar a que alguien comente:
+  `GET /api/v1/comment-automations/<id>/logs` de cada una de las cuatro. Si
+  aparecen filas `skipped` con `Already sent DM`, el rescate debe haber dejado
+  su línea en `wrangler tail`: `[rescate-comentarios] privado rescatado`.
 
   **Las llaves NO van por el chat.** El dueño las guarda como variables del
-  entorno de Claude Code: `ZERNIO_API_KEY_PAULA` (ya puesta) y la suya. Las
-  variables se leen al ARRANCAR la sesión: si salen vacías, la sesión es más
-  vieja que la variable — se abre una nueva, no se vuelven a pedir.
+  entorno de Claude Code: `ZERNIO_API_KEY` y `ZERNIO_API_KEY_PAULA` (las dos
+  puestas). Las variables se leen al ARRANCAR la sesión: si salen vacías, la
+  sesión es más vieja que la variable — se abre una nueva, no se vuelven a
+  pedir.
 - **Avisos:** Telegram al dueño (`@ciudadmaderas_avisos_bot`). Solo se avisa de los
   leads **calientes** — avisar de todos entrena a ignorar los avisos. El aviso NO
   depende del canal: `calificarLead` solo recibe `env` y el id de conversación, así
@@ -405,15 +454,18 @@ queda escrito y hay que revocarlo; ya pasó una vez.
 cd starter && pnpm test && pnpm run deploy
 ```
 
-**Todo lo de este repo está desplegado al 2026-09-08** (versión
-`35129c89-3fdc-4adc-8e82-9de0696a2418`): separación por asesor, origen de cada
+**Todo lo de este repo está desplegado al 2026-09-20** (versión
+`1d23e19c-5228-438a-8047-9cd55f791141`): el rescate del embudo de comentarios
+(`src/channels/rescate-comentarios.ts`), y de antes — separación por asesor, origen de cada
 lead, una cuenta de Zernio por asesor, red de seguridad, sesión web que aguanta
 el cambio de IP, corte a 80 caracteres con botones y es-MX sin voseo. Lo último
 de esa madrugada: el bot **se calla cuando un asesor contesta a mano** desde la
 bandeja de Zernio (`message.sent` con `sentVia:"human"` → pausa; `api` y las
 automatizaciones NO pausan, o el bot se apagaría con su propio eco; `null` es
 "no se sabe" y tampoco pausa, así que contestar desde la app de Facebook
-todavía necesita el botón manual), y el **rescate ya no levanta la ficha en
+todavía necesita el botón manual — **pero ojo: en las cuentas del dueño eso
+nunca llegó a funcionar porque su webhook no estaba suscrito a `message.sent`;
+ver "El webhook del dueño estaba suscrito a UN SOLO evento" más arriba**), y el **rescate ya no levanta la ficha en
 blanco**: lee el nombre y la calificación de la transcripción con
 `nombreDe`/`datosDe` y la misma `calcularPrioridad` de `calificarLead`.
 
