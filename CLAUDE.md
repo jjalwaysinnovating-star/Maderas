@@ -112,6 +112,22 @@ la reemplaza (no se puede recuperar la anterior).
   El DM no lleva botones a propósito: los de Zernio son de enlace, y un enlace
   NO abre la ventana de 24h de Instagram — solo abre esa ventana un mensaje de
   la persona. Por eso se pide respuesta en vez de un toque.
+  **PENDIENTE (2026-09-20): las redes de PAULA probablemente NO tienen embudo.**
+  Esas dos automatizaciones se crearon el 2026-08-29 en la cuenta de Zernio del
+  dueño y para SUS dos cuentas. Paula abrió su propia cuenta de Zernio días
+  después, y nadie creó las suyas — así que cada comentario en sus
+  publicaciones se está perdiendo, sin que nada lo reporte.
+  Para revisarlo y arreglarlo hace falta SU llave, que el dueño ya guardó como
+  variable del entorno de Claude Code con el nombre `ZERNIO_API_KEY_PAULA`
+  (**no está en el chat, y no debe estarlo**). Las variables se leen al ARRANCAR
+  la sesión: si `$ZERNIO_API_KEY_PAULA` sale vacía, la sesión es más vieja que
+  la variable — hay que abrir una nueva, no volver a pedirla.
+  Con esa llave: `GET /api/v1/comment-automations` para ver si hay alguna, y si
+  no, crear DOS (una por cuenta suya: Facebook `6a9f52f177555aae01ef1b70` e
+  Instagram `6a9f5d9c77555aae01ef51b1`) copiando las del dueño —`keywords: []`,
+  los mismos `excludeKeywords` de reclamos, `alsoMatchInDms: false`, sin
+  botones y con el DM terminando en PREGUNTA. Las razones de cada una de esas
+  decisiones están arriba; no se improvisan.
 - **Avisos:** Telegram al dueño (`@ciudadmaderas_avisos_bot`). Solo se avisa de los
   leads **calientes** — avisar de todos entrena a ignorar los avisos. El aviso NO
   depende del canal: `calificarLead` solo recibe `env` y el id de conversación, así
