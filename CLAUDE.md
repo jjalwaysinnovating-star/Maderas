@@ -112,22 +112,38 @@ la reemplaza (no se puede recuperar la anterior).
   El DM no lleva botones a propósito: los de Zernio son de enlace, y un enlace
   NO abre la ventana de 24h de Instagram — solo abre esa ventana un mensaje de
   la persona. Por eso se pide respuesta en vez de un toque.
-  **PENDIENTE (2026-09-20): las redes de PAULA probablemente NO tienen embudo.**
-  Esas dos automatizaciones se crearon el 2026-08-29 en la cuenta de Zernio del
-  dueño y para SUS dos cuentas. Paula abrió su propia cuenta de Zernio días
-  después, y nadie creó las suyas — así que cada comentario en sus
-  publicaciones se está perdiendo, sin que nada lo reporte.
-  Para revisarlo y arreglarlo hace falta SU llave, que el dueño ya guardó como
-  variable del entorno de Claude Code con el nombre `ZERNIO_API_KEY_PAULA`
-  (**no está en el chat, y no debe estarlo**). Las variables se leen al ARRANCAR
-  la sesión: si `$ZERNIO_API_KEY_PAULA` sale vacía, la sesión es más vieja que
-  la variable — hay que abrir una nueva, no volver a pedirla.
-  Con esa llave: `GET /api/v1/comment-automations` para ver si hay alguna, y si
-  no, crear DOS (una por cuenta suya: Facebook `6a9f52f177555aae01ef1b70` e
-  Instagram `6a9f5d9c77555aae01ef51b1`) copiando las del dueño —`keywords: []`,
-  los mismos `excludeKeywords` de reclamos, `alsoMatchInDms: false`, sin
-  botones y con el DM terminando en PREGUNTA. Las razones de cada una de esas
-  decisiones están arriba; no se improvisan.
+  ### ⚠️ EL EMBUDO ESTÁ ROTO EN LAS DOS CUENTAS (2026-09-20) — sin diagnosticar
+
+  El dueño lo reportó en vivo: **alguien comentó en Ciudad Maderas y no salió
+  el mensaje privado**. Y las redes de Paula casi seguro nunca tuvieron embudo
+  — sus dos automatizaciones nunca se crearon: las que existen se hicieron el
+  2026-08-29 en la cuenta de Zernio del dueño y para SUS dos cuentas, y Paula
+  abrió su propia cuenta de Zernio días después.
+
+  **Por qué no se nota:** el embudo vive ENTERO en Zernio. A este Worker solo
+  le llega el `message.received` de cuando la persona CONTESTA el privado. Si
+  el privado nunca sale, aquí no hay error, ni log, ni fila en el panel — se
+  ve idéntico a "nadie comentó". La única forma de saberlo es preguntándole a
+  Zernio.
+
+  **Qué revisar, con `GET /api/v1/comment-automations` de cada cuenta:**
+  1. ¿Siguen existiendo las del dueño (Instagram `6a92f975894af1fc0642775c`,
+     Facebook `6a92f9769470b63456aa16c3`)? ¿`isActive` en true?
+  2. ¿Sus `stats` (`totalTriggered` / `totalSent` / `totalFailed`) se movieron?
+     `totalFailed` alto = se disparan pero Meta las rechaza (permisos);
+     `totalTriggered` en cero = ni siquiera les llega el comentario.
+  3. Para Paula: si no hay ninguna, crear DOS — Facebook
+     `6a9f52f177555aae01ef1b70` e Instagram `6a9f5d9c77555aae01ef51b1`.
+
+  **Al crear, copiar las del dueño y no improvisar:** `keywords: []` (CUALQUIER
+  comentario, lo pidió así), los mismos `excludeKeywords` de reclamos,
+  `alsoMatchInDms: false`, sin botones, y el DM terminando en PREGUNTA. Cada
+  uno de esos cuatro evita un problema concreto ya explicado arriba.
+
+  **Las llaves NO van por el chat.** El dueño las guarda como variables del
+  entorno de Claude Code: `ZERNIO_API_KEY_PAULA` (ya puesta) y la suya. Las
+  variables se leen al ARRANCAR la sesión: si salen vacías, la sesión es más
+  vieja que la variable — se abre una nueva, no se vuelven a pedir.
 - **Avisos:** Telegram al dueño (`@ciudadmaderas_avisos_bot`). Solo se avisa de los
   leads **calientes** — avisar de todos entrena a ignorar los avisos. El aviso NO
   depende del canal: `calificarLead` solo recibe `env` y el id de conversación, así
