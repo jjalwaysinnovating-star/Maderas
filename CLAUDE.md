@@ -242,6 +242,17 @@ la reemplaza (no se puede recuperar la anterior).
   problema entrena a ignorar los avisos. Ambas cosas salieron de la prueba de
   Instagram con "Jahir". Pruebas en `test/leads/rescate.test.ts`.
   **Vive en `src/`: `forjabot update` lo borra.**
+  **La red se volvió el camino principal, y eso hay que mirarlo (2026-09-20).**
+  Los DOS leads reales de ese día entraron por `origen: rescate`, ninguno por
+  `calificarLead`. O sea: el bot prometió contacto sin llamar la herramienta, las
+  dos veces. La red cumplió —los dos quedaron en el panel, con teléfono y con su
+  aviso— pero el rescate solo puede leer lo que alcance de la transcripción: uno
+  salió `caliente` con uso y plazo, el otro `sin_calificar` y sin uso, plazo ni
+  pago. Un lead `sin_calificar` llega sin la señal de qué tan urgente es, que es
+  justo para lo que sirve calificar. No es una falla nueva —ya estaba escrito
+  arriba que el modelo a veces no llama la tool— pero dos de dos dice que es la
+  norma y no la excepción. Si se va a tocar, es del lado del prompt/la tool, no
+  del rescate.
 - **De dónde vino cada lead** (`member/origen.local.ts`, sobrevive el update).
   Sin esto, gastar en anuncios es adivinar. Cada lead guarda en su `metadata`:
   `canal` (siempre: instagram / facebook / whatsapp / telegram / web /
@@ -328,9 +339,12 @@ la reemplaza (no se puede recuperar la anterior).
   hora = el mensaje no llegó al Worker) y `wrangler secret list` (aparecieron
   dos secrets que nadie había declarado). `wrangler tail` no sirvió aquí: no
   llegó a conectarse y no capturó nada.
-  **Falta la prueba en vivo**: alguien de fuera —ni el dueño ni ella— escribe a
-  una red de Paula y se comprueba que el lead cae en la lista de ELLA, no en la
-  del dueño, y que el aviso suena en el teléfono de ella.
+  **PROBADO EN VIVO Y CORRECTO (2026-09-20).** El reparto funciona: ese día
+  entraron dos leads reales por Facebook y cada uno cayó con su dueño —
+  `metadata.asesor = "paula"` uno (23:44) y `"joswuar"` el otro (21:10), los dos
+  con teléfono y con su aviso. Ya no queda nada que comprobar aquí; si algún día
+  un lead aparece en la lista equivocada, lo que se mira es el `accountId` que
+  Zernio mandó y la fila de esa cuenta en `member/asesores.local.ts`.
 - **Una conversación = un lead, pero solo dentro de 6 horas**
   (`LeadsRepo.VENTANA_MISMA_PLATICA_MS`). `calificarLead` reemplaza el lead
   pendiente de esa plática en vez de agregar otro (un prospecto se registraba al
