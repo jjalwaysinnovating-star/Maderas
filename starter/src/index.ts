@@ -781,6 +781,15 @@ export default {
       return;
     }
 
+    // VIGÍA LIGERO (cron horario): solo mira si el bot puede pensar y si está
+    // mudo. Barato y sin tocar Zernio. Se sale enseguida — un tick cada hora
+    // NO debe disparar followups ni la purga, que son de cadencia diaria.
+    if (event.cron === "17 * * * *") {
+      const { corridaVigia } = await import("./vigia");
+      await corridaVigia(env, { completa: false }).catch((e) => console.error("vigia:", e));
+      return;
+    }
+
     // Tier efectivo también en el cron (followups/analyzer/alertas usan isPro).
     await applyTier(env);
     await applyLanguage(env);
@@ -837,6 +846,14 @@ export default {
         await sendHeartbeat(env, await selfOrigin(env));
       })().catch((e) => console.error("heartbeat:", e)),
     );
+
+    // VIGÍA COMPLETO (una vez al día): revisa la configuración de Zernio,
+    // arregla lo que puede (eventos del webhook, embudo apagado) y avisa de lo
+    // que necesita manos (un permiso de Meta por vencer, una cuenta
+    // desconectada). Va PRIMERO y no debe tumbar la purga: todas las caídas de
+    // este bot fueron calladas, y esto es lo único que las oye. Ver src/vigia.
+    const { corridaVigia } = await import("./vigia");
+    await corridaVigia(env, { completa: true }).catch((e) => console.error("vigia:", e));
 
     // Daily cron (wrangler.toml: "0 3 * * *") — purge messages older than 90 days.
     await purgeOldMessages(env);

@@ -350,6 +350,60 @@ la reemplaza (no se puede recuperar la anterior).
   `curl -X POST …/kb/reindex -H "X-Reindex-Token: <token>"`. **Ojo:** si se corre
   antes de que propague el deploy, contesta `indexed: 0` — hay que repetirlo.
 
+## El vigía — el bot se revisa solo (2026-09-21)
+
+Todas las caídas de este bot fallaron **calladas**: ManyChat contestando en
+paralelo, los mensajes de Paula cayéndose una hora, el embudo saltándose a
+quien ya había escrito, el webhook del dueño con un solo evento durante doce
+días. Ninguna dio error, todas se veían igual que "hoy nadie escribió", y todas
+se descubrieron de casualidad. Ninguna era un error de código —vivían en
+Zernio, en Meta o en el saldo— así que las 1200 pruebas no podían verlas.
+
+`src/vigia/index.ts`, colgado del cron. **Dos cadencias:**
+
+| Cron | Qué hace |
+|---|---|
+| `17 * * * *` | Ligero: ¿el cerebro responde? ¿el bot está mudo? |
+| `0 3 * * *` | Completo: lo anterior + toda la config de Zernio |
+
+**Arregla solo** (cambios idempotentes, reponer lo que ya estaba): eventos que
+le falten al webhook, webhook apagado, embudo de comentarios apagado.
+**Solo avisa** (necesita manos): permiso de Meta por vencer, cuenta
+desconectada, saldo de Anthropic agotado, embudo que alguien borró, entregas
+fallidas. **No inventa un embudo que no existe** ni pisa la URL del webhook: si
+apunta a otro lado, alguien lo hizo a propósito o hay dos bots peleándose la
+cuenta, y eso se mira antes.
+
+Cuatro decisiones que no son cosméticas:
+
+1. **El detector de silencio es el que vale.** Las demás revisiones buscan
+   causas que ya conocemos; esa busca el SÍNTOMA —entraron mensajes y no salió
+   ninguna respuesta— así que atrapa también lo que no previmos. Dos cuidados
+   contra falsas alarmas: la ventana termina hace 15 minutos (un mensaje recién
+   llegado sigue en el buffer) y las conversaciones **pausadas no cuentan**,
+   porque ahí el silencio del bot es justo lo que queremos.
+2. **Enfriamiento de 6 h por problema.** La corrida es cada hora; sin esto, un
+   saldo agotado en viernes serían treinta avisos idénticos, y el número treinta
+   ya no lo lee nadie — que es exactamente lo que tratamos de evitar.
+3. **Un solo mensaje de Telegram por corrida**, nunca uno por hallazgo.
+4. **El resumen de los lunes SÍ se manda aunque todo esté bien.** Rompe la regla
+   de "solo avisar de problemas" a propósito: un vigía averiado se ve idéntico a
+   uno tranquilo, los dos callados. Una línea a la semana es lo único que
+   distingue "todo bien" de "esto lleva un mes muerto" — el mismo error que este
+   bot ya cometió cuatro veces, aplicado al que vigila.
+
+**Lo que el vigía NO puede arreglar** (son logins o tarjetas, no API): reconectar
+una cuenta de Meta, recargar Anthropic, renovar el token de Cloudflare, guardar
+un secret. De todo eso avisa con tiempo — 15 días antes en el caso de Meta.
+
+Estado al 2026-09-21: las 4 cuentas conectadas, los 2 webhooks completos, los 4
+embudos encendidos. **El permiso de Facebook del dueño vence el 2026-10-15**
+(los de Paula el 28 de octubre y el 7 de noviembre); el vigía empezará a avisar
+~15 días antes. Reconectar es a mano, en el panel de Zernio.
+
+Pruebas en `test/vigia/vigia.test.ts`. **Vive en `src/`: `forjabot update` lo
+borra** — si un día dejan de llegar los resúmenes de los lunes, es esto.
+
 ## Reglas del negocio que NO se relajan
 
 - **La palabra "garantizar" está prohibida ENTERA**, no solo pegada a "plusvalía", y
@@ -454,9 +508,9 @@ queda escrito y hay que revocarlo; ya pasó una vez.
 cd starter && pnpm test && pnpm run deploy
 ```
 
-**Todo lo de este repo está desplegado al 2026-09-20** (versión
-`1d23e19c-5228-438a-8047-9cd55f791141`): el rescate del embudo de comentarios
-(`src/channels/rescate-comentarios.ts`), y de antes — separación por asesor, origen de cada
+**Todo lo de este repo está desplegado al 2026-09-21** (versión
+`a168d3b8-6125-40a9-8e58-135f36022582`): el vigía (`src/vigia/`), el rescate del
+embudo de comentarios (`src/channels/rescate-comentarios.ts`), y de antes — separación por asesor, origen de cada
 lead, una cuenta de Zernio por asesor, red de seguridad, sesión web que aguanta
 el cambio de IP, corte a 80 caracteres con botones y es-MX sin voseo. Lo último
 de esa madrugada: el bot **se calla cuando un asesor contesta a mano** desde la

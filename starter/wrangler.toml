@@ -164,7 +164,10 @@ WEB_SITES = "ciudad-maderas.jjalwaysinnovating.workers.dev"
 command = "node scripts/forja-preflight.mjs"
 
 [triggers]
-crons = ["0 3 * * *"]  # daily 3am UTC: purge old messages
+crons = [
+  "0 3 * * *",    # diario 3am UTC: purga de mensajes viejos + VIGÍA COMPLETO
+  "17 * * * *",   # cada hora al :17 — vigía ligero (¿el bot piensa? ¿está mudo?)
+]
 
 # DASHBOARD_PASSWORD  (secret) — HTTP Basic Auth password for the admin dashboard; username is always "admin".
 # Set it with: wrangler secret put DASHBOARD_PASSWORD
