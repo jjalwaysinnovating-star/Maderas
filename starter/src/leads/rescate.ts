@@ -83,6 +83,38 @@ const PIDE_NOMBRE = /cu[áa]l es tu nombre|c[óo]mo te llamas|tu nombre[^?]*\?/i
  * null — un lead sin nombre es molesto; uno con el nombre equivocado hace que
  * el asesor salude mal a un cliente real.
  */
+/**
+ * Cuántos mensajes atrás se lee. Generoso a propósito: el tope viejo eran 20 y
+ * eso le costó una ficha a un prospecto real (ver `episodioActual`).
+ */
+export const MENSAJES_A_LEER = 200;
+
+/**
+ * La VISITA de hoy, no todo el historial del hilo.
+ *
+ * En Messenger el hilo con una persona no se cierra nunca: la plática de hoy y
+ * la de hace tres semanas viven en la misma fila. Para lo que CADUCA —plazo,
+ * forma de pago, uso— leer todo sería mentir: quien dijo "este mes" en agosto
+ * no necesariamente sigue igual en septiembre, y marcar caliente por eso manda
+ * al asesor a una llamada que no era.
+ *
+ * El corte es el mismo que ya usa `LeadsRepo.VENTANA_MISMA_PLATICA_MS` para
+ * decidir "esto sigue siendo la misma plática": el último hueco de 6 horas.
+ */
+export function episodioActual<T extends { created_at?: number }>(
+  historia: T[],
+  ventanaMs: number = LeadsRepo.VENTANA_MISMA_PLATICA_MS,
+): T[] {
+  for (let i = historia.length - 1; i > 0; i--) {
+    const a = historia[i - 1]?.created_at;
+    const b = historia[i]?.created_at;
+    if (typeof a === "number" && typeof b === "number" && b - a >= ventanaMs) {
+      return historia.slice(i);
+    }
+  }
+  return historia;
+}
+
 export function nombreDe(historia: Turno[]): string | null {
   for (let i = 0; i < historia.length - 1; i++) {
     const m = historia[i];
@@ -194,11 +226,39 @@ export async function rescataLeadPrometido(
   const esRescate = (existente?.metadata ?? "").includes('"origen":"rescate"');
   if (existente && !esRescate) return { rescatado: false };
 
-  const historia = await new MessagesRepo(db).lastN(conversationId, 20);
+  // Dos ventanas distintas, y la diferencia NO es cosmética.
+  //
+  //  · IDENTIDAD (nombre, teléfono): del hilo entero. Un nombre no caduca, y
+  //    en Messenger la persona lo dio una vez hace semanas y no lo repite.
+  //  · CALIFICACIÓN (plazo, pago, uso): solo de la visita de hoy. Eso sí
+  //    caduca — ver `episodioActual`.
+  //
+  // El tope viejo era `lastN(…, 20)` para todo, y eso le costó la ficha a un
+  // prospecto real el 2026-09-20: su plática tenía 30 mensajes, así que
+  // "Invertir", "Este mes" y la forma de pago quedaron FUERA de la ventana y
+  // el nombre entró por un pelo. La ficha salió con nombre y teléfono pero
+  // "sin calificar" — un prospecto que el asesor no supo si era urgente.
+  const historia = await new MessagesRepo(db).lastN(conversationId, MENSAJES_A_LEER);
+  const episodio = episodioActual(historia);
   const delCliente = historia.filter((m) => m.role === "user").map((m) => m.content);
-  const transcripcion = historia
+  const transcripcion = episodio
     .map((m) => `${m.role === "user" ? "Cliente" : "Bot"}: ${m.content}`)
     .join("\n");
+  // Si el hilo trae pláticas anteriores, se dice — con lo que había contestado
+  // entonces. Es contexto para el asesor, NO la calificación de hoy: se ve
+  // aparte justamente para que nadie lo confunda con lo que dijo hoy.
+  const previo = historia.slice(0, historia.length - episodio.length);
+  const contextoViejo = (() => {
+    if (previo.length === 0) return "";
+    const d = datosDe(previo);
+    const partes = [d.uso && `uso: ${d.uso}`, d.plazo && `plazo: ${d.plazo}`, d.formaPago && `pago: ${d.formaPago}`]
+      .filter(Boolean)
+      .join(" · ");
+    const cuando = previo[previo.length - 1]?.created_at;
+    const fecha = typeof cuando === "number" ? new Date(cuando).toISOString().slice(0, 10) : "antes";
+    return `\n\n--- Ya había escrito en este mismo hilo (última vez: ${fecha}) ---\n` +
+      (partes ? `Lo que contestó entonces — ${partes}. OJO: es de esa visita, no de hoy.` : "Sin respuestas que calificaran en esa visita.");
+  })();
   const telefono = telefonoDe(delCliente);
   // El bot ya oyó el nombre y las respuestas que califican — solo no las
   // guardó. Están en la transcripción, así que se leen de ahí en vez de dejar
@@ -207,7 +267,7 @@ export async function rescataLeadPrometido(
   // la herramienta; la ficha salió sin nombre y marcada "sin calificar", o sea
   // un prospecto caliente disfrazado de frío en la lista del asesor.
   const nombre = nombreDe(historia);
-  const datos = datosDe(historia);
+  const datos = datosDe(episodio);
   // Solo se califica con las DOS respuestas que mandan. Con una sola, la ficha
   // se queda "sin calificar" a propósito: inventar una prioridad a medias es
   // peor que decir que no se sabe.
@@ -232,7 +292,7 @@ export async function rescataLeadPrometido(
     await repo.enrich(existente.id, {
       contact: telefono,
       name: nombre,
-      notes: `El bot le dijo que un asesor lo contactaría, pero no lo registró. Aquí va la conversación completa:\n\n${transcripcion}`.slice(0, 4000),
+      notes: `El bot le dijo que un asesor lo contactaría, pero no lo registró. Aquí va la conversación:\n\n${transcripcion}${contextoViejo}`.slice(0, 4000),
     });
 
     // El aviso del rescate casi siempre sale ANTES de que el cliente suelte su
@@ -266,7 +326,7 @@ export async function rescataLeadPrometido(
     name: nombre ?? undefined,
     contact: telefono ?? undefined,
     intent: "Prospecto rescatado — el bot prometió contacto sin registrarlo",
-    notes: `El bot le dijo que un asesor lo contactaría, pero no lo registró. Aquí va la conversación completa:\n\n${transcripcion}`.slice(0, 4000),
+    notes: `El bot le dijo que un asesor lo contactaría, pero no lo registró. Aquí va la conversación:\n\n${transcripcion}${contextoViejo}`.slice(0, 4000),
     // La prioridad sale de las MISMAS reglas que `calificarLead` — se importa
     // la función, no se copian los umbrales: dos tablas de prioridad que se
     // separan con el tiempo es peor que no tener la segunda.

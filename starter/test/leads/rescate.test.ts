@@ -326,3 +326,137 @@ describe("un hilo viejo no tapa al prospecto de hoy", () => {
     ).toBe(true);
   });
 });
+
+describe("el hilo eterno de Messenger: qué se lee de dónde", () => {
+  /**
+   * El caso real que destapó esto (2026-09-20).
+   *
+   * En Messenger el hilo con una persona no se cierra NUNCA, así que la visita
+   * de hoy y la de hace doce días viven en la misma fila. Aquel prospecto
+   * contestó todo el guion el día 8 —uso, plazo, pago, nombre y teléfono—, el
+   * bot dijo "ya tengo tus datos" y no llamó a la herramienta. El día 20 volvió
+   * a escribir, preguntó por OTRA ciudad y pidió que lo contactaran.
+   *
+   * Su plática tenía 30 mensajes y el rescate solo leía los últimos 20: el
+   * nombre entró por un pelo y las tres respuestas que califican quedaron
+   * fuera. La ficha llegó a la asesora con teléfono pero "sin calificar", o sea
+   * sin la única señal que sirve para decidir a quién llamar primero.
+   */
+  const CONV2 = "conv-hilo-eterno";
+  const HACE_12_DIAS = -12 * 24 * 60 * 60 * 1000;
+
+  async function siembraHiloLargo(env: any) {
+    const db = new Db(env.DB);
+    const ahora = Date.now();
+    await db.run(
+      `INSERT INTO conversations (id, channel, channel_user_id, started_at, last_message_at)
+       VALUES (?, 'zernio', 'josa', ?, ?)`,
+      [CONV2, ahora + HACE_12_DIAS, ahora],
+    );
+    // La visita VIEJA: el guion completo.
+    const viejo: [string, string][] = [
+      ["user", "Quiero un terreno en cancun"],
+      ["assistant", "Perfecto, Cancún es una excelente opción. ¿Para qué buscas el terreno?"],
+      ["user", "Invertir"],
+      ["assistant", "Claro. ¿Para cuándo necesitarías avanzar?"],
+      ["user", "Este mes"],
+      ["assistant", "¿Cómo te gustaría pagar?"],
+      ["user", "Con financiamiento"],
+      ["assistant", "¿Cuál es tu nombre?"],
+      ["user", "Josa"],
+      ["assistant", "Gracias, Josa. ¿Y tu teléfono para que el asesor te contacte?"],
+      ["user", "6645781234"],
+      ["assistant", "Perfecto, Josa. Ya tengo tus datos."],
+    ];
+    let t = ahora + HACE_12_DIAS;
+    for (const [role, content] of viejo) {
+      await db.run(
+        `INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)`,
+        [`v${t}-${Math.random()}`, CONV2, role, content, (t += 60_000)],
+      );
+    }
+    // Relleno, para pasar de 20 mensajes y reproducir el corte de la ventana.
+    for (let i = 0; i < 8; i++) {
+      await db.run(
+        `INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)`,
+        [`r${i}`, CONV2, i % 2 ? "assistant" : "user", i % 2 ? "¡Hola de nuevo!" : "Hola", (t += 60_000)],
+      );
+    }
+    // La visita de HOY: otra ciudad, sin volver a calificar.
+    const hoy: [string, string][] = [
+      ["user", "Que ciudades tienes"],
+      ["assistant", "Tenemos terrenos en 8 ciudades de México."],
+      ["user", "Aguascalientes"],
+      ["assistant", "Aguascalientes tiene buen potencial."],
+      ["user", "Si, comunicame con uno"],
+    ];
+    let h = ahora - 5 * 60_000;
+    for (const [role, content] of hoy) {
+      await db.run(
+        `INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)`,
+        [`h${h}-${Math.random()}`, CONV2, role, content, (h += 30_000)],
+      );
+    }
+  }
+
+  it("la IDENTIDAD sí se trae del hilo entero: un nombre no caduca", async () => {
+    await siembraHiloLargo(env);
+    await rescataLeadPrometido(env, CONV2, "El asesor te contactará pronto.");
+
+    const lead = (await new LeadsRepo(new Db(env.DB)).list(10)).find((l) => l.conversation_id === CONV2)!;
+    expect(lead.name).toBe("Josa");
+    expect(lead.contact?.replace(/\D/g, "")).toBe("6645781234");
+  });
+
+  it("la CALIFICACIÓN no se hereda de una visita de hace doce días", async () => {
+    // Quien dijo "este mes" hace doce días —y hoy preguntó por otra ciudad sin
+    // volver a decirlo— no es un caliente de hoy. Marcarlo así mandaría al
+    // asesor a una llamada urgente que nadie pidió.
+    await siembraHiloLargo(env);
+    await rescataLeadPrometido(env, CONV2, "El asesor te contactará pronto.");
+
+    const lead = (await new LeadsRepo(new Db(env.DB)).list(10)).find((l) => l.conversation_id === CONV2)!;
+    expect(leadMetadata(lead).prioridad).toBe("sin_calificar");
+  });
+
+  it("pero el asesor SÍ ve lo que había contestado antes, fechado y aparte", async () => {
+    await siembraHiloLargo(env);
+    await rescataLeadPrometido(env, CONV2, "El asesor te contactará pronto.");
+
+    const lead = (await new LeadsRepo(new Db(env.DB)).list(10)).find((l) => l.conversation_id === CONV2)!;
+    expect(lead.notes).toContain("Ya había escrito en este mismo hilo");
+    expect(lead.notes).toMatch(/plazo: inmediato/);
+    expect(lead.notes).toMatch(/no de hoy/i); // que nadie lo confunda con hoy
+    // Y la visita de hoy va completa.
+    expect(lead.notes).toContain("Aguascalientes");
+  });
+
+  it("una plática larga de UNA sola sentada sí califica entera", async () => {
+    // El otro lado de la moneda: si todo pasó hoy, la ventana no debe cortar
+    // nada aunque sean más de 20 mensajes. Era lo que rompía el tope viejo.
+    const db = new Db(env.DB);
+    const CONV3 = "conv-larga-hoy";
+    const ahora = Date.now();
+    await db.run(
+      `INSERT INTO conversations (id, channel, channel_user_id, started_at, last_message_at)
+       VALUES (?, 'zernio', 'largo', ?, ?)`,
+      [CONV3, ahora, ahora],
+    );
+    let t = ahora - 40 * 60_000;
+    const mete = (role: string, content: string) =>
+      db.run(`INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)`,
+        [`L${t}-${Math.random()}`, CONV3, role, content, (t += 60_000)]);
+    await mete("user", "Invertir");
+    await mete("user", "Este mes");
+    await mete("user", "Con financiamiento");
+    for (let i = 0; i < 24; i++) await mete(i % 2 ? "assistant" : "user", "Cuéntame más del desarrollo");
+    await mete("assistant", "¿Cuál es tu nombre?");
+    await mete("user", "Ramiro");
+    await mete("user", "Mi tel es 686 222 3344");
+
+    await rescataLeadPrometido(env, CONV3, "Un asesor te contactará hoy mismo.");
+    const lead = (await new LeadsRepo(new Db(env.DB)).list(10)).find((l) => l.conversation_id === CONV3)!;
+    expect(leadMetadata(lead).prioridad).toBe("caliente");
+    expect(lead.name).toBe("Ramiro");
+  });
+});

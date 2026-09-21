@@ -242,17 +242,45 @@ la reemplaza (no se puede recuperar la anterior).
   problema entrena a ignorar los avisos. Ambas cosas salieron de la prueba de
   Instagram con "Jahir". Pruebas en `test/leads/rescate.test.ts`.
   **Vive en `src/`: `forjabot update` lo borra.**
-  **La red se volvió el camino principal, y eso hay que mirarlo (2026-09-20).**
-  Los DOS leads reales de ese día entraron por `origen: rescate`, ninguno por
-  `calificarLead`. O sea: el bot prometió contacto sin llamar la herramienta, las
-  dos veces. La red cumplió —los dos quedaron en el panel, con teléfono y con su
-  aviso— pero el rescate solo puede leer lo que alcance de la transcripción: uno
-  salió `caliente` con uso y plazo, el otro `sin_calificar` y sin uso, plazo ni
-  pago. Un lead `sin_calificar` llega sin la señal de qué tan urgente es, que es
-  justo para lo que sirve calificar. No es una falla nueva —ya estaba escrito
-  arriba que el modelo a veces no llama la tool— pero dos de dos dice que es la
-  norma y no la excepción. Si se va a tocar, es del lado del prompt/la tool, no
-  del rescate.
+  **La red se volvió el camino principal (2026-09-20).** Los DOS leads reales de
+  ese día entraron por `origen: rescate`, ninguno por `calificarLead`. Revisado
+  a fondo el 2026-09-21: **no hay nada roto en el cableado** — `calificarLead`
+  no está en `disabled_tools`, su descripción es explícita, el esquema es
+  simple, y `src/agent.ts` la pasa al modelo con `stopWhen: steps >= 6` sin
+  forzar nada. La herramienta SÍ se ha llamado (18 veces el 26–27 de agosto, y
+  otras sueltas el 31/8, 3/9 y 8/9). El modelo simplemente a veces no la llama,
+  y en un hilo de Messenger que nunca se cierra tiende a contestar "ya tengo
+  tus datos" leyendo su PROPIO historial de hace semanas. Eso es conducta del
+  modelo, no configuración: si se va a atacar, es del lado del guion, no del
+  rescate.
+
+  ### El rescate leía solo los últimos 20 mensajes (arreglado 2026-09-21)
+
+  Lo que sí estaba roto, y explica la ficha `sin_calificar` de aquel día. El
+  rescate hacía `lastN(conversationId, 20)` para TODO. Esa plática tenía 30
+  mensajes: el nombre entró por un pelo y "Invertir", "Este mes" y la forma de
+  pago quedaron FUERA de la ventana. La ficha llegó con nombre y teléfono pero
+  sin la única señal que sirve para decidir a quién llamar primero. Se ve en
+  los datos: `name` sí, `uso`/`plazo`/`pago` en null.
+
+  Ahora son **dos ventanas distintas, y la diferencia no es cosmética**:
+
+  | Qué | De dónde | Por qué |
+  |---|---|---|
+  | Nombre y teléfono | el hilo **entero** (tope 200) | un nombre no caduca, y en Messenger se dio una vez hace semanas |
+  | Plazo, pago, uso | solo la **visita de hoy** | eso sí caduca |
+
+  La "visita de hoy" la recorta `episodioActual`, cortando en el último hueco de
+  6 h — la MISMA `LeadsRepo.VENTANA_MISMA_PLATICA_MS` que ya decide "esto sigue
+  siendo la misma plática". Subir el tope a 200 para todo habría sido peor que
+  el bug: quien dijo "este mes" en agosto saldría caliente hoy y el asesor
+  correría a una llamada que nadie pidió.
+  Lo viejo no se tira: si el hilo trae pláticas anteriores, las notas lo dicen
+  **fechado y aparte** ("Ya había escrito en este mismo hilo… OJO: es de esa
+  visita, no de hoy"), que es contexto para el asesor sin disfrazarse de
+  calificación de hoy.
+  Cuatro pruebas nuevas en `test/leads/rescate.test.ts`; dos de ellas fallan
+  con el código viejo (se comprobó a propósito).
 - **De dónde vino cada lead** (`member/origen.local.ts`, sobrevive el update).
   Sin esto, gastar en anuncios es adivinar. Cada lead guarda en su `metadata`:
   `canal` (siempre: instagram / facebook / whatsapp / telegram / web /
@@ -523,7 +551,7 @@ cd starter && pnpm test && pnpm run deploy
 ```
 
 **Todo lo de este repo está desplegado al 2026-09-21** (versión
-`a168d3b8-6125-40a9-8e58-135f36022582`): el vigía (`src/vigia/`), el rescate del
+`57b39d6c-f93f-48a2-97ac-97490c38f54d`): el vigía (`src/vigia/`), el rescate del
 embudo de comentarios (`src/channels/rescate-comentarios.ts`), y de antes — separación por asesor, origen de cada
 lead, una cuenta de Zernio por asesor, red de seguridad, sesión web que aguanta
 el cambio de IP, corte a 80 caracteres con botones y es-MX sin voseo. Lo último
