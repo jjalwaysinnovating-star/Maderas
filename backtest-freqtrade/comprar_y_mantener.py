@@ -57,7 +57,7 @@ def comprar_y_mantener(datos: dict, inicio: str, fin: str) -> dict:
 
 
 def main() -> None:
-    exchange = sys.argv[1] if len(sys.argv) > 1 else "binance"
+    exchange = sys.argv[1] if len(sys.argv) > 1 else "okx"
     datos = {par: carga(exchange, par) for par in PARES}
 
     print(f"\nDatos de {exchange}:")

@@ -4,21 +4,35 @@ Proyecto aparte del bot de Ciudad Maderas: no toca nada de `starter/`.
 **Solo simulación.** Sin dinero real, sin claves API, solo spot (nada de
 futuros ni apalancamiento).
 
-## Estado (2026-09-25): preparado, SIN correr
+## Resultado (corrido el 2026-09-25, datos de OKX)
 
-No hay resultados todavía. La red del entorno de Claude Code en la nube bloqueó
-**12 de los 13 exchanges de spot que Freqtrade soporta oficialmente** (Binance,
-Binance US, BingX, Bitget, Bybit, Bybit EU, Gate, HTX, Hyperliquid, Kraken, OKX
-y MyOKX) y el archivo público `data.binance.vision`. Gate EU no se probó por
-separado. Freqtrade falló con
-`Markets were not loaded`, no se bajó ni una vela, y por regla del dueño **no se
-inventan datos**: el backtest se detuvo ahí.
+Estrategia sin cambios desde que se escribió (commit `7e16562`, antes de bajar
+datos). Comisión 0.1 % por lado. Datos: 17,772 velas de 1 h por par, sin
+ninguna hora faltante.
 
-Para destrabarlo: en la configuración del entorno (menú del entorno en la barra
-de título de la sesión → Edit → acceso a red), permitir `www.okx.com` (primera
-opción), y de respaldo `api.binance.com` y `data.binance.vision`. Si con eso
-sigue bloqueado, abrir una sesión nueva. Kraken y Gate no sirven aquí aunque
-se permitan: por su API no dan 2 años de velas de 1 hora.
+| | Diseño (18 meses) | Validación (6 meses) |
+|---|---|---|
+| Operaciones | 164 | 51 |
+| Aciertos | 44 (26.8 %) | 14 (27.5 %) |
+| Neto después de comisiones | **+6.57 USDT (+0.66 %)** | **−37.00 USDT (−3.70 %)** |
+| Comisiones pagadas | 117.88 USDT | 33.59 USDT |
+| Peor caída (operaciones cerradas / saldo) | 21.0 % / 23.8 % | 7.8 % / 10.3 % |
+| Tiempo con alguna operación abierta | 45 % | 43 % |
+| Comprar y mantener 50/50, con comisión | −46.71 USDT (−4.67 %) | **+218.99 USDT (+21.90 %)** |
+| Peor caída de comprar y mantener | 55.5 % | 32.8 % |
+
+Lectura: en diseño quedó tablas (casi todo lo que ganó se fue en comisiones);
+en validación perdió mientras el mercado subió ~22 %. Caídas mucho menores que
+comprar y mantener, porque pasa más de la mitad del tiempo fuera y nunca
+invierte más de ~2/3 del saldo. No mostró ventaja; no es garantía de nada.
+
+Los resultados completos están en `user_data/backtest_results/`.
+
+**Red:** OKX tuvo que permitirse en el entorno "Bot Simulador" (Custom +
+`www.okx.com`); Binance contesta 451 (región bloqueada). Además, `ccxt` ignora
+por defecto el proxy de la nube: `requests_trust_env` y `aiohttp_trust_env` en
+`ccxt_config` lo arreglan sin apagar la verificación TLS, y en una computadora
+normal no cambian nada.
 
 ## Qué hay
 
@@ -53,5 +67,5 @@ Tres cosas que conviene saber al leer el resultado:
 
 ```bash
 pip install freqtrade
-cd backtest-freqtrade && ./correr_backtest.sh okx   # o binance
+cd backtest-freqtrade && ./correr_backtest.sh        # usa OKX
 ```

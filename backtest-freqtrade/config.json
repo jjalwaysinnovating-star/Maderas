@@ -35,10 +35,13 @@
         "order_book_top": 1
     },
     "exchange": {
-        "name": "binance",
+        "name": "okx",
         "key": "",
         "secret": "",
-        "ccxt_config": {},
+        "ccxt_config": {
+            "requests_trust_env": true,
+            "aiohttp_trust_env": true
+        },
         "ccxt_async_config": {},
         "pair_whitelist": [
             "BTC/USDT",

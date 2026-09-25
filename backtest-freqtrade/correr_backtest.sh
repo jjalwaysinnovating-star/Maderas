@@ -5,11 +5,11 @@
 #   3. backtest del periodo de validación (2026-03-25 → 2026-09-25, 6 meses)
 #   4. referencia "comprar y mantener" con los mismos datos
 #
-# Uso:  ./correr_backtest.sh [exchange]      (por defecto: binance)
+# Uso:  ./correr_backtest.sh [exchange]      (por defecto: okx)
 set -euo pipefail
 cd "$(dirname "$0")"
 
-EXCHANGE="${1:-binance}"
+EXCHANGE="${1:-okx}"
 FT="${FREQTRADE:-freqtrade}"
 PY="${PYTHON:-python3}"
 export FREQTRADE__EXCHANGE__NAME="$EXCHANGE"
