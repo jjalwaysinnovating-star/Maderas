@@ -1,0 +1,4 @@
+user_data/data/
+user_data/logs/
+user_data/backtest_results/.last_result.json
+__pycache__/
