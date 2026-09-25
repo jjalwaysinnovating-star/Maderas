@@ -1,0 +1,16 @@
+# Programas instalados (se reinstalan con el README)
+.venv/
+
+# Usuario y contraseña de la interfaz web local: nunca a GitHub
+config-privado.json
+
+# Datos y salidas que se regeneran
+user_data/data/
+user_data/logs/
+user_data/backtest_results/
+user_data/plot/
+resultados/*/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+__pycache__/

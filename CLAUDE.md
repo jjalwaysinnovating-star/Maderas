@@ -22,6 +22,11 @@ que lo vigila (`test/sitio-web.test.ts`, bloque "solo terrenos").
 **El dueño no programa.** Corre los comandos por él y explícale en español
 sencillo, una pregunta a la vez. Lee `starter/CLAUDE.md` para el mapa del código.
 
+`trading-simulacion/` es un experimento APARTE, sin relación con el bot: un bot de
+cripto (Freqtrade) **solo en simulación**, sin claves API y solo spot. Su README
+lo explica. Las sesiones en la nube no llegan a ningún exchange (la red los
+bloquea), así que sus datos y su corrida en vivo son en la computadora del dueño.
+
 ## Dónde vive
 
 | Qué | Dónde |
